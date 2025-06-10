@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Select, Image } from 'antd';
-import { SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/services/api';
 import type { Product } from '@/types';
@@ -316,6 +316,7 @@ const Products: React.FC = () => {
             </Select>
             <Button
               type="primary"
+              icon={<ReloadOutlined />}
               onClick={() => fetchProducts(pagination.current, pagination.pageSize, searchText, auditStatusFilter)}
             >
               刷新

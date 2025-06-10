@@ -22,7 +22,7 @@ import {
   SearchOutlined, 
   FilterOutlined,
   ShoppingCartOutlined,
-  CalendarOutlined
+
 } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';

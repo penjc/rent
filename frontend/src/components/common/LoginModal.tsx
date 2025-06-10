@@ -12,8 +12,6 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
-  const [smsLoading, setSmsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const [activeTab, setActiveTab] = useState('login');
 
   const [loginForm] = Form.useForm();
@@ -49,41 +47,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
     }
   };
 
-  // 发送验证码
-  const sendSmsCode = async (phone: string, type: number) => {
-    if (!phone) {
-      message.error('请输入手机号');
-      return;
-    }
-    
-    setSmsLoading(true);
-    try {
-      await authService.sendSmsCode({ phone, type });
-      message.success('验证码已发送');
-      
-      // 启动倒计时
-      setCountdown(60);
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } catch (error: any) {
-      message.error(error.message || '发送验证码失败');
-    } finally {
-      setSmsLoading(false);
-    }
-  };
+
 
   // 关闭模态框时重置表单
   const handleClose = () => {
     loginForm.resetFields();
     registerForm.resetFields();
-    setCountdown(0);
     onClose();
   };
 

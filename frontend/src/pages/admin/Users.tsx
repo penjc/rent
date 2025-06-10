@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Switch, Popconfirm } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import {SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/services/api';
 import type { User } from '@/types';
@@ -59,6 +59,18 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
+  // 当编辑用户变化时，更新表单值
+  useEffect(() => {
+    if (editingUser && editModalVisible) {
+      form.setFieldsValue({
+        nickname: editingUser.nickname || '',
+        realName: editingUser.realName || '',
+        verified: editingUser.verified === 1,
+        status: editingUser.status === 1,
+      });
+    }
+  }, [editingUser, editModalVisible, form]);
+
   // 搜索用户
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -73,12 +85,6 @@ const Users: React.FC = () => {
   // 编辑用户
   const handleEdit = (user: UserData) => {
     setEditingUser(user);
-    form.setFieldsValue({
-      nickname: user.nickname,
-      realName: user.realName,
-      verified: user.verified,
-      status: user.status === 1,
-    });
     setEditModalVisible(true);
   };
 
@@ -89,6 +95,7 @@ const Users: React.FC = () => {
       const updateData = {
         ...values,
         status: values.status ? 1 : 0,
+        verified: values.verified ? 1 : 0,
       };
 
       const response = await api.put(`/admin/users/${editingUser?.id}`, updateData);
@@ -153,8 +160,8 @@ const Users: React.FC = () => {
       key: 'verified',
       width: 100,
       render: (verified) => (
-        <Tag color={verified ? 'green' : 'orange'}>
-          {verified ? '已认证' : '未认证'}
+        <Tag color={verified === 1 ? 'green' : 'orange'}>
+          {verified === 1 ? '已认证' : '未认证'}
         </Tag>
       ),
     },
@@ -225,7 +232,7 @@ const Users: React.FC = () => {
             />
             <Button
               type="primary"
-              icon={<PlusOutlined />}
+              icon={<ReloadOutlined />}
               onClick={() => fetchUsers(pagination.current, pagination.pageSize, searchText)}
             >
               刷新
@@ -260,11 +267,18 @@ const Users: React.FC = () => {
           form.resetFields();
         }}
         destroyOnClose
+        width={600}
       >
         <Form
           form={form}
           layout="vertical"
           preserve={false}
+          initialValues={{
+            nickname: editingUser?.nickname || '',
+            realName: editingUser?.realName || '',
+            verified: editingUser?.verified || false,
+            status: editingUser?.status === 1,
+          }}
         >
           <Form.Item
             label="昵称"

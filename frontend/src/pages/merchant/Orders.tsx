@@ -9,16 +9,16 @@ import {
   message,
   Descriptions,
   Select,
-  DatePicker,
-  Input,
+  // DatePicker,
+  // Input,
   Popconfirm
 } from 'antd';
-import { 
+import {
   EyeOutlined,
   TruckOutlined,
-  CheckOutlined,
-  SearchOutlined,
-  InboxOutlined
+  // CheckOutlined,
+  // SearchOutlined,
+  InboxOutlined, ReloadOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -27,7 +27,7 @@ import type { Order } from '@/types';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
+// const { RangePicker } = DatePicker;
 
 // 订单状态映射
 const ORDER_STATUS_MAP = {
@@ -305,8 +305,8 @@ const Orders: React.FC = () => {
               <Option value={6}>已完成</Option>
               <Option value={7}>已取消</Option>
             </Select>
-            <Button 
-              icon={<SearchOutlined />} 
+            <Button
+                icon={<ReloadOutlined />}
               onClick={loadOrders}
             >
               刷新

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Input, Button, Card, Row, Col, Carousel, Spin, Empty, Avatar, Dropdown, message } from 'antd';
-import { SearchOutlined, UserOutlined, ShoppingCartOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Button, Card, Row, Col, Carousel, Spin, Empty, message } from 'antd';
+
 import { useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
-import { authService } from '../../services/authService';
+
 import LoginModal from '../../components/common/LoginModal';
 import type { Product, Category } from '../../types';
-import type { User } from '../../services/authService';
+
 
 const { Meta } = Card;
 
@@ -21,16 +21,9 @@ const Home: React.FC = () => {
   const [total, setTotal] = useState(0);
   
   // 用户认证相关状态
-  const [user, setUser] = useState<User | null>(null);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
 
-  // 检查用户登录状态
-  useEffect(() => {
-    const storedUser = authService.getStoredUser();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, []);
+
 
   // 获取分类数据
   useEffect(() => {
@@ -71,11 +64,7 @@ const Home: React.FC = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // 搜索处理
-  const handleSearch = () => {
-    setCurrentPage(1);
-    setSelectedCategory(null); // 搜索时清除分类筛选
-  };
+
 
   // 分类选择
   const handleCategorySelect = (categoryId: number | null) => {
@@ -99,16 +88,7 @@ const Home: React.FC = () => {
 
   // 登录成功处理
   const handleLoginSuccess = () => {
-    const storedUser = authService.getStoredUser();
-    setUser(storedUser);
     message.success('登录成功');
-  };
-
-  // 登出处理
-  const handleLogout = () => {
-    authService.logout();
-    setUser(null);
-    message.success('已退出登录');
   };
 
   // 格式化价格
@@ -131,30 +111,7 @@ const Home: React.FC = () => {
     }
   };
 
-  // 用户菜单
-  const userMenuItems = [
-    {
-      key: 'orders',
-      icon: <ShoppingCartOutlined />,
-      label: '我的订单',
-      onClick: () => navigate('/user/orders')
-    },
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: '个人中心',
-      onClick: () => navigate('/user/profile')
-    },
-    {
-      type: 'divider' as const,
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: '退出登录',
-      onClick: handleLogout
-    }
-  ];
+
 
   // 轮播图数据
   const bannerImages = [
@@ -168,7 +125,7 @@ const Home: React.FC = () => {
         {/* 轮播图 */}
         <div style={{ marginBottom: 30 }}>
           <Carousel autoplay style={{ borderRadius: 8, overflow: 'hidden' }}>
-            {bannerImages.map((image, index) => (
+            {bannerImages.map((_, index) => (
               <div key={index}>
                 <div
                   style={{

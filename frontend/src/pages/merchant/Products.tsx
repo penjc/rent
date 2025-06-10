@@ -22,8 +22,7 @@ import {
   PlusOutlined, 
   EditOutlined, 
   DeleteOutlined, 
-  EyeOutlined,
-  UploadOutlined,
+
   ShopOutlined,
   StopOutlined
 } from '@ant-design/icons';
@@ -274,7 +273,7 @@ const Products: React.FC = () => {
 
   // 自定义上传函数
   const customUpload = async (options: any) => {
-    const { file, onSuccess, onError, onProgress } = options;
+    const { file, onSuccess, onError } = options;
     
     try {
       const formData = new FormData();

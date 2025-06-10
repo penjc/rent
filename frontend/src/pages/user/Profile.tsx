@@ -24,7 +24,7 @@ import {
   SafetyCertificateOutlined,
   EditOutlined
 } from '@ant-design/icons';
-import type { UploadFile } from 'antd/es/upload/interface';
+
 
 const { Title, Text } = Typography;
 
@@ -45,7 +45,8 @@ const Profile: React.FC = () => {
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
-  const [avatar, setAvatar] = useState<string>('');
+
+
 
   // 模拟用户数据
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -67,7 +68,6 @@ const Profile: React.FC = () => {
     if (info.file.status === 'done') {
       // 模拟上传成功
       const newAvatarUrl = 'https://via.placeholder.com/100x100?text=New+Avatar';
-      setAvatar(newAvatarUrl);
       setUserInfo({ ...userInfo, avatar: newAvatarUrl });
       setLoading(false);
       message.success('头像更新成功');
@@ -85,7 +85,7 @@ const Profile: React.FC = () => {
     }, 1000);
   };
 
-  const handleChangePassword = (values: any) => {
+  const handleChangePassword = () => {
     setLoading(true);
     // 模拟API调用
     setTimeout(() => {
@@ -96,12 +96,7 @@ const Profile: React.FC = () => {
     }, 1000);
   };
 
-  const uploadButton = (
-    <div className="text-center">
-      <CameraOutlined className="text-2xl text-gray-400 mb-2" />
-      <div className="text-gray-600">更换头像</div>
-    </div>
-  );
+
 
   const tabItems = [
     {

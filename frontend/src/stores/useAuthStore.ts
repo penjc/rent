@@ -170,7 +170,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({
+      partialize: () => ({
         // 不持久化认证状态，每次刷新都重新验证
         isAuthenticated: false,
         user: null,

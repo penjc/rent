@@ -32,7 +32,7 @@ export interface User {
   realName?: string;
   idCard?: string;
   status: number;
-  verified: boolean;
+  verified: number; // 0: 未认证, 1: 已认证
   createdAt: string;
   updatedAt: string;
 }
@@ -172,31 +172,31 @@ export interface AuditData {
 export type UserType = 'user' | 'merchant' | 'admin';
 
 // 订单状态枚举
-export enum OrderStatus {
-  PENDING = 1,    // 待支付
-  PAID = 2,       // 已支付
-  SHIPPED = 3,    // 已发货
-  COMPLETED = 4,  // 已完成
-  CANCELLED = 5,  // 已取消
-}
+export const OrderStatus = {
+  PENDING: 1,    // 待支付
+  PAID: 2,       // 已支付
+  SHIPPED: 3,    // 已发货
+  COMPLETED: 4,  // 已完成
+  CANCELLED: 5,  // 已取消
+} as const;
 
 // 商品审核状态枚举
-export enum AuditStatus {
-  PENDING = 0,    // 待审核
-  APPROVED = 1,   // 审核通过
-  REJECTED = 2,   // 审核拒绝
-}
+export const AuditStatus = {
+  PENDING: 0,    // 待审核
+  APPROVED: 1,   // 审核通过
+  REJECTED: 2,   // 审核拒绝
+} as const;
 
 // 商家状态枚举
-export enum MerchantStatus {
-  PENDING = 0,    // 待审核
-  APPROVED = 1,   // 已审核
-  REJECTED = 2,   // 审核拒绝
-}
+export const MerchantStatus = {
+  PENDING: 0,    // 待审核
+  APPROVED: 1,   // 已审核
+  REJECTED: 2,   // 审核拒绝
+} as const;
 
 // 租赁类型枚举
-export enum RentType {
-  DAILY = 1,      // 日租
-  WEEKLY = 2,     // 周租
-  MONTHLY = 3,    // 月租
-} 
+export const RentType = {
+  DAILY: 1,      // 日租
+  WEEKLY: 2,     // 周租
+  MONTHLY: 3,    // 月租
+} as const; 

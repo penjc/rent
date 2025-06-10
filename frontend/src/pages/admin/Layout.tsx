@@ -1,23 +1,26 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, message } from 'antd';
 import { 
   DashboardOutlined, 
   UsergroupAddOutlined, 
   ShopOutlined, 
   AuditOutlined,
-  UserOutlined 
+  UserOutlined,
+  OrderedListOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import Dashboard from './Dashboard';
 import Users from './Users';
 import Merchants from './Merchants';
 import Products from './Products';
+import Orders from './Orders';
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const AdminLayout: React.FC = () => {
-  const { isAuthenticated, user, userType, logout } = useAuthStore();
+  const { isAuthenticated, userType, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,23 +35,26 @@ const AdminLayout: React.FC = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  const handleLogout = () => {
+    logout();
+    message.success('已退出登录');
+    navigate('/auth/login');
+  };
+
+  const handleMenuClick = (key: string) => {
+    if (key === 'logout') {
+      handleLogout();
+    }
+  };
+
   // 根据当前路径确定选中的菜单项
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path.includes('/users')) return 'users';
     if (path.includes('/merchants')) return 'merchants';
     if (path.includes('/products')) return 'products';
+    if (path.includes('/orders')) return 'orders';
     return 'dashboard';
-  };
-
-  const handleMenuClick = (key: string) => {
-    if (key === 'logout') {
-      logout();
-      message.success('已退出登录');
-      navigate('/auth/login');
-    } else if (key === 'profile') {
-      message.info('个人信息页面开发中...');
-    }
   };
 
   const handleNavMenuClick = ({ key }: { key: string }) => {
@@ -65,6 +71,9 @@ const AdminLayout: React.FC = () => {
       case 'products':
         navigate('/admin/products');
         break;
+      case 'orders':
+        navigate('/admin/orders');
+        break;
       default:
         break;
     }
@@ -73,15 +82,9 @@ const AdminLayout: React.FC = () => {
   const userMenu = {
     items: [
       {
-        key: 'profile',
-        label: '个人信息',
-      },
-      {
-        type: 'divider' as const,
-      },
-      {
         key: 'logout',
         label: '退出登录',
+        icon: <LogoutOutlined />,
       },
     ],
     onClick: ({ key }: { key: string }) => handleMenuClick(key),
@@ -110,22 +113,12 @@ const AdminLayout: React.FC = () => {
           </div>
           
           <div className="auth-section">
-            {isAuthenticated && user ? (
-              <Dropdown menu={userMenu} placement="bottomRight">
-                <div className="flex items-center cursor-pointer text-white">
-                  <Avatar src={(user as any)?.avatar} icon={<UserOutlined />} />
-                  <span className="ml-2">
-                    {(user as any)?.name || 
-                     (user as any)?.username || 
-                     '管理员'}
-                  </span>
-                </div>
-              </Dropdown>
-                          ) : (
-                <div className="space-x-2">
-                  <Button type="text" className="text-white" onClick={() => navigate('/auth/login')}>登录</Button>
-                </div>
-              )}
+            <Dropdown menu={userMenu} placement="bottomRight">
+              <div className="flex items-center cursor-pointer text-white hover:text-blue-100 transition-colors">
+                <Avatar icon={<UserOutlined />} className="bg-blue-500" />
+                <span className="ml-2 font-medium">系统管理员</span>
+              </div>
+            </Dropdown>
           </div>
         </div>
       </Header>
@@ -158,6 +151,11 @@ const AdminLayout: React.FC = () => {
                 icon: <ShopOutlined />,
                 label: '商品审核',
               },
+              {
+                key: 'orders',
+                icon: <OrderedListOutlined />,
+                label: '订单管理',
+              },
             ]}
           />
         </Sider>
@@ -176,13 +174,14 @@ const AdminLayout: React.FC = () => {
               <Route path="users" element={<Users />} />
               <Route path="merchants" element={<Merchants />} />
               <Route path="products" element={<Products />} />
+              <Route path="orders" element={<Orders />} />
             </Routes>
           </Content>
         </Layout>
       </Layout>
 
       <Footer className="text-center">
-        Casual Rent ©2024 管理后台
+                    Casual Rent ©2025 Created by Genius of CityU
       </Footer>
     </Layout>
   );

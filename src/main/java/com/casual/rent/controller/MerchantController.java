@@ -344,4 +344,65 @@ public class MerchantController {
             return Result.error("获取热门商品失败：" + e.getMessage());
         }
     }
+    
+    /**
+     * 更新商家认证信息（上传身份证和营业执照）
+     */
+    @PostMapping("/{merchantId}/certification")
+    public Result<String> updateCertification(
+            @PathVariable Long merchantId,
+            @RequestParam(value = "idCardFront", required = false) MultipartFile idCardFront,
+            @RequestParam(value = "idCardBack", required = false) MultipartFile idCardBack,
+            @RequestParam(value = "businessLicense", required = false) MultipartFile businessLicense) {
+        
+        try {
+            Merchant merchant = merchantService.getById(merchantId);
+            if (merchant == null) {
+                return Result.fail("商家不存在");
+            }
+            
+            // 验证文件类型和大小
+            String[] allowedTypes = {"image/", "application/pdf"};
+            long maxSize = 10 * 1024 * 1024; // 10MB
+            
+            String idCardFrontUrl = merchant.getIdCardFront();
+            String idCardBackUrl = merchant.getIdCardBack();
+            String businessLicenseUrl = merchant.getBusinessLicense();
+            
+            // 更新身份证正面
+            if (idCardFront != null && !idCardFront.isEmpty()) {
+                if (!fileUploadService.isValidFileType(idCardFront, allowedTypes) ||
+                    !fileUploadService.isValidFileSize(idCardFront, maxSize)) {
+                    return Result.fail("身份证正面文件格式或大小不符合要求");
+                }
+                idCardFrontUrl = fileUploadService.uploadFile(idCardFront, "certificates");
+            }
+            
+            // 更新身份证背面
+            if (idCardBack != null && !idCardBack.isEmpty()) {
+                if (!fileUploadService.isValidFileType(idCardBack, allowedTypes) ||
+                    !fileUploadService.isValidFileSize(idCardBack, maxSize)) {
+                    return Result.fail("身份证背面文件格式或大小不符合要求");
+                }
+                idCardBackUrl = fileUploadService.uploadFile(idCardBack, "certificates");
+            }
+            
+            // 更新营业执照
+            if (businessLicense != null && !businessLicense.isEmpty()) {
+                if (!fileUploadService.isValidFileType(businessLicense, allowedTypes) ||
+                    !fileUploadService.isValidFileSize(businessLicense, maxSize)) {
+                    return Result.fail("营业执照文件格式或大小不符合要求");
+                }
+                businessLicenseUrl = fileUploadService.uploadFile(businessLicense, "certificates");
+            }
+            
+            // 更新商家认证信息
+            merchantService.updateCertification(merchantId, idCardFrontUrl, idCardBackUrl, businessLicenseUrl);
+            
+            return Result.success("认证信息更新成功");
+            
+        } catch (Exception e) {
+            return Result.error("更新认证信息失败：" + e.getMessage());
+        }
+    }
 } 

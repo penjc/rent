@@ -5,13 +5,11 @@ import {
   OrderedListOutlined, 
   DollarOutlined, 
   EyeOutlined,
-  TrophyOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 import type { Product, Order } from '@/types';
 
@@ -31,12 +29,11 @@ interface RecentOrder extends Order {
   key: React.Key;
 }
 
-interface PopularProduct extends Product {
-  orderCount: number;
-}
+interface PopularProduct extends Product {}
 
 const Dashboard: React.FC = () => {
   const { user, userType } = useAuthStore();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
@@ -66,7 +63,7 @@ const Dashboard: React.FC = () => {
     if (!merchantId) return;
 
     try {
-      const response = await api.get(`/merchants/${merchantId}/stats`);
+      const response = await api.get(`/merchant/${merchantId}/stats`);
       if (response.data.code === 200) {
         setStats(response.data.data);
       }
@@ -81,7 +78,7 @@ const Dashboard: React.FC = () => {
     if (!merchantId) return;
 
     try {
-      const response = await api.get(`/merchants/${merchantId}/orders`, {
+      const response = await api.get(`/merchant/orders/${merchantId}`, {
         params: { page: 1, size: 5 }
       });
       if (response.data.code === 200) {
@@ -102,7 +99,7 @@ const Dashboard: React.FC = () => {
     if (!merchantId) return;
 
     try {
-      const response = await api.get(`/merchants/${merchantId}/popular-products`);
+      const response = await api.get(`/merchant/${merchantId}/popular-products`);
       if (response.data.code === 200) {
         setPopularProducts(response.data.data);
       }
@@ -110,18 +107,15 @@ const Dashboard: React.FC = () => {
       console.error('获取热门商品失败:', error);
       // 如果接口不存在，使用商品列表代替
       try {
-        const productsResponse = await api.get(`/merchants/${merchantId}/products`, {
+        const productsResponse = await api.get(`/merchant/products/${merchantId}`, {
           params: { page: 1, size: 5 }
         });
         if (productsResponse.data.code === 200) {
-          const products = productsResponse.data.data.records.map((product: Product) => ({
-            ...product,
-            orderCount: Math.floor(Math.random() * 50), // 模拟订单数量
-          }));
-          setPopularProducts(products);
+          setPopularProducts(productsResponse.data.data.records);
         }
       } catch (fallbackError) {
         console.error('获取商品列表失败:', fallbackError);
+        setPopularProducts([]); // 设置空数组
       }
     }
   };
@@ -176,7 +170,14 @@ const Dashboard: React.FC = () => {
       } else {
         imageUrls = images.split(',').map(url => url.trim());
       }
-      return imageUrls.length > 0 ? imageUrls[0] : '/images/default-product.jpg';
+      const firstImageUrl = imageUrls.length > 0 ? imageUrls[0] : '/images/default-product.jpg';
+      
+      // 处理相对路径URL
+      if (firstImageUrl && !firstImageUrl.startsWith('http://') && !firstImageUrl.startsWith('https://') && !firstImageUrl.startsWith('/images/')) {
+        return `/api/files${firstImageUrl}`;
+      }
+      
+      return firstImageUrl;
     } catch {
       return '/images/default-product.jpg';
     }
@@ -302,17 +303,21 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={14}>
           <Card 
             title="最近订单" 
-            extra={<a href="/merchant/orders">查看全部</a>}
-            style={{ height: 400 }}
+            extra={<a onClick={() => navigate('/merchant/orders')} style={{ cursor: 'pointer' }}>查看全部</a>}
+            style={{ height: 400, overflow: 'hidden' }}
+            bodyStyle={{ padding: '16px', height: 'calc(100% - 57px)', overflow: 'hidden' }}
           >
-            <Table
-              columns={recentOrderColumns}
-              dataSource={recentOrders}
-              loading={loading}
-              pagination={false}
-              size="small"
-              scroll={{ x: 650 }}
-            />
+            <div style={{ height: '100%', overflow: 'auto' }}>
+              <Table
+                columns={recentOrderColumns}
+                dataSource={recentOrders}
+                loading={loading}
+                pagination={false}
+                size="small"
+                scroll={{ x: 650, y: 280 }}
+                style={{ minWidth: '650px' }}
+              />
+            </div>
           </Card>
         </Col>
 
@@ -320,40 +325,62 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={10}>
           <Card 
             title="热门商品" 
-            extra={<a href="/merchant/products">查看全部</a>}
-            style={{ height: 400 }}
+            extra={<a onClick={() => navigate('/merchant/products')} style={{ cursor: 'pointer' }}>查看全部</a>}
+            style={{ height: 400, overflow: 'hidden' }}
+            bodyStyle={{ padding: '16px', height: 'calc(100% - 57px)', overflow: 'hidden' }}
           >
-            <List
-              loading={loading}
-              dataSource={popularProducts}
-              renderItem={(product, index) => (
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar 
-                        src={getProductImage(product.images)} 
-                        size={40}
-                        shape="square"
-                      />
-                    }
-                    title={
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{product.name}</span>
-                        <Tag color="blue">{index + 1}</Tag>
-                      </div>
-                    }
-                    description={
-                      <div>
-                        <div>日租: ¥{product.dailyPrice}</div>
-                        <div style={{ fontSize: 12, color: '#999' }}>
-                          库存: {product.stock} | 订单: {product.orderCount || 0}
+            <div style={{ height: '100%', overflow: 'auto' }}>
+              <List
+                loading={loading}
+                dataSource={popularProducts}
+                renderItem={(product, index) => (
+                  <List.Item 
+                    key={product.id}
+                    style={{ padding: '12px 0', borderBottom: index === popularProducts.length - 1 ? 'none' : '1px solid #f0f0f0' }}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar 
+                          src={getProductImage(product.images)} 
+                          size={40}
+                          shape="square"
+                          style={{ flexShrink: 0 }}
+                        />
+                      }
+                      title={
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span 
+                            style={{ 
+                              fontSize: 14, 
+                              fontWeight: 'bold',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '140px'
+                            }}
+                            title={product.name}
+                          >
+                            {product.name}
+                          </span>
+                          <Tag color="blue" style={{ fontSize: '12px', padding: '2px 6px' }}>{index + 1}</Tag>
                         </div>
-                      </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+                      }
+                      description={
+                        <div style={{ fontSize: 12 }}>
+                          <div style={{ color: '#52c41a', fontWeight: 'bold', marginBottom: 4 }}>
+                            日租: ¥{product.dailyPrice}
+                          </div>
+                                                     <div style={{ color: '#999' }}>
+                             库存: {product.stock}
+                           </div>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+                split={false}
+              />
+            </div>
           </Card>
         </Col>
       </Row>
@@ -364,7 +391,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={8}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/merchant/products/add'}
+              onClick={() => navigate('/merchant/products')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <ShopOutlined style={{ fontSize: 32, color: '#1890ff' }} />
@@ -375,7 +402,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={8}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/merchant/orders'}
+              onClick={() => navigate('/merchant/orders')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <OrderedListOutlined style={{ fontSize: 32, color: '#52c41a' }} />
@@ -386,12 +413,12 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={8}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/merchant/products'}
+              onClick={() => navigate('/merchant/certification')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <EyeOutlined style={{ fontSize: 32, color: '#fa8c16' }} />
-              <h4>商品管理</h4>
-              <p>查看和编辑商品信息</p>
+              <h4>商家认证</h4>
+              <p>上传认证材料</p>
             </Card>
           </Col>
         </Row>

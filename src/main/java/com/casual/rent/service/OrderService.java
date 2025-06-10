@@ -135,6 +135,19 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
     
     /**
+     * 获取所有订单（管理员，支持订单号搜索）
+     */
+    public IPage<Order> getAllOrders(int page, int size, Integer status, String orderNo) {
+        Page<Order> pageParam = new Page<>(page, size);
+        
+        return lambdaQuery()
+                .eq(status != null, Order::getStatus, status)
+                .like(orderNo != null && !orderNo.trim().isEmpty(), Order::getOrderNo, orderNo)
+                .orderByDesc(Order::getCreatedAt)
+                .page(pageParam);
+    }
+    
+    /**
      * 支付订单
      */
     public void payOrder(Long orderId, Long userId) {

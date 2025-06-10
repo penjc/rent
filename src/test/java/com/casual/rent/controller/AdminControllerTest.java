@@ -131,4 +131,17 @@ public class AdminControllerTest {
 
         System.out.println("✅ 更新订单状态测试通过");
     }
+
+    @Test
+    void testSearchOrdersByOrderNo() throws Exception {
+        mockMvc.perform(get("/admin/orders")
+                .param("page", "1")
+                .param("size", "10")
+                .param("orderNo", "R2024"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").exists());
+
+        System.out.println("✅ 按订单号搜索订单测试通过");
+    }
 } 

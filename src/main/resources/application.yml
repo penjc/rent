@@ -7,7 +7,7 @@ spring:
   application:
     name: casual-rent
   profiles:
-    active: pro
+    active: dev
   
   # 文件上传配置
   servlet:

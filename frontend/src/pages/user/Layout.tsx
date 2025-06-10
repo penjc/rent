@@ -171,7 +171,7 @@ const UserLayout: React.FC = () => {
       </Content>
 
       <Footer className="text-center">
-        Casual Rent ©2024 Created by Your Company
+                    Casual Rent ©2025 Created by Genius of CityU
       </Footer>
     </Layout>
   );

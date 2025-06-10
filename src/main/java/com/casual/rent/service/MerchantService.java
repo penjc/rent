@@ -119,4 +119,28 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
         wrapper.orderByDesc("created_at");
         return page(pageParam, wrapper);
     }
+    
+    /**
+     * 更新商家认证信息
+     */
+    public void updateCertification(Long merchantId, String idCardFront, String idCardBack, String businessLicense) {
+        Merchant merchant = getById(merchantId);
+        if (merchant != null) {
+            if (idCardFront != null) {
+                merchant.setIdCardFront(idCardFront);
+            }
+            if (idCardBack != null) {
+                merchant.setIdCardBack(idCardBack);
+            }
+            if (businessLicense != null) {
+                merchant.setBusinessLicense(businessLicense);
+            }
+            // 更新状态为待审核（如果之前是审核通过，重新提交认证材料后需要重新审核）
+            if (merchant.getStatus() != 0) {
+                merchant.setStatus(0);
+                merchant.setRemark("商家更新认证材料，待重新审核");
+            }
+            updateById(merchant);
+        }
+    }
 } 

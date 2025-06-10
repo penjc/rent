@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Select, Image } from 'antd';
-import { SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/services/api';
 import type { Merchant } from '@/types';
+
+// 处理图片URL - 确保URL格式正确
+const getImageUrl = (url: string | undefined) => {
+  if (!url) return '';
+  
+  console.log('原始图片URL:', url);
+  
+  // 如果URL已经是完整的HTTP/HTTPS链接，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    console.log('返回完整URL:', url);
+    return url;
+  }
+  
+  // 如果是相对路径，需要添加域名前缀
+  // 这里假设后端返回的是完整URL，如果不是则需要调整
+  console.log('返回相对路径URL:', url);
+  return url;
+};
 
 const { Search } = Input;
 const { TextArea } = Input;
@@ -256,6 +274,7 @@ const Merchants: React.FC = () => {
             </Select>
             <Button
               type="primary"
+              icon={<ReloadOutlined />}
               onClick={() => fetchMerchants(pagination.current, pagination.pageSize, searchText, statusFilter)}
             >
               刷新
@@ -309,30 +328,64 @@ const Merchants: React.FC = () => {
               <Space direction="vertical">
                 <div>
                   <p><strong>身份证正面：</strong></p>
-                  <Image
-                    width={200}
-                    src={selectedMerchant.idCardFront}
-                    fallback="/images/default-product.jpg"
-                  />
+                  {selectedMerchant.idCardFront ? (
+                    <Image
+                      width={200}
+                      src={getImageUrl(selectedMerchant.idCardFront)}
+                      alt="身份证正面"
+                      placeholder={<div style={{ width: 200, height: 150, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>加载中...</div>}
+                      fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                      onError={() => {
+                        console.error('身份证正面图片加载失败:', selectedMerchant.idCardFront);
+                        console.error('处理后的URL:', getImageUrl(selectedMerchant.idCardFront));
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: 200, height: 150, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #d9d9d9' }}>
+                      未上传
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p><strong>身份证反面：</strong></p>
-                  <Image
-                    width={200}
-                    src={selectedMerchant.idCardBack}
-                    fallback="/images/default-product.jpg"
-                  />
-                </div>
-                {selectedMerchant.businessLicense && (
-                  <div>
-                    <p><strong>营业执照：</strong></p>
+                  {selectedMerchant.idCardBack ? (
                     <Image
                       width={200}
-                      src={selectedMerchant.businessLicense}
-                      fallback="/images/default-product.jpg"
+                      src={getImageUrl(selectedMerchant.idCardBack)}
+                      alt="身份证反面"
+                      placeholder={<div style={{ width: 200, height: 150, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>加载中...</div>}
+                      fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                      onError={() => {
+                        console.error('身份证反面图片加载失败:', selectedMerchant.idCardBack);
+                        console.error('处理后的URL:', getImageUrl(selectedMerchant.idCardBack));
+                      }}
                     />
-                  </div>
-                )}
+                  ) : (
+                    <div style={{ width: 200, height: 150, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #d9d9d9' }}>
+                      未上传
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p><strong>营业执照：</strong></p>
+                  {selectedMerchant.businessLicense ? (
+                    <Image
+                      width={200}
+                      src={getImageUrl(selectedMerchant.businessLicense)}
+                      alt="营业执照"
+                      placeholder={<div style={{ width: 200, height: 150, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>加载中...</div>}
+                      fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+                      onError={() => {
+                        console.error('营业执照图片加载失败:', selectedMerchant.businessLicense);
+                        console.error('处理后的URL:', getImageUrl(selectedMerchant.businessLicense));
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: 200, height: 150, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #d9d9d9' }}>
+                      未上传
+                    </div>
+                  )}
+                </div>
               </Space>
             </div>
           </div>

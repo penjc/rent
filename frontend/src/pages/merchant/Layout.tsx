@@ -6,12 +6,12 @@ import {
   ShopOutlined, 
   OrderedListOutlined, 
   UserOutlined,
-  PlusOutlined,
   LogoutOutlined
 } from '@ant-design/icons';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import Orders from './Orders';
+import Certification from './Certification';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { MerchantData } from '@/services/merchantApi';
 
@@ -28,6 +28,7 @@ const MerchantLayout: React.FC = () => {
     const path = location.pathname;
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
+    if (path.includes('/certification')) return 'certification';
     return 'dashboard';
   };
 
@@ -45,10 +46,9 @@ const MerchantLayout: React.FC = () => {
     if (user) {
       setMerchant(user as any);
     }
-  }, [navigate, isAuthenticated, userType, user]);
+    }, [navigate, isAuthenticated, userType, user]);
 
   const handleLogout = () => {
-    // 清理所有登录状态
     logout();
     message.success('已退出登录');
     navigate('/auth/login');
@@ -57,9 +57,6 @@ const MerchantLayout: React.FC = () => {
   const handleMenuClick = (key: string) => {
     if (key === 'logout') {
       handleLogout();
-    } else if (key === 'profile') {
-      // TODO: 实现商家个人信息页面
-      message.info('个人信息页面开发中...');
     }
   };
 
@@ -74,6 +71,9 @@ const MerchantLayout: React.FC = () => {
       case 'orders':
         navigate('/merchant/orders');
         break;
+      case 'certification':
+        navigate('/merchant/certification');
+        break;
       default:
         break;
     }
@@ -81,14 +81,6 @@ const MerchantLayout: React.FC = () => {
 
   const userMenu = {
     items: [
-      {
-        key: 'profile',
-        label: '个人信息',
-        icon: <UserOutlined />,
-      },
-      {
-        type: 'divider' as const,
-      },
       {
         key: 'logout',
         label: '退出登录',
@@ -165,6 +157,11 @@ const MerchantLayout: React.FC = () => {
                 icon: <OrderedListOutlined />,
                 label: '订单管理',
               },
+              {
+                key: 'certification',
+                icon: <UserOutlined />,
+                label: '商家认证',
+              },
             ]}
           />
         </Sider>
@@ -175,11 +172,12 @@ const MerchantLayout: React.FC = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/certification" element={<Certification />} />
             </Routes>
           </Content>
 
           <Footer className="text-center bg-white border-t">
-            Casual Rent 商家中心 ©2023 Created by Casual Team
+            Casual Rent ©2025 Created by Genius of CityU
           </Footer>
         </Layout>
       </Layout>

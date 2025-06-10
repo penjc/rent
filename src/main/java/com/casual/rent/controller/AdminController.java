@@ -179,8 +179,9 @@ public class AdminController {
     @GetMapping("/orders")
     public Result<IPage<Order>> getAllOrders(@RequestParam(defaultValue = "1") int page,
                                            @RequestParam(defaultValue = "10") int size,
-                                           @RequestParam(required = false) Integer status) {
-        IPage<Order> orders = orderService.getAllOrders(page, size, status);
+                                           @RequestParam(required = false) Integer status,
+                                           @RequestParam(required = false) String orderNo) {
+        IPage<Order> orders = orderService.getAllOrders(page, size, status, orderNo);
         return Result.success(orders);
     }
     

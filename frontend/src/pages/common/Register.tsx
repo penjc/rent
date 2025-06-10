@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Tabs, message, Upload } from 'antd';
-import { UserOutlined, LockOutlined, PhoneOutlined, ShopOutlined, UploadOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Button, Typography, Tabs, message } from 'antd';
+import { UserOutlined, LockOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { userRegister, type UserRegisterData } from '@/services/authApi';
 import { merchantRegister, type MerchantRegisterData } from '@/services/merchantApi';

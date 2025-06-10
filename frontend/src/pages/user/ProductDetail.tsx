@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import { 
   ShoppingCartOutlined, SafetyCertificateOutlined, 
-  StarOutlined, HeartOutlined 
+ 
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';

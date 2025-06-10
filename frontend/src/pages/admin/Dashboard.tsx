@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Progress, message, List, Avatar } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Progress, List, Avatar } from 'antd';
 import { 
   UserOutlined,
   ShopOutlined, 
-  OrderedListOutlined, 
-  DollarOutlined, 
-  EyeOutlined,
+  OrderedListOutlined,
   ClockCircleOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
+  EyeOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { useAuthStore } from '@/stores/useAuthStore';
+
+import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
-import type { Product, Order, User, Merchant } from '@/types';
+import type { Order, User } from '@/types';
 
 interface AdminStats {
   totalUsers: number;
-  activeUsers: number;
   totalMerchants: number;
   pendingMerchants: number;
   approvedMerchants: number;
@@ -25,9 +22,7 @@ interface AdminStats {
   pendingProducts: number;
   approvedProducts: number;
   totalOrders: number;
-  todayOrders: number;
   completedOrders: number;
-  totalRevenue: number;
 }
 
 interface RecentOrder extends Order {
@@ -39,11 +34,10 @@ interface RecentUser extends User {
 }
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
-    activeUsers: 0,
     totalMerchants: 0,
     pendingMerchants: 0,
     approvedMerchants: 0,
@@ -51,13 +45,10 @@ const Dashboard: React.FC = () => {
     pendingProducts: 0,
     approvedProducts: 0,
     totalOrders: 0,
-    todayOrders: 0,
     completedOrders: 0,
-    totalRevenue: 0,
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
-  const [pendingMerchants, setPendingMerchants] = useState<Merchant[]>([]);
 
   // 获取统计数据
   const fetchStats = async () => {
@@ -89,7 +80,6 @@ const Dashboard: React.FC = () => {
 
       setStats({
         totalUsers,
-        activeUsers: Math.floor(totalUsers * 0.8), // 模拟活跃用户
         totalMerchants,
         pendingMerchants,
         approvedMerchants: totalMerchants - pendingMerchants,
@@ -97,9 +87,7 @@ const Dashboard: React.FC = () => {
         pendingProducts,
         approvedProducts: totalProducts - pendingProducts,
         totalOrders,
-        todayOrders: Math.floor(totalOrders * 0.1), // 模拟今日订单
         completedOrders,
-        totalRevenue: completedOrders * 150, // 模拟总收入
       });
     } catch (error) {
       console.error('获取统计数据失败:', error);
@@ -142,19 +130,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // 获取待审核商家
-  const fetchPendingMerchants = async () => {
-    try {
-      const response = await api.get('/admin/merchants/pending', {
-        params: { page: 1, size: 5 }
-      });
-      if (response.data.code === 200) {
-        setPendingMerchants(response.data.data.records);
-      }
-    } catch (error) {
-      console.error('获取待审核商家失败:', error);
-    }
-  };
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -163,7 +139,6 @@ const Dashboard: React.FC = () => {
         fetchStats(),
         fetchRecentOrders(),
         fetchRecentUsers(),
-        fetchPendingMerchants(),
       ]);
       setLoading(false);
     };
@@ -230,7 +205,7 @@ const Dashboard: React.FC = () => {
           <Avatar size={64} icon={<UserOutlined />} style={{ backgroundColor: '#722ed1' }} />
           <div style={{ marginLeft: 16 }}>
             <h2 style={{ margin: 0 }}>
-              欢迎回来，{(user as any)?.name || (user as any)?.username || '管理员'}！
+              欢迎回来，管理员！
             </h2>
             <p style={{ margin: 0, color: '#666' }}>
               今天是 {new Date().toLocaleDateString()}，系统运行正常！
@@ -250,7 +225,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#3f8600' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              活跃用户: {stats.activeUsers}
+              注册用户总数
             </div>
           </Card>
         </Col>
@@ -289,48 +264,15 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#fa8c16' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              今日: {stats.todayOrders} | 已完成: {stats.completedOrders}
+              已完成: {stats.completedOrders}
             </div>
           </Card>
         </Col>
       </Row>
 
-      {/* 业务指标 */}
+      {/* 待处理事项 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} lg={8}>
-          <Card title="系统健康度" style={{ height: 300 }}>
-            <div style={{ textAlign: 'center' }}>
-              <Progress 
-                type="circle" 
-                percent={95} 
-                strokeColor={{
-                  '0%': '#108ee9',
-                  '100%': '#87d068',
-                }}
-                format={(percent) => `${percent}%`}
-              />
-              <p style={{ marginTop: 16, color: '#666' }}>
-                系统运行良好，各项指标正常
-              </p>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={8}>
-          <Card title="平台总收入" style={{ height: 300 }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 36, fontWeight: 'bold', color: '#52c41a', marginBottom: 16 }}>
-                ¥{stats.totalRevenue.toLocaleString()}
-              </div>
-              <p style={{ color: '#666' }}>
-                平台累计交易金额
-              </p>
-              <div style={{ marginTop: 16 }}>
-                <Tag color="green">月增长 +15%</Tag>
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={8}>
+        <Col xs={24}>
           <Card title="待处理事项" style={{ height: 300 }}>
             <div style={{ padding: '16px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -362,7 +304,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card 
             title="最近订单" 
-            extra={<a href="/admin/orders">查看全部</a>}
+            extra={<a onClick={() => navigate('/admin/orders')} style={{ cursor: 'pointer' }}>查看全部</a>}
             style={{ height: 400 }}
           >
             <Table
@@ -380,7 +322,7 @@ const Dashboard: React.FC = () => {
         <Col xs={24} lg={12}>
           <Card 
             title="最新用户" 
-            extra={<a href="/admin/users">查看全部</a>}
+            extra={<a onClick={() => navigate('/admin/users')} style={{ cursor: 'pointer' }}>查看全部</a>}
             style={{ height: 400 }}
           >
             <List
@@ -419,7 +361,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={6}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/admin/merchants'}
+              onClick={() => navigate('/admin/merchants')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <ShopOutlined style={{ fontSize: 32, color: '#1890ff' }} />
@@ -430,7 +372,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={6}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/admin/products'}
+              onClick={() => navigate('/admin/products')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <OrderedListOutlined style={{ fontSize: 32, color: '#52c41a' }} />
@@ -441,7 +383,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={6}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/admin/users'}
+              onClick={() => navigate('/admin/users')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <UserOutlined style={{ fontSize: 32, color: '#fa8c16' }} />
@@ -452,7 +394,7 @@ const Dashboard: React.FC = () => {
           <Col xs={24} sm={6}>
             <Card 
               hoverable 
-              onClick={() => window.location.href = '/admin/orders'}
+              onClick={() => navigate('/admin/orders')}
               style={{ textAlign: 'center', cursor: 'pointer' }}
             >
               <EyeOutlined style={{ fontSize: 32, color: '#722ed1' }} />
