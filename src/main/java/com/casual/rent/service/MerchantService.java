@@ -143,4 +143,13 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
             updateById(merchant);
         }
     }
+    
+    /**
+     * 根据状态统计商家数量
+     */
+    public long countByStatus(Integer status) {
+        QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
+        wrapper.eq("status", status);
+        return count(wrapper);
+    }
 } 

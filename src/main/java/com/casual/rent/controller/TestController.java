@@ -13,13 +13,13 @@ public class TestController {
     
     @GetMapping("/hello")
     public Result<String> hello() {
-        return Result.success("C2C租赁平台启动成功！");
+        return Result.success("Casual Rent 启动成功！");
     }
     
     @GetMapping("/status")
     public Result<Object> status() {
         return Result.success("系统运行正常", new Object() {
-            public String message = "C2C租赁平台后台服务运行中";
+            public String message = "Casual Rent 后台服务运行中";
             public long timestamp = System.currentTimeMillis();
             public String version = "1.0.0";
         });

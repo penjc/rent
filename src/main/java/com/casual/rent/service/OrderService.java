@@ -285,6 +285,15 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
     
     /**
+     * 根据状态统计订单数量
+     */
+    public long countByStatus(Integer status) {
+        return lambdaQuery()
+                .eq(Order::getStatus, status)
+                .count();
+    }
+    
+    /**
      * 生成订单号
      */
     private String generateOrderNo() {

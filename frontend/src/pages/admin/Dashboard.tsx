@@ -15,12 +15,17 @@ import type { Order, User } from '@/types';
 
 interface AdminStats {
   totalUsers: number;
+  pendingVerificationUsers: number;
+  approvedUsers: number;
+  rejectedUsers: number;
   totalMerchants: number;
   pendingMerchants: number;
   approvedMerchants: number;
+  rejectedMerchants: number;
   totalProducts: number;
   pendingProducts: number;
   approvedProducts: number;
+  rejectedProducts: number;
   totalOrders: number;
   completedOrders: number;
 }
@@ -38,12 +43,17 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
+    pendingVerificationUsers: 0,
+    approvedUsers: 0,
+    rejectedUsers: 0,
     totalMerchants: 0,
     pendingMerchants: 0,
     approvedMerchants: 0,
+    rejectedMerchants: 0,
     totalProducts: 0,
     pendingProducts: 0,
     approvedProducts: 0,
+    rejectedProducts: 0,
     totalOrders: 0,
     completedOrders: 0,
   });
@@ -53,42 +63,10 @@ const Dashboard: React.FC = () => {
   // 获取统计数据
   const fetchStats = async () => {
     try {
-      // 获取用户统计
-      const usersResponse = await api.get('/admin/users', { params: { page: 1, size: 1 } });
-      const totalUsers = usersResponse.data.data?.total || 0;
-
-      // 获取商家统计
-      const merchantsResponse = await api.get('/admin/merchants', { params: { page: 1, size: 1 } });
-      const totalMerchants = merchantsResponse.data.data?.total || 0;
-      
-      const pendingMerchantsResponse = await api.get('/admin/merchants/pending', { params: { page: 1, size: 1 } });
-      const pendingMerchants = pendingMerchantsResponse.data.data?.total || 0;
-
-      // 获取商品统计
-      const productsResponse = await api.get('/admin/products', { params: { page: 1, size: 1 } });
-      const totalProducts = productsResponse.data.data?.total || 0;
-      
-      const pendingProductsResponse = await api.get('/admin/products/pending', { params: { page: 1, size: 1 } });
-      const pendingProducts = pendingProductsResponse.data.data?.total || 0;
-
-      // 获取订单统计
-      const ordersResponse = await api.get('/admin/orders', { params: { page: 1, size: 1 } });
-      const totalOrders = ordersResponse.data.data?.total || 0;
-      
-      const completedOrdersResponse = await api.get('/admin/orders', { params: { page: 1, size: 1, status: 6 } });
-      const completedOrders = completedOrdersResponse.data.data?.total || 0;
-
-      setStats({
-        totalUsers,
-        totalMerchants,
-        pendingMerchants,
-        approvedMerchants: totalMerchants - pendingMerchants,
-        totalProducts,
-        pendingProducts,
-        approvedProducts: totalProducts - pendingProducts,
-        totalOrders,
-        completedOrders,
-      });
+      const response = await api.get('/admin/dashboard/stats');
+      if (response.data.code === 200) {
+        setStats(response.data.data);
+      }
     } catch (error) {
       console.error('获取统计数据失败:', error);
     }
@@ -225,7 +203,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#3f8600' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              注册用户总数
+              待审核: {stats.pendingVerificationUsers} | 已认证: {stats.approvedUsers} | 未通过: {stats.rejectedUsers}
             </div>
           </Card>
         </Col>
@@ -238,7 +216,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#1890ff' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              待审核: {stats.pendingMerchants} | 已通过: {stats.approvedMerchants}
+              待审核: {stats.pendingMerchants} | 已通过: {stats.approvedMerchants} | 未通过: {stats.rejectedMerchants}
             </div>
           </Card>
         </Col>
@@ -251,7 +229,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#722ed1' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              待审核: {stats.pendingProducts} | 已通过: {stats.approvedProducts}
+              待审核: {stats.pendingProducts} | 已通过: {stats.approvedProducts} | 未通过: {stats.rejectedProducts}
             </div>
           </Card>
         </Col>
@@ -273,24 +251,41 @@ const Dashboard: React.FC = () => {
       {/* 待处理事项 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24}>
-          <Card title="待处理事项" style={{ height: 300 }}>
+          <Card title="待处理事项" style={{ height: 320 }}>
             <div style={{ padding: '16px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span>待审核用户认证</span>
+                <Tag color="orange" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/users')}>
+                  {stats.pendingVerificationUsers}
+                </Tag>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span>待审核商家</span>
-                <Tag color="orange">{stats.pendingMerchants}</Tag>
+                <Tag color="orange" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/merchants')}>
+                  {stats.pendingMerchants}
+                </Tag>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span>待审核商品</span>
-                <Tag color="orange">{stats.pendingProducts}</Tag>
+                <Tag color="orange" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/products')}>
+                  {stats.pendingProducts}
+                </Tag>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span>进行中订单</span>
-                <Tag color="blue">{stats.totalOrders - stats.completedOrders}</Tag>
+                <Tag color="blue" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/orders')}>
+                  {stats.totalOrders - stats.completedOrders}
+                </Tag>
               </div>
               <div style={{ marginTop: 24 }}>
                 <Progress 
-                  percent={stats.pendingMerchants + stats.pendingProducts === 0 ? 100 : 50}
-                  strokeColor={stats.pendingMerchants + stats.pendingProducts === 0 ? '#52c41a' : '#fa8c16'}
+                  percent={
+                    stats.pendingVerificationUsers + stats.pendingMerchants + stats.pendingProducts === 0 ? 100 : 
+                    Math.max(0, 100 - ((stats.pendingVerificationUsers + stats.pendingMerchants + stats.pendingProducts) * 10))
+                  }
+                  strokeColor={
+                    stats.pendingVerificationUsers + stats.pendingMerchants + stats.pendingProducts === 0 ? '#52c41a' : '#fa8c16'
+                  }
                   format={(percent) => `处理进度 ${percent}%`}
                 />
               </div>

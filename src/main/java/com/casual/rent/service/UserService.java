@@ -132,4 +132,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         wrapper.orderByDesc("created_at");
         return page(pageParam, wrapper);
     }
+    
+    /**
+     * 根据认证状态统计用户数量
+     */
+    public long countByVerificationStatus(Integer verified) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("verified", verified);
+        return count(wrapper);
+    }
 } 

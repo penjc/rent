@@ -13,13 +13,15 @@ CREATE TABLE `users` (
   `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '头像',
   `real_name` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '真实姓名',
   `id_card` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证号',
+  `id_card_front` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_card_back` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` tinyint(4) DEFAULT '1' COMMENT '状态：1-正常，0-禁用',
   `verified` tinyint(4) DEFAULT '0' COMMENT '实名认证：1-已认证，0-未认证',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- 2. 商家表（出借者）
 CREATE TABLE `merchants` (
@@ -31,7 +33,7 @@ CREATE TABLE `merchants` (
   `id_card_front` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证正面照片',
   `id_card_back` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证背面照片',
   `business_license` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '营业执照（可选）',
-  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-正常，0-待审核，-1-已拒绝',
+  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-正常，0-待审核，2-已拒绝',
   `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注/拒绝原因',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -80,7 +82,7 @@ CREATE TABLE `products` (
   `deposit` decimal(10,2) DEFAULT '0.00' COMMENT '押金',
   `stock` int(11) DEFAULT '1' COMMENT '库存数量',
   `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-上架，0-待审核，-1-下架',
-  `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，-1-拒绝',
+  `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，2-拒绝',
   `audit_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

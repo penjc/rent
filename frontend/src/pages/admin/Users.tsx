@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Switch, Popconfirm } from 'antd';
-import {SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined} from '@ant-design/icons';
+import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Switch, Popconfirm, Image, Row, Col } from 'antd';
+import {SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, EyeOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/services/api';
 import type { User } from '@/types';
@@ -22,6 +22,8 @@ const Users: React.FC = () => {
   });
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [certModalVisible, setCertModalVisible] = useState(false);
+  const [viewingUser, setViewingUser] = useState<UserData | null>(null);
   const [form] = Form.useForm();
 
   // 获取用户列表
@@ -128,6 +130,28 @@ const Users: React.FC = () => {
     }
   };
 
+  // 查看身份认证信息
+  const handleViewCertification = (user: UserData) => {
+    setViewingUser(user);
+    setCertModalVisible(true);
+  };
+
+  // 用户认证审核
+  const handleVerifyUser = async (userId: number, verified: number) => {
+    try {
+      const response = await api.put(`/admin/users/${userId}/verify`, { verified });
+      
+      if (response.data.code === 200) {
+        message.success(verified === 1 ? '用户认证通过' : '用户认证拒绝');
+        setCertModalVisible(false);
+        fetchUsers(pagination.current, pagination.pageSize, searchText);
+      }
+    } catch (error) {
+      console.error('用户认证审核失败:', error);
+      message.error('用户认证审核失败');
+    }
+  };
+
   const columns: ColumnsType<UserData> = [
     {
       title: 'ID',
@@ -158,11 +182,23 @@ const Users: React.FC = () => {
       title: '身份认证',
       dataIndex: 'verified',
       key: 'verified',
-      width: 100,
-      render: (verified) => (
-        <Tag color={verified === 1 ? 'green' : 'orange'}>
-          {verified === 1 ? '已认证' : '未认证'}
-        </Tag>
+      width: 120,
+      render: (verified, record) => (
+        <Space>
+          <Tag color={verified === 1 ? 'green' : verified === 0 ? 'orange' : 'red'}>
+            {verified === 1 ? '已认证' : verified === 0 ? '待审核' : '认证拒绝'}
+          </Tag>
+          {(record.idCardFront || record.idCardBack || record.realName) && (
+            <Button
+              type="link"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewCertification(record)}
+            >
+              查看
+            </Button>
+          )}
+        </Space>
       ),
     },
     {
@@ -311,6 +347,96 @@ const Users: React.FC = () => {
             <Switch checkedChildren="正常" unCheckedChildren="禁用" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 身份认证查看模态框 */}
+      <Modal
+        title="用户身份认证信息"
+        open={certModalVisible}
+        onCancel={() => {
+          setCertModalVisible(false);
+          setViewingUser(null);
+        }}
+        footer={viewingUser?.verified === 0 ? [
+          <Button key="reject" danger onClick={() => handleVerifyUser(viewingUser.id, 2)}>
+            拒绝认证
+          </Button>,
+          <Button key="approve" type="primary" onClick={() => handleVerifyUser(viewingUser.id, 1)}>
+            通过认证
+          </Button>
+        ] : null}
+        width={800}
+      >
+        {viewingUser && (
+          <div>
+            <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+              <Col span={8}>
+                <strong>用户ID：</strong>{viewingUser.id}
+              </Col>
+              <Col span={8}>
+                <strong>手机号：</strong>{viewingUser.phone}
+              </Col>
+              <Col span={8}>
+                <strong>认证状态：</strong>
+                <Tag color={viewingUser.verified === 1 ? 'green' : viewingUser.verified === 0 ? 'orange' : 'red'}>
+                  {viewingUser.verified === 1 ? '已认证' : viewingUser.verified === 0 ? '待审核' : '认证拒绝'}
+                </Tag>
+              </Col>
+              <Col span={12}>
+                <strong>真实姓名：</strong>{viewingUser.realName || '未填写'}
+              </Col>
+              <Col span={12}>
+                <strong>身份证号：</strong>{viewingUser.idCard || '未填写'}
+              </Col>
+            </Row>
+
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <Card size="small" title="身份证正面">
+                  {viewingUser.idCardFront ? (
+                    <Image
+                      src={viewingUser.idCardFront}
+                      alt="身份证正面"
+                      width="100%"
+                      height={250}
+                      style={{ objectFit: 'cover' }}
+                      placeholder={<div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>加载中...</div>}
+                      onError={() => {
+                        console.error('身份证正面图片加载失败:', viewingUser.idCardFront);
+                      }}
+                    />
+                  ) : (
+                    <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                      <span>未上传</span>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+              
+              <Col span={12}>
+                <Card size="small" title="身份证反面">
+                  {viewingUser.idCardBack ? (
+                    <Image
+                      src={viewingUser.idCardBack}
+                      alt="身份证反面"
+                      width="100%"
+                      height={250}
+                      style={{ objectFit: 'cover' }}
+                      placeholder={<div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>加载中...</div>}
+                      onError={() => {
+                        console.error('身份证反面图片加载失败:', viewingUser.idCardBack);
+                      }}
+                    />
+                  ) : (
+                    <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                      <span>未上传</span>
+                    </div>
+                  )}
+                </Card>
+              </Col>
+            </Row>
+          </div>
+        )}
       </Modal>
     </div>
   );

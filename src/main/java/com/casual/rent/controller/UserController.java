@@ -156,6 +156,86 @@ public class UserController {
     }
     
     /**
+     * 用户身份认证 - 上传身份证
+     */
+    @PostMapping("/certification/{userId}")
+    public Result<?> uploadCertification(@PathVariable Long userId,
+                                        @RequestParam(value = "idCardFront", required = false) MultipartFile idCardFront,
+                                        @RequestParam(value = "idCardBack", required = false) MultipartFile idCardBack,
+                                        @RequestParam(value = "realName", required = false) String realName,
+                                        @RequestParam(value = "idCard", required = false) String idCard) {
+        try {
+            User user = userService.getById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            
+            String[] allowedTypes = {"image/", "application/pdf"};
+            long maxSize = 10 * 1024 * 1024; // 10MB
+            
+            // 处理身份证正面
+            if (idCardFront != null && !idCardFront.isEmpty()) {
+                if (!fileUploadService.isValidFileType(idCardFront, allowedTypes) ||
+                    !fileUploadService.isValidFileSize(idCardFront, maxSize)) {
+                    return Result.error("身份证正面文件格式或大小不符合要求");
+                }
+                String idCardFrontUrl = fileUploadService.uploadFile(idCardFront, "certificates");
+                user.setIdCardFront(idCardFrontUrl);
+            }
+            
+            // 处理身份证反面
+            if (idCardBack != null && !idCardBack.isEmpty()) {
+                if (!fileUploadService.isValidFileType(idCardBack, allowedTypes) ||
+                    !fileUploadService.isValidFileSize(idCardBack, maxSize)) {
+                    return Result.error("身份证反面文件格式或大小不符合要求");
+                }
+                String idCardBackUrl = fileUploadService.uploadFile(idCardBack, "certificates");
+                user.setIdCardBack(idCardBackUrl);
+            }
+            
+            // 更新其他信息
+            if (realName != null && !realName.trim().isEmpty()) {
+                user.setRealName(realName.trim());
+            }
+            if (idCard != null && !idCard.trim().isEmpty()) {
+                user.setIdCard(idCard.trim());
+            }
+            
+            // 如果提交了认证材料，设置为待验证状态
+            if ((idCardFront != null && !idCardFront.isEmpty()) || 
+                (idCardBack != null && !idCardBack.isEmpty())) {
+                user.setVerified(0); // 重新设置为待审核状态
+            }
+            
+            userService.updateById(user);
+            return Result.success("认证信息提交成功，请等待管理员审核");
+            
+        } catch (Exception e) {
+            return Result.error("认证信息提交失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取用户认证状态
+     */
+    @GetMapping("/certification/status/{userId}")
+    public Result<Map<String, Object>> getCertificationStatus(@PathVariable Long userId) {
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("verified", user.getVerified());
+        result.put("realName", user.getRealName());
+        result.put("idCard", user.getIdCard());
+        result.put("idCardFront", user.getIdCardFront());
+        result.put("idCardBack", user.getIdCardBack());
+        
+        return Result.success(result);
+    }
+    
+    /**
      * 获取我的订单
      */
     @GetMapping("/orders/{userId}")

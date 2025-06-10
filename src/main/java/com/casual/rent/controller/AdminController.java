@@ -15,6 +15,7 @@ import com.casual.rent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -89,6 +90,78 @@ public class AdminController {
     public Result<String> deleteUser(@PathVariable Long userId) {
         userService.removeById(userId);
         return Result.success("用户删除成功");
+    }
+    
+    /**
+     * 用户认证审核
+     */
+    @PutMapping("/users/{userId}/verify")
+    public Result<String> verifyUser(@PathVariable Long userId, @RequestBody Map<String, Object> params) {
+        Integer verified = (Integer) params.get("verified");
+        
+        if (verified == null) {
+            return Result.fail("认证状态不能为空");
+        }
+        
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        
+        user.setVerified(verified);
+        userService.updateById(user);
+        
+        return Result.success(verified == 1 ? "用户认证通过" : "用户认证拒绝");
+    }
+    
+    /**
+     * 获取仪表盘统计数据
+     */
+    @GetMapping("/dashboard/stats")
+    public Result<Map<String, Object>> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // 用户统计
+        long totalUsers = userService.count();
+        long pendingVerificationUsers = userService.countByVerificationStatus(0);
+        long approvedUsers = userService.countByVerificationStatus(1);
+        long rejectedUsers = userService.countByVerificationStatus(2);
+        
+        stats.put("totalUsers", totalUsers);
+        stats.put("pendingVerificationUsers", pendingVerificationUsers);
+        stats.put("approvedUsers", approvedUsers);
+        stats.put("rejectedUsers", rejectedUsers);
+        
+        // 商家统计
+        long totalMerchants = merchantService.count();
+        long pendingMerchants = merchantService.countByStatus(0);
+        long approvedMerchants = merchantService.countByStatus(1);
+        long rejectedMerchants = merchantService.countByStatus(2);
+        
+        stats.put("totalMerchants", totalMerchants);
+        stats.put("pendingMerchants", pendingMerchants);
+        stats.put("approvedMerchants", approvedMerchants);
+        stats.put("rejectedMerchants", rejectedMerchants);
+        
+        // 商品统计
+        long totalProducts = productService.count();
+        long pendingProducts = productService.countByAuditStatus(0);
+        long approvedProducts = productService.countByAuditStatus(1);
+        long rejectedProducts = productService.countByAuditStatus(2);
+        
+        stats.put("totalProducts", totalProducts);
+        stats.put("pendingProducts", pendingProducts);
+        stats.put("approvedProducts", approvedProducts);
+        stats.put("rejectedProducts", rejectedProducts);
+        
+        // 订单统计
+        long totalOrders = orderService.count();
+        long completedOrders = orderService.countByStatus(6);
+        
+        stats.put("totalOrders", totalOrders);
+        stats.put("completedOrders", completedOrders);
+        
+        return Result.success(stats);
     }
     
     // =================== 商家管理 ===================

@@ -26,6 +26,10 @@ public class User {
     
     private String idCard;
     
+    private String idCardFront;
+    
+    private String idCardBack;
+    
     private Integer status;
     
     private Integer verified;
@@ -88,6 +92,22 @@ public class User {
     
     public void setIdCard(String idCard) {
         this.idCard = idCard;
+    }
+    
+    public String getIdCardFront() {
+        return idCardFront;
+    }
+    
+    public void setIdCardFront(String idCardFront) {
+        this.idCardFront = idCardFront;
+    }
+    
+    public String getIdCardBack() {
+        return idCardBack;
+    }
+    
+    public void setIdCardBack(String idCardBack) {
+        this.idCardBack = idCardBack;
     }
     
     public Integer getStatus() {

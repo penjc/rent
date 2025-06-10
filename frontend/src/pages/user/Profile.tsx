@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Form, 
@@ -13,90 +13,222 @@ import {
   Space,
   message,
   Modal,
-  Tabs
+  Tabs,
+  Image,
+  Tag,
+  Progress
 } from 'antd';
 import { 
   UserOutlined,
   CameraOutlined,
   PhoneOutlined,
-  MailOutlined,
   LockOutlined,
-  SafetyCertificateOutlined,
-  EditOutlined
+  EditOutlined,
+  InboxOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined,
+  IdcardOutlined
 } from '@ant-design/icons';
-
+import { useAuthStore } from '@/stores/useAuthStore';
+import api from '@/services/api';
+import type { User } from '@/types';
 
 const { Title, Text } = Typography;
-
-interface UserInfo {
-  id: number;
-  phone: string;
-  nickname: string;
-  realName: string;
-  email: string;
-  avatar: string;
-  createdAt: string;
-  isVerified: boolean;
-}
+const { Dragger } = Upload;
 
 const Profile: React.FC = () => {
+  const { user: authUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [certificationModalVisible, setCertificationModalVisible] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
+  const [certificationForm] = Form.useForm();
+  
+  const [userInfo, setUserInfo] = useState<User | null>(null);
 
+  // 获取用户信息
+  const fetchUserInfo = async () => {
+    if (!authUser?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await api.get(`/user/profile/${authUser.id}`);
+      if (response.data.code === 200) {
+        setUserInfo(response.data.data);
+        form.setFieldsValue(response.data.data);
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      message.error('获取用户信息失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // 获取用户认证状态
+  const fetchCertificationStatus = async () => {
+    if (!authUser?.id) return;
+    
+    try {
+      const response = await api.get(`/user/certification/status/${authUser.id}`);
+      if (response.data.code === 200) {
+        const certData = response.data.data;
+        setUserInfo(prev => prev ? { ...prev, ...certData } : null);
+      }
+    } catch (error) {
+      console.error('获取认证状态失败:', error);
+    }
+  };
 
-  // 模拟用户数据
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    id: 1,
-    phone: '13800138000',
-    nickname: '张三',
-    realName: '张三',
-    email: 'zhangsan@example.com',
-    avatar: 'https://via.placeholder.com/100x100?text=张三',
-    createdAt: '2025-01-01',
-    isVerified: true
-  });
+  useEffect(() => {
+    fetchUserInfo();
+    fetchCertificationStatus();
+  }, [authUser?.id]);
 
-  const handleAvatarChange = (info: any) => {
-    if (info.file.status === 'uploading') {
+  // 处理头像上传
+  const handleAvatarChange = async (info: any) => {
+    if (!authUser?.id) return;
+    
+    const file = info.file;
+    if (!file) return;
+    
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+      const response = await api.post(`/user/avatar/${authUser.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.code === 200) {
+        message.success('头像更新成功');
+        await fetchUserInfo(); // 重新获取用户信息
+      }
+    } catch (error) {
+      message.error('头像上传失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 保存基本信息
+  const handleSaveProfile = async (values: any) => {
+    if (!authUser?.id) return;
+    
+    setLoading(true);
+    try {
+      const response = await api.put(`/user/profile/${authUser.id}`, values);
+      if (response.data.code === 200) {
+        message.success('个人信息更新成功');
+        setEditMode(false);
+        await fetchUserInfo();
+      }
+    } catch (error) {
+      message.error('更新失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 修改密码
+  const handleChangePassword = async () => {
+    try {
+      await passwordForm.validateFields();
       setLoading(true);
-      return;
+      
+      // TODO: 实现修改密码API
+      setTimeout(() => {
+        setPasswordModalVisible(false);
+        passwordForm.resetFields();
+        setLoading(false);
+        message.success('密码修改成功');
+      }, 1000);
+    } catch (error) {
+      console.log('表单验证失败:', error);
     }
-    if (info.file.status === 'done') {
-      // 模拟上传成功
-      const newAvatarUrl = 'https://via.placeholder.com/100x100?text=New+Avatar';
-      setUserInfo({ ...userInfo, avatar: newAvatarUrl });
-      setLoading(false);
-      message.success('头像更新成功');
+  };
+
+  // 身份认证上传
+  const handleCertificationUpload = async (values: any) => {
+    if (!authUser?.id) return;
+    
+    setUploading(true);
+    const formData = new FormData();
+    
+    if (values.realName) formData.append('realName', values.realName);
+    if (values.idCard) formData.append('idCard', values.idCard);
+    if (values.idCardFront) formData.append('idCardFront', values.idCardFront.file);
+    if (values.idCardBack) formData.append('idCardBack', values.idCardBack.file);
+    
+    try {
+      const response = await api.post(`/user/certification/${authUser.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress({ certification: percent });
+          }
+        }
+      });
+      
+      if (response.data.code === 200) {
+        message.success('认证材料提交成功');
+        setCertificationModalVisible(false);
+        certificationForm.resetFields();
+        await fetchCertificationStatus();
+      }
+    } catch (error) {
+      message.error('认证材料提交失败');
+    } finally {
+      setUploading(false);
+      setUploadProgress({});
     }
   };
 
-  const handleSaveProfile = (values: any) => {
-    setLoading(true);
-    // 模拟API调用
-    setTimeout(() => {
-      setUserInfo({ ...userInfo, ...values });
-      setEditMode(false);
-      setLoading(false);
-      message.success('个人信息更新成功');
-    }, 1000);
+  // 获取认证状态标签
+  const getVerificationStatus = () => {
+    if (!userInfo) return null;
+    
+    switch (userInfo.verified) {
+      case 1:
+        return <Tag icon={<CheckCircleOutlined />} color="green">已认证</Tag>;
+      case 0:
+        return <Tag icon={<ClockCircleOutlined />} color="orange">待审核</Tag>;
+      case 2:
+        return <Tag icon={<CloseCircleOutlined />} color="red">认证失败</Tag>;
+      default:
+        return <Tag color="default">未认证</Tag>;
+    }
   };
 
-  const handleChangePassword = () => {
-    setLoading(true);
-    // 模拟API调用
-    setTimeout(() => {
-      setPasswordModalVisible(false);
-      passwordForm.resetFields();
-      setLoading(false);
-      message.success('密码修改成功');
-    }, 1000);
+  // 获取认证进度
+  const getCertificationProgress = () => {
+    if (!userInfo) return 0;
+    
+    let progress = 0;
+    if (userInfo.realName) progress += 25;
+    if (userInfo.idCard) progress += 25;
+    if (userInfo.idCardFront) progress += 25;
+    if (userInfo.idCardBack) progress += 25;
+    
+    return progress;
   };
 
-
+  // 文件上传属性
+  const getUploadProps = (type: string) => ({
+    name: type,
+    multiple: false,
+    accept: 'image/*,.pdf',
+    beforeUpload: () => false, // 阻止自动上传
+    showUploadList: false,
+  });
 
   const tabItems = [
     {
@@ -108,7 +240,7 @@ const Profile: React.FC = () => {
             <div className="relative inline-block">
               <Avatar 
                 size={100} 
-                src={userInfo.avatar} 
+                src={userInfo?.avatar} 
                 icon={<UserOutlined />}
                 className="mb-4"
               />
@@ -116,7 +248,7 @@ const Profile: React.FC = () => {
                 name="avatar"
                 listType="picture"
                 showUploadList={false}
-                beforeUpload={() => false} // 阻止自动上传
+                beforeUpload={() => false}
                 onChange={handleAvatarChange}
                 className="absolute bottom-0 right-0"
               >
@@ -129,18 +261,13 @@ const Profile: React.FC = () => {
               </Upload>
             </div>
             <div>
-              <Title level={4} className="mb-2">{userInfo.nickname}</Title>
+              <Title level={4} className="mb-2">{userInfo?.nickname || '用户'}</Title>
               <Space>
                 <Text type="secondary">
                   <PhoneOutlined className="mr-1" />
-                  {userInfo.phone}
+                  {userInfo?.phone}
                 </Text>
-                {userInfo.isVerified && (
-                  <Text className="text-green-500">
-                    <SafetyCertificateOutlined className="mr-1" />
-                    已认证
-                  </Text>
-                )}
+                {getVerificationStatus()}
               </Space>
             </div>
           </div>
@@ -150,7 +277,7 @@ const Profile: React.FC = () => {
           <Form
             form={form}
             layout="vertical"
-            initialValues={userInfo}
+            initialValues={userInfo || undefined}
             onFinish={handleSaveProfile}
           >
             <Row gutter={[24, 0]}>
@@ -171,7 +298,6 @@ const Profile: React.FC = () => {
                 <Form.Item
                   name="realName"
                   label="真实姓名"
-                  rules={[{ required: true, message: '请输入真实姓名' }]}
                 >
                   <Input 
                     placeholder="请输入真实姓名"
@@ -191,23 +317,8 @@ const Profile: React.FC = () => {
                 >
                   <Input 
                     placeholder="请输入手机号"
-                    disabled={!editMode}
+                    disabled
                     prefix={<PhoneOutlined />}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="email"
-                  label="邮箱"
-                  rules={[
-                    { type: 'email', message: '请输入正确的邮箱格式' }
-                  ]}
-                >
-                  <Input 
-                    placeholder="请输入邮箱"
-                    disabled={!editMode}
-                    prefix={<MailOutlined />}
                   />
                 </Form.Item>
               </Col>
@@ -241,12 +352,111 @@ const Profile: React.FC = () => {
       )
     },
     {
+      key: 'certification',
+      label: '身份认证',
+      children: (
+        <Card>
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <Title level={4} className="mb-0">实名认证</Title>
+              <div className="flex items-center space-x-4">
+                {getVerificationStatus()}
+                <Progress 
+                  type="circle" 
+                  size={80} 
+                  percent={
+                    userInfo?.verified === 1 ? 100 : // 已认证显示100%
+                    userInfo?.verified === 2 ? 100 : // 认证失败也显示100%（表示流程完成）
+                    getCertificationProgress() // 其他状态显示实际进度
+                  }
+                  strokeColor={
+                    userInfo?.verified === 1 ? '#52c41a' : 
+                    userInfo?.verified === 2 ? '#ff4d4f' : 
+                    '#1890ff'
+                  }
+                  format={() => 
+                    userInfo?.verified === 1 ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '24px' }} /> :
+                    userInfo?.verified === 2 ? <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: '24px' }} /> :
+                    userInfo?.verified === 0 ? <ClockCircleOutlined style={{ color: '#1890ff', fontSize: '24px' }} /> :
+                    <IdcardOutlined style={{ color: '#d9d9d9', fontSize: '24px' }} />
+                  }
+                />
+              </div>
+            </div>
+            <Text type="secondary">
+              完成实名认证后，您将获得更高的账户安全性和更多平台权益
+            </Text>
+          </div>
+
+          <Divider />
+
+          <Row gutter={[24, 24]}>
+            <Col span={24}>
+              <div className="bg-gray-50 p-4 rounded">
+                <Space direction="vertical" className="w-full">
+                  <div><strong>真实姓名：</strong>{userInfo?.realName || '未填写'}</div>
+                  <div><strong>身份证号：</strong>{userInfo?.idCard || '未填写'}</div>
+                </Space>
+              </div>
+            </Col>
+            
+            {/* 身份证照片展示 */}
+            <Col xs={24} md={12}>
+              <Card size="small" title="身份证正面">
+                {userInfo?.idCardFront ? (
+                  <Image
+                    src={userInfo.idCardFront}
+                    alt="身份证正面"
+                    width="100%"
+                    height={200}
+                    style={{ objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                    <Text type="secondary">未上传</Text>
+                  </div>
+                )}
+              </Card>
+            </Col>
+            
+            <Col xs={24} md={12}>
+              <Card size="small" title="身份证反面">
+                {userInfo?.idCardBack ? (
+                  <Image
+                    src={userInfo.idCardBack}
+                    alt="身份证反面"
+                    width="100%"
+                    height={200}
+                    style={{ objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+                    <Text type="secondary">未上传</Text>
+                  </div>
+                )}
+              </Card>
+            </Col>
+          </Row>
+
+          <div className="text-center mt-6">
+            <Button 
+              type="primary" 
+              icon={<IdcardOutlined />}
+              onClick={() => setCertificationModalVisible(true)}
+              disabled={userInfo?.verified === 1}
+            >
+              {userInfo?.verified === 1 ? '已认证' : '提交认证'}
+            </Button>
+          </div>
+        </Card>
+      )
+    },
+    {
       key: 'security',
       label: '安全设置',
       children: (
         <Card>
           <div className="space-y-6">
-            {/* 修改密码 */}
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <div className="font-medium mb-1">登录密码</div>
@@ -260,114 +470,30 @@ const Profile: React.FC = () => {
               </Button>
             </div>
 
-            {/* 手机验证 */}
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <div className="font-medium mb-1">手机验证</div>
                 <Text type="secondary">
-                  已绑定手机：{userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
+                  已绑定手机：{userInfo?.phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
                 </Text>
               </div>
-              <Button>更换手机</Button>
+              <Button disabled>更换手机</Button>
             </div>
 
-            {/* 邮箱验证 */}
-            <div className="flex justify-between items-center p-4 border rounded-lg">
-              <div>
-                <div className="font-medium mb-1">邮箱验证</div>
-                <Text type="secondary">
-                  {userInfo.email ? `已绑定邮箱：${userInfo.email}` : '未绑定邮箱'}
-                </Text>
-              </div>
-              <Button>{userInfo.email ? '更换邮箱' : '绑定邮箱'}</Button>
-            </div>
-
-            {/* 实名认证 */}
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <div className="font-medium mb-1">实名认证</div>
                 <Text type="secondary">
-                  {userInfo.isVerified ? '已完成实名认证' : '提高账户安全性，享受更多服务'}
+                  {userInfo?.verified === 1 ? '已完成实名认证' : '提高账户安全性，享受更多服务'}
                 </Text>
               </div>
-              <Button type={userInfo.isVerified ? 'default' : 'primary'}>
-                {userInfo.isVerified ? '查看认证信息' : '立即认证'}
+              <Button 
+                type={userInfo?.verified === 1 ? 'default' : 'primary'}
+                onClick={() => setCertificationModalVisible(true)}
+                disabled={userInfo?.verified === 1}
+              >
+                {userInfo?.verified === 1 ? '已认证' : '去认证'}
               </Button>
-            </div>
-          </div>
-        </Card>
-      )
-    },
-    {
-      key: 'stats',
-      label: '账户统计',
-      children: (
-        <Card>
-          <Row gutter={[24, 24]}>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-blue-500 mb-2">12</div>
-                <div className="text-gray-600">总订单数</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-green-500 mb-2">¥3,240</div>
-                <div className="text-gray-600">累计消费</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-orange-500 mb-2">8</div>
-                <div className="text-gray-600">收藏商品</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-purple-500 mb-2">4.9</div>
-                <div className="text-gray-600">信用评分</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-red-500 mb-2">365</div>
-                <div className="text-gray-600">注册天数</div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card className="text-center">
-                <div className="text-2xl font-bold text-cyan-500 mb-2">VIP</div>
-                <div className="text-gray-600">会员等级</div>
-              </Card>
-            </Col>
-          </Row>
-
-          <Divider />
-
-          <div className="mt-6">
-            <Title level={5} className="mb-4">最近活动</Title>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <div>
-                  <div className="font-medium">租赁了 iPhone 15 Pro</div>
-                  <Text type="secondary" className="text-sm">2025-06-09 10:30</Text>
-                </div>
-                <Text className="text-green-500">+10 积分</Text>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <div>
-                  <div className="font-medium">完成了 MacBook Pro 订单</div>
-                  <Text type="secondary" className="text-sm">2025-06-08 16:20</Text>
-                </div>
-                <Text className="text-green-500">+50 积分</Text>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <div>
-                  <div className="font-medium">评价了 iPad Pro</div>
-                  <Text type="secondary" className="text-sm">2025-06-07 14:15</Text>
-                </div>
-                <Text className="text-green-500">+20 积分</Text>
-              </div>
             </div>
           </div>
         </Card>
@@ -375,77 +501,165 @@ const Profile: React.FC = () => {
     }
   ];
 
-  return (
-    <div className="user-profile">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Title level={2} className="mb-6">个人中心</Title>
-        
-        <Tabs items={tabItems} />
-
-        {/* 修改密码弹窗 */}
-        <Modal
-          title="修改密码"
-          open={passwordModalVisible}
-          onCancel={() => setPasswordModalVisible(false)}
-          footer={null}
-          width={500}
-        >
-          <Form
-            form={passwordForm}
-            layout="vertical"
-            onFinish={handleChangePassword}
-          >
-            <Form.Item
-              name="oldPassword"
-              label="当前密码"
-              rules={[{ required: true, message: '请输入当前密码' }]}
-            >
-              <Input.Password placeholder="请输入当前密码" />
-            </Form.Item>
-
-            <Form.Item
-              name="newPassword"
-              label="新密码"
-              rules={[
-                { required: true, message: '请输入新密码' },
-                { min: 6, message: '密码长度至少6位' }
-              ]}
-            >
-              <Input.Password placeholder="请输入新密码" />
-            </Form.Item>
-
-            <Form.Item
-              name="confirmPassword"
-              label="确认新密码"
-              dependencies={['newPassword']}
-              rules={[
-                { required: true, message: '请确认新密码' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('newPassword') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('两次输入的密码不一致'));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password placeholder="请再次输入新密码" />
-            </Form.Item>
-
-            <Form.Item className="mb-0">
-              <Space className="w-full justify-end">
-                <Button onClick={() => setPasswordModalVisible(false)}>
-                  取消
-                </Button>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  确认修改
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </Modal>
+  if (loading && !userInfo) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>加载中...</p>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <Title level={2}>个人中心</Title>
+      
+      <Tabs items={tabItems} />
+
+      {/* 修改密码模态框 */}
+      <Modal
+        title="修改密码"
+        open={passwordModalVisible}
+        onOk={handleChangePassword}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        confirmLoading={loading}
+      >
+        <Form form={passwordForm} layout="vertical">
+          <Form.Item
+            name="oldPassword"
+            label="当前密码"
+            rules={[{ required: true, message: '请输入当前密码' }]}
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+          
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[
+              { required: true, message: '请输入新密码' },
+              { min: 6, message: '密码至少6位' }
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+          
+          <Form.Item
+            name="confirmPassword"
+            label="确认新密码"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: '请确认新密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 身份认证模态框 */}
+      <Modal
+        title="身份认证"
+        open={certificationModalVisible}
+        onOk={() => certificationForm.submit()}
+        onCancel={() => {
+          setCertificationModalVisible(false);
+          certificationForm.resetFields();
+        }}
+        confirmLoading={uploading}
+        width={800}
+      >
+        <Form 
+          form={certificationForm} 
+          layout="vertical"
+          onFinish={handleCertificationUpload}
+        >
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                name="realName"
+                label="真实姓名"
+                rules={[{ required: true, message: '请输入真实姓名' }]}
+              >
+                <Input placeholder="请输入真实姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="idCard"
+                label="身份证号"
+                rules={[
+                  { required: true, message: '请输入身份证号' },
+                  { pattern: /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, message: '请输入正确的身份证号' }
+                ]}
+              >
+                <Input placeholder="请输入身份证号" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Form.Item
+                name="idCardFront"
+                label="身份证正面"
+                rules={[{ required: true, message: '请上传身份证正面' }]}
+              >
+                <Dragger {...getUploadProps('idCardFront')}>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    {uploading && uploadProgress.certification > 0 ? 
+                      `上传中... ${uploadProgress.certification}%` : 
+                      '点击或拖拽上传身份证正面'
+                    }
+                  </p>
+                  <p className="ant-upload-hint">
+                    支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
+                  </p>
+                </Dragger>
+              </Form.Item>
+            </Col>
+            
+            <Col span={12}>
+              <Form.Item
+                name="idCardBack"
+                label="身份证反面"
+                rules={[{ required: true, message: '请上传身份证反面' }]}
+              >
+                <Dragger {...getUploadProps('idCardBack')}>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    {uploading && uploadProgress.certification > 0 ? 
+                      `上传中... ${uploadProgress.certification}%` : 
+                      '点击或拖拽上传身份证反面'
+                    }
+                  </p>
+                  <p className="ant-upload-hint">
+                    支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
+                  </p>
+                </Dragger>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
     </div>
   );
 };

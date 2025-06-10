@@ -31,8 +31,10 @@ export interface User {
   avatar?: string;
   realName?: string;
   idCard?: string;
+  idCardFront?: string;
+  idCardBack?: string;
   status: number;
-  verified: number; // 0: 未认证, 1: 已认证
+  verified: number; // 0: 未认证, 1: 已认证, 2: 认证拒绝
   createdAt: string;
   updatedAt: string;
 }

@@ -99,4 +99,13 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
                 .orderByDesc(Product::getCreatedAt)
                 .page(pageParam);
     }
+    
+    /**
+     * 根据审核状态统计商品数量
+     */
+    public long countByAuditStatus(Integer auditStatus) {
+        return lambdaQuery()
+                .eq(Product::getAuditStatus, auditStatus)
+                .count();
+    }
 } 
