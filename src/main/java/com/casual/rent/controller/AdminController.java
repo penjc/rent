@@ -1,0 +1,201 @@
+package com.casual.rent.controller;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.casual.rent.common.Result;
+import com.casual.rent.entity.Admin;
+import com.casual.rent.entity.Merchant;
+import com.casual.rent.entity.Product;
+import com.casual.rent.entity.Order;
+import com.casual.rent.entity.User;
+import com.casual.rent.service.AdminService;
+import com.casual.rent.service.MerchantService;
+import com.casual.rent.service.ProductService;
+import com.casual.rent.service.OrderService;
+import com.casual.rent.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+/**
+ * 管理员控制器
+ */
+@RestController
+@RequestMapping("/admin")
+public class AdminController {
+    
+    @Autowired
+    private AdminService adminService;
+    
+    @Autowired
+    private MerchantService merchantService;
+    
+    @Autowired
+    private ProductService productService;
+    
+    @Autowired
+    private OrderService orderService;
+    
+    @Autowired
+    private UserService userService;
+    
+    /**
+     * 管理员登录
+     */
+    @PostMapping("/login")
+    public Result<Admin> login(@RequestBody Map<String, Object> params) {
+        String username = (String) params.get("username");
+        String password = (String) params.get("password");
+        
+        if (username == null || password == null) {
+            return Result.fail("用户名和密码不能为空");
+        }
+        
+        Admin admin = adminService.login(username, password);
+        if (admin == null) {
+            return Result.fail("用户名或密码错误");
+        }
+        
+        return Result.success(admin);
+    }
+    
+    // =================== 用户管理 ===================
+    
+    /**
+     * 获取用户列表
+     */
+    @GetMapping("/users")
+    public Result<IPage<User>> getUsers(@RequestParam(defaultValue = "1") int page,
+                                       @RequestParam(defaultValue = "10") int size,
+                                       @RequestParam(required = false) String phone) {
+        IPage<User> users = userService.getUsers(page, size, phone);
+        return Result.success(users);
+    }
+    
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/users/{userId}")
+    public Result<String> updateUser(@PathVariable Long userId, @RequestBody User user) {
+        user.setId(userId);
+        userService.updateById(user);
+        return Result.success("用户信息更新成功");
+    }
+    
+    /**
+     * 删除用户
+     */
+    @DeleteMapping("/users/{userId}")
+    public Result<String> deleteUser(@PathVariable Long userId) {
+        userService.removeById(userId);
+        return Result.success("用户删除成功");
+    }
+    
+    // =================== 商家管理 ===================
+    
+    /**
+     * 获取商家列表
+     */
+    @GetMapping("/merchants")
+    public Result<IPage<Merchant>> getMerchants(@RequestParam(defaultValue = "1") int page,
+                                               @RequestParam(defaultValue = "10") int size,
+                                               @RequestParam(required = false) String phone,
+                                               @RequestParam(required = false) Integer status) {
+        IPage<Merchant> merchants = merchantService.getMerchants(page, size, phone, status);
+        return Result.success(merchants);
+    }
+    
+    /**
+     * 获取待审核商家列表
+     */
+    @GetMapping("/merchants/pending")
+    public Result<IPage<Merchant>> getPendingMerchants(@RequestParam(defaultValue = "1") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
+        IPage<Merchant> merchants = merchantService.getPendingMerchants(page, size);
+        return Result.success(merchants);
+    }
+    
+    /**
+     * 审核商家
+     */
+    @PutMapping("/merchants/{merchantId}/audit")
+    public Result<String> auditMerchant(@PathVariable Long merchantId, @RequestBody Map<String, Object> params) {
+        Integer status = (Integer) params.get("status");
+        String remark = (String) params.get("remark");
+        
+        if (status == null) {
+            return Result.fail("审核状态不能为空");
+        }
+        
+        merchantService.auditMerchant(merchantId, status, remark);
+        return Result.success(status == 1 ? "商家审核通过" : "商家审核拒绝");
+    }
+    
+    // =================== 商品管理 ===================
+    
+    /**
+     * 获取商品列表
+     */
+    @GetMapping("/products")
+    public Result<IPage<Product>> getProducts(@RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "10") int size,
+                                             @RequestParam(required = false) String name,
+                                             @RequestParam(required = false) Integer auditStatus) {
+        IPage<Product> products = productService.getProductsForAdmin(page, size, name, auditStatus);
+        return Result.success(products);
+    }
+    
+    /**
+     * 获取待审核商品列表
+     */
+    @GetMapping("/products/pending")
+    public Result<IPage<Product>> getPendingProducts(@RequestParam(defaultValue = "1") int page,
+                                                    @RequestParam(defaultValue = "10") int size) {
+        IPage<Product> products = productService.getPendingProducts(page, size);
+        return Result.success(products);
+    }
+    
+    /**
+     * 审核商品
+     */
+    @PutMapping("/products/{productId}/audit")
+    public Result<String> auditProduct(@PathVariable Long productId, @RequestBody Map<String, Object> params) {
+        Integer auditStatus = (Integer) params.get("auditStatus");
+        String auditRemark = (String) params.get("auditRemark");
+        
+        if (auditStatus == null) {
+            return Result.fail("审核状态不能为空");
+        }
+        
+        productService.auditProduct(productId, auditStatus, auditRemark);
+        return Result.success(auditStatus == 1 ? "商品审核通过" : "商品审核拒绝");
+    }
+    
+    // =================== 订单管理 ===================
+    
+    /**
+     * 获取所有订单
+     */
+    @GetMapping("/orders")
+    public Result<IPage<Order>> getAllOrders(@RequestParam(defaultValue = "1") int page,
+                                           @RequestParam(defaultValue = "10") int size,
+                                           @RequestParam(required = false) Integer status) {
+        IPage<Order> orders = orderService.getAllOrders(page, size, status);
+        return Result.success(orders);
+    }
+    
+    /**
+     * 手动修改订单状态
+     */
+    @PutMapping("/orders/{orderId}/status")
+    public Result<String> updateOrderStatus(@PathVariable Long orderId, @RequestBody Map<String, Object> params) {
+        Integer status = (Integer) params.get("status");
+        
+        if (status == null) {
+            return Result.fail("订单状态不能为空");
+        }
+        
+        orderService.updateOrderStatus(orderId, status);
+        return Result.success("订单状态更新成功");
+    }
+} 

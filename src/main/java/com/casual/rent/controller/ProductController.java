@@ -1,0 +1,177 @@
+package com.casual.rent.controller;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.casual.rent.common.Result;
+import com.casual.rent.entity.Product;
+import com.casual.rent.service.ProductService;
+import com.casual.rent.service.FileUploadService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+
+/**
+ * 商品控制器
+ */
+@RestController
+@RequestMapping("/products")
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+public class ProductController {
+    
+    @Autowired
+    private ProductService productService;
+    
+    @Autowired
+    private FileUploadService fileUploadService;
+    
+    /**
+     * 分页查询商品列表
+     */
+    @GetMapping
+    public Result<IPage<Product>> getProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long categoryId) {
+        
+        IPage<Product> productPage = productService.getProductPage(page, size, categoryId);
+        return Result.success(productPage);
+    }
+    
+    /**
+     * 根据ID获取商品详情
+     */
+    @GetMapping("/{id}")
+    public Result<Product> getProductById(@PathVariable Long id) {
+        Product product = productService.getById(id);
+        if (product == null) {
+            return Result.notFound();
+        }
+        return Result.success(product);
+    }
+    
+    /**
+     * 商家查询自己的商品
+     */
+    @GetMapping("/merchant/{merchantId}")
+    public Result<IPage<Product>> getProductsByMerchant(
+            @PathVariable Long merchantId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        IPage<Product> productPage = productService.getProductsByMerchant(page, size, merchantId);
+        return Result.success(productPage);
+    }
+    
+    /**
+     * 创建商品（支持文件上传）
+     */
+    @PostMapping("/with-images")
+    public Result<Product> createProductWithImages(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("dailyPrice") Double dailyPrice,
+            @RequestParam("weeklyPrice") Double weeklyPrice,
+            @RequestParam("monthlyPrice") Double monthlyPrice,
+            @RequestParam("categoryId") Long categoryId,
+            @RequestParam("merchantId") Long merchantId,
+            @RequestParam("stock") Integer stock,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) {
+        
+        try {
+            // 创建商品对象
+            Product product = new Product();
+            product.setName(name);
+            product.setDescription(description);
+            product.setDailyPrice(BigDecimal.valueOf(dailyPrice));
+            product.setWeeklyPrice(BigDecimal.valueOf(weeklyPrice));
+            product.setMonthlyPrice(BigDecimal.valueOf(monthlyPrice));
+            product.setCategoryId(categoryId);
+            product.setMerchantId(merchantId);
+            product.setStock(stock);
+            product.setStatus(0); // 默认待审核
+            product.setCreatedAt(LocalDateTime.now());
+            product.setUpdatedAt(LocalDateTime.now());
+            
+            // 处理图片上传
+            if (images != null && images.length > 0) {
+                // 验证图片
+                String[] allowedTypes = {"image/"};
+                long maxSize = 5 * 1024 * 1024; // 5MB
+                
+                for (MultipartFile image : images) {
+                    if (!image.isEmpty()) {
+                        if (!fileUploadService.isValidFileType(image, allowedTypes)) {
+                            return Result.fail("只支持图片文件：" + image.getOriginalFilename());
+                        }
+                        if (!fileUploadService.isValidFileSize(image, maxSize)) {
+                            return Result.fail("图片大小不能超过5MB：" + image.getOriginalFilename());
+                        }
+                    }
+                }
+                
+                // 上传图片到腾讯云OSS
+                String[] imageUrls = fileUploadService.uploadFiles(images, "products");
+                
+                // 将图片URL数组转换为JSON字符串存储
+                product.setImages(Arrays.toString(imageUrls));
+            }
+            
+            // 保存商品
+            productService.save(product);
+            return Result.success(product);
+            
+        } catch (Exception e) {
+            return Result.error("创建商品失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 创建商品（原JSON格式，保持向后兼容）
+     */
+    @PostMapping
+    public Result<Product> createProduct(@RequestBody Product product) {
+        // 设置默认值
+        if (product.getStatus() == null) {
+            product.setStatus(0); // 默认待审核
+        }
+        
+        // 设置时间戳
+        product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
+        
+        productService.save(product);
+        return Result.success(product);
+    }
+    
+    /**
+     * 更新商品
+     */
+    @PutMapping("/{id}")
+    public Result<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+        product.setId(id);
+        productService.updateById(product);
+        return Result.success(product);
+    }
+    
+    /**
+     * 删除商品
+     */
+    @DeleteMapping("/{id}")
+    public Result<String> deleteProduct(@PathVariable Long id, @RequestParam Long merchantId) {
+        // 验证商品是否属于该商家
+        Product product = productService.getById(id);
+        if (product == null) {
+            return Result.fail("商品不存在");
+        }
+        
+        if (!product.getMerchantId().equals(merchantId)) {
+            return Result.fail("无权删除此商品");
+        }
+        
+        productService.removeById(id);
+        return Result.success("商品删除成功");
+    }
+} 
