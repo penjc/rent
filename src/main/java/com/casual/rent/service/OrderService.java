@@ -78,6 +78,7 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setProductImage(product.getImages());
         order.setRentType(days >= 30 ? 3 : days >= 7 ? 2 : 1); // 1=日租, 2=周租, 3=月租
         order.setRentDays(days);
+        order.setQuantity(quantity);
         order.setUnitPrice(unitPrice);
         order.setTotalAmount(totalAmount.add(totalDeposit)); // 租金 + 押金
         order.setDeposit(totalDeposit);
@@ -92,6 +93,9 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         // 减少库存
         product.setStock(product.getStock() - quantity);
         productService.updateById(product);
+        
+        // 检查库存，如果为0则自动下架
+        productService.checkAndUpdateProductStatus(productId);
         
         return order;
     }
@@ -267,17 +271,114 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
     
     /**
+     * 取消订单
+     */
+    public void cancelOrder(Long orderId, Long userId) {
+        Order order = getById(orderId);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new RuntimeException("无权限操作此订单");
+        }
+        
+        // 只有待支付和已支付状态的订单可以取消
+        if (!order.getStatus().equals(OrderStatus.PENDING_PAYMENT.getCode()) && 
+            !order.getStatus().equals(OrderStatus.PAID.getCode())) {
+            throw new RuntimeException("当前订单状态不允许取消");
+        }
+        
+        // 更新订单状态为已取消
+        order.setStatus(OrderStatus.CANCELLED.getCode());
+        order.setUpdatedAt(LocalDateTime.now());
+        updateById(order);
+        
+        // 恢复商品库存
+        Product product = productService.getById(order.getProductId());
+        if (product != null) {
+            // 恢复库存，使用订单的数量
+            Integer quantity = order.getQuantity() != null ? order.getQuantity() : 1;
+            product.setStock(product.getStock() + quantity);
+            productService.updateById(product);
+            
+            // 如果商品库存恢复后大于0且当前是下架状态，重新上架
+            if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
+                product.setStatus(1); // 重新上架
+                productService.updateById(product);
+            }
+        }
+    }
+    
+    /**
+     * 管理员取消订单
+     */
+    public void cancelOrderByAdmin(Long orderId) {
+        Order order = getById(orderId);
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
+        }
+        
+        // 管理员可以取消任何未完成的订单
+        if (order.getStatus().equals(OrderStatus.COMPLETED.getCode())) {
+            throw new RuntimeException("已完成的订单不能取消");
+        }
+        
+        // 更新订单状态为已取消
+        order.setStatus(OrderStatus.CANCELLED.getCode());
+        order.setUpdatedAt(LocalDateTime.now());
+        updateById(order);
+        
+        // 恢复商品库存
+        Product product = productService.getById(order.getProductId());
+        if (product != null) {
+            Integer quantity = order.getQuantity() != null ? order.getQuantity() : 1;
+            product.setStock(product.getStock() + quantity);
+            productService.updateById(product);
+            
+            // 如果商品库存恢复后大于0且当前是下架状态，重新上架
+            if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
+                product.setStatus(1); // 重新上架
+                productService.updateById(product);
+            }
+        }
+    }
+    
+    /**
      * 更新订单状态（管理员）
      */
     public void updateOrderStatus(Long orderId, Integer status) {
         Order order = getById(orderId);
         if (order != null) {
+            Integer oldStatus = order.getStatus();
             order.setStatus(status);
             if (status.equals(OrderStatus.MERCHANT_SHIPPING.getCode()) && order.getShippedAt() == null) {
                 order.setShippedAt(LocalDateTime.now());
             }
             if (status.equals(OrderStatus.COMPLETED.getCode()) && order.getReturnedAt() == null) {
                 order.setReturnedAt(LocalDateTime.now());
+                
+                // 订单完成时恢复库存
+                Product product = productService.getById(order.getProductId());
+                if (product != null) {
+                    Integer quantity = order.getQuantity() != null ? order.getQuantity() : 1;
+                    product.setStock(product.getStock() + quantity);
+                    productService.updateById(product);
+                }
+            }
+            if (status.equals(OrderStatus.CANCELLED.getCode())) {
+                // 订单被取消时恢复库存
+                Product product = productService.getById(order.getProductId());
+                if (product != null) {
+                    Integer quantity = order.getQuantity() != null ? order.getQuantity() : 1;
+                    product.setStock(product.getStock() + quantity);
+                    productService.updateById(product);
+                    
+                    // 如果商品库存恢复后大于0且当前是下架状态，重新上架
+                    if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
+                        product.setStatus(1); // 重新上架
+                        productService.updateById(product);
+                    }
+                }
             }
             order.setUpdatedAt(LocalDateTime.now());
             updateById(order);

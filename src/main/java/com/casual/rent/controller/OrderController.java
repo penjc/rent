@@ -165,4 +165,17 @@ public class OrderController {
             return Result.error(e.getMessage());
         }
     }
+
+    /**
+     * 取消订单
+     */
+    @PutMapping("/{orderId}/cancel")
+    public Result<String> cancelOrder(@PathVariable Long orderId, @RequestParam Long userId) {
+        try {
+            orderService.cancelOrder(orderId, userId);
+            return Result.success("订单取消成功");
+        } catch (Exception e) {
+            return Result.error("取消订单失败：" + e.getMessage());
+        }
+    }
 } 

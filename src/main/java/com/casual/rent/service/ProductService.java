@@ -23,6 +23,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
                 .eq(categoryId != null, Product::getCategoryId, categoryId)
                 .eq(Product::getStatus, 1) // 只查询上架的商品
                 .eq(Product::getAuditStatus, 1) // 只查询审核通过的商品
+                .gt(Product::getStock, 0) // 只查询库存大于0的商品
                 .orderByDesc(Product::getCreatedAt)
                 .page(pageParam);
     }
@@ -107,5 +108,27 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         return lambdaQuery()
                 .eq(Product::getAuditStatus, auditStatus)
                 .count();
+    }
+    
+    /**
+     * 自动下架库存为0的商品
+     */
+    public void autoOffShelfZeroStockProducts() {
+        lambdaUpdate()
+                .eq(Product::getStock, 0)
+                .eq(Product::getStatus, 1) // 只处理上架的商品
+                .set(Product::getStatus, 0) // 设置为下架
+                .update();
+    }
+    
+    /**
+     * 检查并更新商品状态（库存为0时自动下架）
+     */
+    public void checkAndUpdateProductStatus(Long productId) {
+        Product product = getById(productId);
+        if (product != null && product.getStock() <= 0 && product.getStatus() == 1) {
+            product.setStatus(0); // 自动下架
+            updateById(product);
+        }
     }
 } 

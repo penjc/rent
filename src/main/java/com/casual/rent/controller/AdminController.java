@@ -272,4 +272,17 @@ public class AdminController {
         orderService.updateOrderStatus(orderId, status);
         return Result.success("订单状态更新成功");
     }
+    
+    /**
+     * 管理员取消订单
+     */
+    @PutMapping("/orders/{orderId}/cancel")
+    public Result<String> cancelOrderByAdmin(@PathVariable Long orderId) {
+        try {
+            orderService.cancelOrderByAdmin(orderId);
+            return Result.success("订单取消成功");
+        } catch (Exception e) {
+            return Result.error("取消订单失败：" + e.getMessage());
+        }
+    }
 } 

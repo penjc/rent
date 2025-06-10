@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS rent
 
 USE rent;
 
--- 1. 用户表（消费者）
+-- 1. 用户表
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
   `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '手机号',
@@ -23,7 +23,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `phone` (`phone`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
--- 2. 商家表（出借者）
+-- 2. 商家表
 CREATE TABLE `merchants` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '商家ID',
   `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '手机号',
@@ -103,12 +103,13 @@ CREATE TABLE `orders` (
   `product_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '商品图片',
   `rent_type` tinyint(4) NOT NULL COMMENT '租期类型：1-按天，2-按周，3-按月',
   `rent_days` int(11) NOT NULL COMMENT '租期天数',
+  `quantity` int(11) DEFAULT '1' COMMENT '租赁个数',
   `unit_price` decimal(10,2) NOT NULL COMMENT '单价',
   `deposit` decimal(10,2) DEFAULT '0.00' COMMENT '押金',
   `total_amount` decimal(10,2) NOT NULL COMMENT '总金额',
   `start_date` date NOT NULL COMMENT '租期开始日期',
   `end_date` date NOT NULL COMMENT '租期结束日期',
-  `status` tinyint(4) DEFAULT '1' COMMENT '订单状态：1-待支付，2-已支付，3-商家发货中，4-使用中，5-用户返还中，6-已完成，7-已取消',
+  `status` tinyint(4) DEFAULT '1' COMMENT '订单状态：1-待支付，2-待发货，3-租赁中，4-已归还，-1-已取消',
   `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
   `shipped_at` timestamp NULL DEFAULT NULL COMMENT '发货时间',
   `returned_at` timestamp NULL DEFAULT NULL COMMENT '归还时间',
@@ -121,7 +122,7 @@ CREATE TABLE `orders` (
   KEY `idx_product_id` (`product_id`),
   KEY `idx_order_no` (`order_no`),
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
 -- 插入默认数据
 

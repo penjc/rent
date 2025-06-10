@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Layout, Card, Row, Col, Button, InputNumber, DatePicker, 
-  Image, Descriptions, Divider, Spin, Alert, message, 
+  Descriptions, Divider, Spin, Alert, message, 
   Breadcrumb, Typography, Space, Tag, Form
 } from 'antd';
 import { 
@@ -229,19 +229,25 @@ const ProductDetail: React.FC = () => {
           {/* 左侧：商品图片 */}
           <Col xs={24} md={12}>
             <Card bodyStyle={{ padding: 0 }}>
-              <Image.PreviewGroup>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {images.map((image, index) => (
-                  <Image
+                  <img
                     key={index}
                     width="100%"
                     height={400}
                     src={image}
                     alt={`${product.name}-${index + 1}`}
-                    style={{ objectFit: 'cover' }}
-                    fallback="/images/default-product.jpg"
+                    style={{ 
+                      objectFit: 'contain',
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: '6px'
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/default-product.jpg';
+                    }}
                   />
                 ))}
-              </Image.PreviewGroup>
+              </div>
             </Card>
           </Col>
 

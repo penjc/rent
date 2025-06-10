@@ -32,6 +32,8 @@ public class Order {
     
     private Integer rentDays;
     
+    private Integer quantity;
+    
     private BigDecimal unitPrice;
     
     private BigDecimal deposit;
@@ -124,6 +126,14 @@ public class Order {
     
     public void setRentDays(Integer rentDays) {
         this.rentDays = rentDays;
+    }
+    
+    public Integer getQuantity() {
+        return quantity;
+    }
+    
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
     
     public BigDecimal getUnitPrice() {

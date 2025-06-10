@@ -111,9 +111,12 @@ const Orders: React.FC = () => {
 
   // 取消订单
   const handleCancelOrder = async (orderId: number) => {
+    const userId = getUserId();
+    if (!userId) return;
+
     setActionLoading(prev => ({ ...prev, [orderId]: true }));
     try {
-      const response = await api.put(`/orders/${orderId}/status`, { status: 7 });
+      const response = await api.put(`/orders/${orderId}/cancel?userId=${userId}`);
       if (response.data.code === 200) {
         message.success('订单已取消');
         fetchOrders();
