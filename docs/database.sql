@@ -8,20 +8,20 @@ USE rent;
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID',
   `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '手机号',
-  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码',
   `nickname` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '昵称',
   `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '头像',
   `real_name` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '真实姓名',
   `id_card` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证号',
-  `id_card_front` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `id_card_back` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_card_front` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证正面',
+  `id_card_back` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证反面',
   `status` tinyint(4) DEFAULT '1' COMMENT '状态：1-正常，0-禁用',
-  `verified` tinyint(4) DEFAULT '0' COMMENT '实名认证：1-已认证，0-未认证',
+  `verified` tinyint(4) DEFAULT '0' COMMENT '实名认证：-1-未认证，0-待审核，1-已认证，2-认证拒绝',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- 2. 商家表
 CREATE TABLE `merchants` (
@@ -33,13 +33,13 @@ CREATE TABLE `merchants` (
   `id_card_front` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证正面照片',
   `id_card_back` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '身份证背面照片',
   `business_license` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '营业执照（可选）',
-  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-正常，0-待审核，2-已拒绝',
+  `status` tinyint(4) DEFAULT '0' COMMENT '实名认证：-1-未认证，0-待审核，1-已认证，2-认证拒绝',
   `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注/拒绝原因',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商家表';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商家表';
 
 -- 3. 管理员表
 CREATE TABLE `admins` (
@@ -53,7 +53,7 @@ CREATE TABLE `admins` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
 
 -- 4. 商品分类表
 CREATE TABLE `categories` (
@@ -65,7 +65,7 @@ CREATE TABLE `categories` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
+) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
 
 
 -- 5. 商品表
@@ -81,8 +81,8 @@ CREATE TABLE `products` (
   `monthly_price` decimal(10,2) DEFAULT NULL COMMENT '月租金',
   `deposit` decimal(10,2) DEFAULT '0.00' COMMENT '押金',
   `stock` int(11) DEFAULT '1' COMMENT '库存数量',
-  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-上架，0-待审核，-1-下架',
-  `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，2-拒绝',
+  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-上架，0-下架',
+  `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，-1-拒绝',
   `audit_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -90,7 +90,7 @@ CREATE TABLE `products` (
   KEY `idx_merchant_id` (`merchant_id`),
   KEY `idx_category_id` (`category_id`),
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 
 -- 6. 订单表
 CREATE TABLE `orders` (
@@ -122,7 +122,7 @@ CREATE TABLE `orders` (
   KEY `idx_product_id` (`product_id`),
   KEY `idx_order_no` (`order_no`),
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
 -- 插入默认数据
 

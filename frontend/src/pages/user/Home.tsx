@@ -15,10 +15,11 @@ const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [hasMoreData, setHasMoreData] = useState(true);
   
   // 用户认证相关状态
   const [loginModalVisible, setLoginModalVisible] = useState(false);
@@ -38,38 +39,91 @@ const Home: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // 优化商品获取函数
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
+  // 首次加载商品
+  const fetchProducts = useCallback(async (page = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await getProducts({
-        page: currentPage,
+        page,
         size: 12,
         categoryId: selectedCategory || undefined,
         name: searchText || undefined
       });
       
-      setProducts(response?.records || []);
-      setTotal(response?.total || 0);
+      const newProducts = response?.records || [];
+      const newTotal = response?.total || 0;
+      
+      if (isLoadMore) {
+        // 加载更多时追加到现有商品列表
+        setProducts(prev => [...prev, ...newProducts]);
+      } else {
+        // 首次加载或筛选时替换商品列表
+        setProducts(newProducts);
+      }
+      
+      setTotal(newTotal);
+      
+      // 检查是否还有更多数据
+      const totalLoaded = isLoadMore ? products.length + newProducts.length : newProducts.length;
+      setHasMoreData(totalLoaded < newTotal);
+      
     } catch (error) {
       console.error('获取商品失败:', error);
       message.error('获取商品失败');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [currentPage, selectedCategory, searchText]);
+  }, [selectedCategory, searchText, products.length]);
+
+  // 加载更多商品
+  const loadMoreProducts = useCallback(() => {
+    if (loadingMore || !hasMoreData) return;
+    
+    const nextPage = Math.floor(products.length / 12) + 1;
+    fetchProducts(nextPage, true);
+  }, [fetchProducts, loadingMore, hasMoreData, products.length]);
+
+  // 滚动监听
+  useEffect(() => {
+    const handleScroll = () => {
+      // 检查是否滚动到页面底部
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.offsetHeight;
+      
+      // 当滚动到距离底部100px时开始加载更多
+      if (scrollTop + windowHeight >= documentHeight - 100) {
+        loadMoreProducts();
+      }
+    };
+
+    // 添加滚动事件监听器
+    window.addEventListener('scroll', handleScroll);
+    
+    // 清理函数
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [loadMoreProducts]);
 
   // 获取商品数据
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    setProducts([]); // 清空现有商品列表
+    setHasMoreData(true);
+    fetchProducts(1, false);
+  }, [selectedCategory, searchText]);
 
 
 
   // 分类选择
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
-    setCurrentPage(1);
     setSearchText(''); // 选择分类时清除搜索关键词
     
     // 添加用户反馈
@@ -238,70 +292,76 @@ const Home: React.FC = () => {
               </Empty>
             </div>
           ) : (
-            <Row gutter={[16, 16]}>
-              {products.map(product => (
-                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
-                  <Card
-                    hoverable
-                    cover={
-                      <img
-                        alt={product.name}
-                        src={getProductImage(product.images)}
-                        style={{ height: 200, objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.currentTarget.src = '/images/default-product.jpg';
-                        }}
-                      />
-                    }
-                    onClick={() => handleProductClick(product.id)}
-                  >
-                    <Meta
-                      title={<div style={{ fontSize: 16, fontWeight: 'bold' }}>{product.name}</div>}
-                      description={
-                        <div>
-                          <div style={{ 
-                            color: '#666', 
-                            fontSize: 12, 
-                            height: 40, 
-                            overflow: 'hidden',
-                            marginBottom: 8
-                          }}>
-                            {product.description}
-                          </div>
-                          <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center' 
-                          }}>
-                            <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
-                              {formatPrice(product.dailyPrice)}/天
-                            </span>
-                            <span style={{ color: '#999', fontSize: 12 }}>
-                              押金: {formatPrice(product.deposit)}
-                            </span>
-                          </div>
-                        </div>
+            <>
+              <Row gutter={[16, 16]}>
+                {products.map(product => (
+                  <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                    <Card
+                      hoverable
+                      cover={
+                        <img
+                          alt={product.name}
+                          src={getProductImage(product.images)}
+                          style={{ height: 200, objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/default-product.jpg';
+                          }}
+                        />
                       }
-                    />
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          )}
-
-          {/* 加载更多按钮 */}
-          {products.length > 0 && products.length < total && (
-            <div style={{ textAlign: 'center', marginTop: 30 }}>
-              <Button 
-                size="large" 
-                onClick={() => {
-                  setCurrentPage(prev => prev + 1);
-                }}
-                loading={loading}
-              >
-                加载更多
-              </Button>
-            </div>
+                      onClick={() => handleProductClick(product.id)}
+                    >
+                      <Meta
+                        title={<div style={{ fontSize: 16, fontWeight: 'bold' }}>{product.name}</div>}
+                        description={
+                          <div>
+                            <div style={{ 
+                              color: '#666', 
+                              fontSize: 12, 
+                              height: 40, 
+                              overflow: 'hidden',
+                              marginBottom: 8
+                            }}>
+                              {product.description}
+                            </div>
+                            <div style={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center' 
+                            }}>
+                              <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
+                                {formatPrice(product.dailyPrice)}/天
+                              </span>
+                              <span style={{ color: '#999', fontSize: 12 }}>
+                                押金: {formatPrice(product.deposit)}
+                              </span>
+                            </div>
+                          </div>
+                        }
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+              
+              {/* 加载更多状态指示器 */}
+              {loadingMore && (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <Spin tip="正在加载更多商品..." />
+                </div>
+              )}
+              
+              {/* 没有更多数据提示 */}
+              {!hasMoreData && products.length > 0 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '20px 0',
+                  color: '#999',
+                  fontSize: '14px'
+                }}>
+                  已加载全部商品
+                </div>
+              )}
+            </>
           )}
         </div>
 

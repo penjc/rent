@@ -44,13 +44,14 @@ const Products: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState(searchParams.get('search') || '');
+  const [activeSearchText, setActiveSearchText] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     searchParams.get('category') ? Number(searchParams.get('category')) : null
   );
   const [sortBy, setSortBy] = useState<string>('created_desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const pageSize = 16;
+  const pageSize = 20;
 
   // 立即租赁相关状态
   const [isRentModalVisible, setIsRentModalVisible] = useState(false);
@@ -86,7 +87,7 @@ const Products: React.FC = () => {
   // 获取商品数据
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, currentPage, sortBy]);
+  }, [selectedCategory, currentPage, sortBy, activeSearchText]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -94,7 +95,8 @@ const Products: React.FC = () => {
       const response = await getProducts({
         page: currentPage,
         size: pageSize,
-        categoryId: selectedCategory || undefined
+        categoryId: selectedCategory || undefined,
+        name: activeSearchText || undefined
       });
       
       setProducts(response?.records || []);
@@ -108,8 +110,8 @@ const Products: React.FC = () => {
 
   // 搜索处理
   const handleSearch = () => {
+    setActiveSearchText(searchText);
     setCurrentPage(1);
-    fetchProducts();
     
     // 更新URL参数
     const params = new URLSearchParams();

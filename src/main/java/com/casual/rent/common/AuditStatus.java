@@ -1,7 +1,7 @@
 package com.casual.rent.common;
 
 /**
- * 审核状态枚举
+ * 商品审核状态枚举
  */
 public enum AuditStatus {
     PENDING(0, "待审核"),

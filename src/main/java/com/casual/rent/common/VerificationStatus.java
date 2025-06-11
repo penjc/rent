@@ -1,7 +1,7 @@
 package com.casual.rent.common;
 
 /**
- * 认证状态枚举
+ * 用户/商家 认证状态枚举
  */
 public enum VerificationStatus {
     NOT_VERIFIED(-1, "未认证"),
