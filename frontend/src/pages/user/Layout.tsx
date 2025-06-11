@@ -7,6 +7,7 @@ import Home from './Home';
 import Products from './Products';
 import ProductDetail from './ProductDetail';
 import Orders from './Orders';
+import OrderManagement from './OrderManagement';
 import Profile from './Profile';
 import Favorites from './Favorites';
 
@@ -165,6 +166,7 @@ const UserLayout: React.FC = () => {
           <Route path="products" element={<Products />} />
           <Route path="products/:id" element={<ProductDetail />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="order-management" element={<OrderManagement />} />
           <Route path="profile" element={<Profile />} />
           <Route path="favorites" element={<Favorites />} />
         </Routes>

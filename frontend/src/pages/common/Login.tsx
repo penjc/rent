@@ -23,8 +23,8 @@ const Login: React.FC = () => {
       
       // 使用响应数据直接登录（兼容当前后端格式）
       if (response.data) {
-        // 设置真实的token，如果后端返回token则使用，否则生成一个临时token
-        const token = (response.data as any).token || `user_token_${Date.now()}`;
+        // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
+        const token = (response.data as any).token || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'user');
         message.success('登录成功');
         navigate('/user');
@@ -43,8 +43,8 @@ const Login: React.FC = () => {
       const response = await merchantLogin(values);
       
       if (response.data) {
-        // 设置真实的token，如果后端返回token则使用，否则生成一个临时token
-        const token = (response.data as any).token || `merchant_token_${Date.now()}`;
+        // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
+        const token = (response.data as any).token || `merchant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'merchant');
         message.success('登录成功');
         navigate('/merchant');
@@ -63,8 +63,8 @@ const Login: React.FC = () => {
       const response = await adminLogin(values);
       
       if (response.data) {
-        // 设置真实的token，如果后端返回token则使用，否则生成一个临时token
-        const token = (response.data as any).token || `admin_token_${Date.now()}`;
+        // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
+        const token = (response.data as any).token || `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'admin');
         message.success('登录成功');
         navigate('/admin');

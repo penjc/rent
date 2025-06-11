@@ -22,8 +22,9 @@ const Register: React.FC = () => {
       const response = await userRegister(registerData);
       
       if (response.data) {
-        // 注册成功后自动登录
-        login('fake-token', response.data as any, 'user');
+        // 注册成功后自动登录，生成一个有效的token
+        const token = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        login(token, response.data as any, 'user');
         localStorage.setItem('userInfo', JSON.stringify(response.data));
         localStorage.setItem('userType', 'user');
         message.success('注册成功，欢迎加入Casual Rent！');
@@ -53,8 +54,9 @@ const Register: React.FC = () => {
       const response = await merchantRegister(fullRegisterData);
       
       if (response.data) {
-        // 商家注册成功后自动登录
-        login('fake-token', response.data as any, 'merchant');
+        // 商家注册成功后自动登录，生成一个有效的token
+        const token = `merchant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        login(token, response.data as any, 'merchant');
         localStorage.setItem('merchantInfo', JSON.stringify(response.data));
         localStorage.setItem('userType', 'merchant');
         message.success('商家入驻申请已提交，欢迎来到Casual Rent！');

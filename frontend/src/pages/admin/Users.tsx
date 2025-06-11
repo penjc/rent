@@ -97,7 +97,7 @@ const Users: React.FC = () => {
       const updateData = {
         ...values,
         status: values.status ? 1 : 0,
-        verified: values.verified ? 1 : 0,
+        verified: values.verified ? 1 : -1, // 已认证为1，未认证为-1
       };
 
       const response = await api.put(`/admin/users/${editingUser?.id}`, updateData);
@@ -185,8 +185,8 @@ const Users: React.FC = () => {
       width: 120,
       render: (verified, record) => (
         <Space>
-          <Tag color={verified === 1 ? 'green' : verified === 0 ? 'orange' : 'red'}>
-            {verified === 1 ? '已认证' : verified === 0 ? '待审核' : '认证拒绝'}
+          <Tag color={verified === 1 ? 'green' : verified === 0 ? 'orange' : verified === -1 ? 'default' : 'red'}>
+            {verified === 1 ? '已认证' : verified === 0 ? '待审核' : verified === -1 ? '未认证' : '认证拒绝'}
           </Tag>
           {(record.idCardFront || record.idCardBack || record.realName) && (
             <Button
@@ -312,7 +312,7 @@ const Users: React.FC = () => {
           initialValues={{
             nickname: editingUser?.nickname || '',
             realName: editingUser?.realName || '',
-            verified: editingUser?.verified || false,
+            verified: editingUser?.verified === 1, // 只有当值为1时才显示已认证
             status: editingUser?.status === 1,
           }}
         >
@@ -378,8 +378,8 @@ const Users: React.FC = () => {
               </Col>
               <Col span={8}>
                 <strong>认证状态：</strong>
-                <Tag color={viewingUser.verified === 1 ? 'green' : viewingUser.verified === 0 ? 'orange' : 'red'}>
-                  {viewingUser.verified === 1 ? '已认证' : viewingUser.verified === 0 ? '待审核' : '认证拒绝'}
+                <Tag color={viewingUser.verified === 1 ? 'green' : viewingUser.verified === 0 ? 'orange' : viewingUser.verified === -1 ? 'default' : 'red'}>
+                  {viewingUser.verified === 1 ? '已认证' : viewingUser.verified === 0 ? '待审核' : viewingUser.verified === -1 ? '未认证' : '认证拒绝'}
                 </Tag>
               </Col>
               <Col span={12}>

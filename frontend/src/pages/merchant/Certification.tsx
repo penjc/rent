@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Upload, Button, message, Row, Col, Tag, Progress, Image, Typography } from 'antd';
-import { InboxOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { InboxOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd/es/upload/interface';
 import { useAuthStore } from '@/stores/useAuthStore';
 import api from '@/services/api';
@@ -83,6 +83,8 @@ const Certification: React.FC = () => {
   // 获取认证状态标签
   const getStatusTag = (status: number) => {
     switch (status) {
+      case -1:
+        return <Tag icon={<InfoCircleOutlined />} color="default">未认证</Tag>;
       case 0:
         return <Tag icon={<ClockCircleOutlined />} color="orange">待审核</Tag>;
       case 1:
@@ -220,18 +222,21 @@ const Certification: React.FC = () => {
               percent={
                 merchantInfo.status === 1 ? 100 : // 审核通过显示100%
                 merchantInfo.status === 2 ? 100 : // 审核拒绝也显示100%（表示流程完成）
+                merchantInfo.status === -1 ? getCertificationProgress() : // 未认证显示实际上传进度
                 getCertificationProgress() // 待审核显示实际上传进度
               }
               width={80}
               strokeColor={
                 merchantInfo.status === 1 ? '#52c41a' : 
                 merchantInfo.status === 2 ? '#ff4d4f' : 
+                merchantInfo.status === -1 ? '#d9d9d9' : 
                 '#1890ff'
               }
               format={(percent) => 
                 merchantInfo.status === 1 ? <CheckCircleOutlined style={{ color: '#52c41a' }} /> :
                 merchantInfo.status === 2 ? <CloseCircleOutlined style={{ color: '#ff4d4f' }} /> :
                 merchantInfo.status === 0 ? <ClockCircleOutlined style={{ color: '#1890ff' }} /> :
+                merchantInfo.status === -1 ? <InfoCircleOutlined style={{ color: '#d9d9d9' }} /> :
                 `${percent}%`
               }
             />

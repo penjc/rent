@@ -26,7 +26,7 @@ const AdminLayout: React.FC = () => {
 
   // 检查管理员认证状态
   useEffect(() => {
-    const storedUserType = localStorage.getItem('userType');
+    const storedUserType = localStorage.getItem('admin_userType');
     
     if (!isAuthenticated || storedUserType !== 'admin') {
       message.warning('请先登录管理员账号');

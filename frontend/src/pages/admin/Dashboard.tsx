@@ -28,6 +28,8 @@ interface AdminStats {
   rejectedProducts: number;
   totalOrders: number;
   completedOrders: number;
+  cancelledOrders: number;
+  inProgressOrders: number;
 }
 
 interface RecentOrder extends Order {
@@ -56,6 +58,8 @@ const Dashboard: React.FC = () => {
     rejectedProducts: 0,
     totalOrders: 0,
     completedOrders: 0,
+    cancelledOrders: 0,
+    inProgressOrders: 0,
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
@@ -254,7 +258,7 @@ const Dashboard: React.FC = () => {
           <Card title="待处理事项" style={{ height: 320 }}>
             <div style={{ padding: '16px 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span>待审核用户认证</span>
+                <span>待审核用户</span>
                 <Tag color="orange" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/users')}>
                   {stats.pendingVerificationUsers}
                 </Tag>
@@ -274,7 +278,7 @@ const Dashboard: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span>进行中订单</span>
                 <Tag color="blue" style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/orders')}>
-                  {stats.totalOrders - stats.completedOrders}
+                  {stats.inProgressOrders}
                 </Tag>
               </div>
               <div style={{ marginTop: 24 }}>
@@ -318,26 +322,46 @@ const Dashboard: React.FC = () => {
           <Card 
             title="最新用户" 
             extra={<a onClick={() => navigate('/admin/users')} style={{ cursor: 'pointer' }}>查看全部</a>}
-            style={{ height: 400 }}
+            style={{ height: 400, overflow: 'hidden' }}
+            bodyStyle={{ padding: '12px 24px', height: 'calc(100% - 64px)', overflow: 'auto' }}
           >
             <List
               loading={loading}
               dataSource={recentUsers}
+              size="small"
               renderItem={(user) => (
-                <List.Item>
+                <List.Item style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
                   <List.Item.Meta
                     avatar={
                       <Avatar 
                         src={user.avatar} 
                         icon={<UserOutlined />}
-                        size={40}
+                        size={32}
                       />
                     }
-                    title={user.nickname || user.phone}
+                    title={
+                      <div style={{ 
+                        fontSize: '14px', 
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '150px'
+                      }}>
+                        {user.nickname || user.phone}
+                      </div>
+                    }
                     description={
-                      <div>
-                        <div>手机: {user.phone}</div>
-                        <div style={{ fontSize: 12, color: '#999' }}>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        <div style={{ 
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '180px'
+                        }}>
+                          手机: {user.phone}
+                        </div>
+                        <div style={{ color: '#999', marginTop: '2px' }}>
                           注册时间: {new Date(user.createdAt).toLocaleDateString()}
                         </div>
                       </div>

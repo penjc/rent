@@ -1,6 +1,9 @@
 package com.casual.rent.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.casual.rent.common.OrderStatus;
+import com.casual.rent.common.VerificationStatus;
+import com.casual.rent.common.AuditStatus;
 import com.casual.rent.common.Result;
 import com.casual.rent.entity.Admin;
 import com.casual.rent.entity.Merchant;
@@ -111,7 +114,7 @@ public class AdminController {
         user.setVerified(verified);
         userService.updateById(user);
         
-        return Result.success(verified == 1 ? "用户认证通过" : "用户认证拒绝");
+        return Result.success(verified.equals(VerificationStatus.VERIFIED.getCode()) ? "用户认证通过" : "用户认证拒绝");
     }
     
     /**
@@ -123,9 +126,9 @@ public class AdminController {
         
         // 用户统计
         long totalUsers = userService.count();
-        long pendingVerificationUsers = userService.countByVerificationStatus(0);
-        long approvedUsers = userService.countByVerificationStatus(1);
-        long rejectedUsers = userService.countByVerificationStatus(2);
+        long pendingVerificationUsers = userService.countByVerificationStatus(VerificationStatus.PENDING);
+        long approvedUsers = userService.countByVerificationStatus(VerificationStatus.VERIFIED);
+        long rejectedUsers = userService.countByVerificationStatus(VerificationStatus.REJECTED);
         
         stats.put("totalUsers", totalUsers);
         stats.put("pendingVerificationUsers", pendingVerificationUsers);
@@ -134,9 +137,9 @@ public class AdminController {
         
         // 商家统计
         long totalMerchants = merchantService.count();
-        long pendingMerchants = merchantService.countByStatus(0);
-        long approvedMerchants = merchantService.countByStatus(1);
-        long rejectedMerchants = merchantService.countByStatus(2);
+        long pendingMerchants = merchantService.countByStatus(VerificationStatus.PENDING);
+        long approvedMerchants = merchantService.countByStatus(VerificationStatus.VERIFIED);
+        long rejectedMerchants = merchantService.countByStatus(VerificationStatus.REJECTED);
         
         stats.put("totalMerchants", totalMerchants);
         stats.put("pendingMerchants", pendingMerchants);
@@ -145,9 +148,9 @@ public class AdminController {
         
         // 商品统计
         long totalProducts = productService.count();
-        long pendingProducts = productService.countByAuditStatus(0);
-        long approvedProducts = productService.countByAuditStatus(1);
-        long rejectedProducts = productService.countByAuditStatus(2);
+        long pendingProducts = productService.countByAuditStatus(AuditStatus.PENDING.getCode());
+        long approvedProducts = productService.countByAuditStatus(AuditStatus.APPROVED.getCode());
+        long rejectedProducts = productService.countByAuditStatus(AuditStatus.REJECTED.getCode());
         
         stats.put("totalProducts", totalProducts);
         stats.put("pendingProducts", pendingProducts);
@@ -156,10 +159,15 @@ public class AdminController {
         
         // 订单统计
         long totalOrders = orderService.count();
-        long completedOrders = orderService.countByStatus(6);
+        long completedOrders = orderService.countByStatus(OrderStatus.COMPLETED.getCode());
+        long cancelledOrders = orderService.countByStatus(OrderStatus.CANCELLED.getCode());
+        // 进行中订单 = 总订单 - 已完成订单 - 已取消订单
+        long inProgressOrders = totalOrders - completedOrders - cancelledOrders;
         
         stats.put("totalOrders", totalOrders);
         stats.put("completedOrders", completedOrders);
+        stats.put("cancelledOrders", cancelledOrders);
+        stats.put("inProgressOrders", inProgressOrders);
         
         return Result.success(stats);
     }
@@ -201,7 +209,7 @@ public class AdminController {
         }
         
         merchantService.auditMerchant(merchantId, status, remark);
-        return Result.success(status == 1 ? "商家审核通过" : "商家审核拒绝");
+        return Result.success(status.equals(VerificationStatus.VERIFIED.getCode()) ? "商家审核通过" : "商家审核拒绝");
     }
     
     // =================== 商品管理 ===================
@@ -241,7 +249,7 @@ public class AdminController {
         }
         
         productService.auditProduct(productId, auditStatus, auditRemark);
-        return Result.success(auditStatus == 1 ? "商品审核通过" : "商品审核拒绝");
+        return Result.success(auditStatus.equals(AuditStatus.APPROVED.getCode()) ? "商品审核通过" : "商品审核拒绝");
     }
     
     // =================== 订单管理 ===================

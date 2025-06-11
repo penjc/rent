@@ -10,16 +10,33 @@ interface AuthState {
   user: AuthUser | null;
   userType: UserType | null;
   token: string | null;
-  isInitialized: boolean; // 添加初始化状态标识
+  isInitialized: boolean;
   
   // Actions
   login: (token: string, user: AuthUser, userType: UserType) => void;
   logout: () => void;
   updateUser: (user: AuthUser) => void;
-  checkAuthStatus: () => boolean;
+  checkAuthStatus: (expectedUserType?: UserType) => boolean;
   clearInvalidAuth: () => void;
-  initialize: () => void; // 添加初始化方法
+  initialize: (expectedUserType?: UserType) => void;
+  getCurrentUserType: () => UserType | null;
 }
+
+// 获取当前路径对应的用户类型
+const getUserTypeFromPath = (): UserType | null => {
+  const path = window.location.pathname;
+  if (path.startsWith('/user')) return 'user';
+  if (path.startsWith('/merchant')) return 'merchant';
+  if (path.startsWith('/admin')) return 'admin';
+  return null;
+};
+
+// 获取用户类型特定的localStorage键
+const getStorageKeys = (userType: UserType) => ({
+  token: `${userType}_token`,
+  userInfo: `${userType}_userInfo`,
+  userType: `${userType}_userType`,
+});
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -31,16 +48,23 @@ export const useAuthStore = create<AuthState>()(
       isInitialized: false,
 
       login: (token: string, user: AuthUser, userType: UserType) => {
-        localStorage.setItem('token', token);
-        // 根据用户类型保存到对应的localStorage
-        if (userType === 'user') {
-          localStorage.setItem('userInfo', JSON.stringify(user));
-        } else if (userType === 'merchant') {
-          localStorage.setItem('merchantInfo', JSON.stringify(user));
-        } else if (userType === 'admin') {
-          localStorage.setItem('adminInfo', JSON.stringify(user));
-        }
-        localStorage.setItem('userType', userType);
+        const keys = getStorageKeys(userType);
+        
+        // 清除其他用户类型的认证信息
+        const allUserTypes: UserType[] = ['user', 'merchant', 'admin'];
+        allUserTypes.forEach(type => {
+          if (type !== userType) {
+            const otherKeys = getStorageKeys(type);
+            localStorage.removeItem(otherKeys.token);
+            localStorage.removeItem(otherKeys.userInfo);
+            localStorage.removeItem(otherKeys.userType);
+          }
+        });
+        
+        // 设置当前用户类型的认证信息
+        localStorage.setItem(keys.token, token);
+        localStorage.setItem(keys.userInfo, JSON.stringify(user));
+        localStorage.setItem(keys.userType, userType);
         
         set({
           isAuthenticated: true,
@@ -52,11 +76,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('merchantInfo');
-        localStorage.removeItem('adminInfo');
-        localStorage.removeItem('userType');
+        const currentUserType = get().userType;
+        if (currentUserType) {
+          const keys = getStorageKeys(currentUserType);
+          localStorage.removeItem(keys.token);
+          localStorage.removeItem(keys.userInfo);
+          localStorage.removeItem(keys.userType);
+        }
+        
         set({
           isAuthenticated: false,
           user: null,
@@ -67,24 +94,33 @@ export const useAuthStore = create<AuthState>()(
       },
 
       updateUser: (user: AuthUser) => {
+        const currentUserType = get().userType;
+        if (currentUserType) {
+          const keys = getStorageKeys(currentUserType);
+          localStorage.setItem(keys.userInfo, JSON.stringify(user));
+        }
         set({ user });
       },
 
+      getCurrentUserType: () => {
+        return getUserTypeFromPath();
+      },
+
       // 初始化认证状态（应用启动时调用）
-      initialize: () => {
-        const isValid = get().checkAuthStatus();
+      initialize: (expectedUserType?: UserType) => {
+        const pathUserType = expectedUserType || getUserTypeFromPath();
+        const isValid = pathUserType ? get().checkAuthStatus(pathUserType) : false;
         set({ isInitialized: true });
         return isValid;
       },
 
       // 检查认证状态是否有效
-      checkAuthStatus: () => {
+      checkAuthStatus: (expectedUserType?: UserType) => {
         const state = get();
-        const token = localStorage.getItem('token');
-        const userType = localStorage.getItem('userType');
+        const pathUserType = expectedUserType || getUserTypeFromPath();
         
-        // 如果没有token或userType，认为未登录
-        if (!token || !userType) {
+        // 如果没有明确的用户类型上下文，认为未登录
+        if (!pathUserType) {
           if (state.isAuthenticated) {
             set({
               isAuthenticated: false,
@@ -96,19 +132,27 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
 
-        // 检查token是否过期（这里可以添加更复杂的验证逻辑）
-        try {
-          // 检查token格式，实际项目中应该验证JWT
-          if (!token || token.length < 10) {
-            // 如果是无效token，需要重新登录
-            console.log('Invalid token detected, clearing auth state');
-            get().clearInvalidAuth();
-            return false;
+        const keys = getStorageKeys(pathUserType);
+        const token = localStorage.getItem(keys.token);
+        const userType = localStorage.getItem(keys.userType);
+        
+        // 检查是否有对应用户类型的认证信息
+        if (!token || !userType || userType !== pathUserType) {
+          if (state.isAuthenticated) {
+            set({
+              isAuthenticated: false,
+              user: null,
+              userType: null,
+              token: null,
+            });
           }
-          
-          // 检查是否是旧的fake-token，如果是则清理状态
-          if (token === 'fake-token') {
-            console.log('Fake token detected, clearing auth state');
+          return false;
+        }
+
+        // 验证token格式
+        try {
+          if (!token || token.length < 10) {
+            console.log('Invalid token detected for', pathUserType);
             get().clearInvalidAuth();
             return false;
           }
@@ -119,28 +163,21 @@ export const useAuthStore = create<AuthState>()(
         }
 
         // 检查用户信息是否存在
-        let userInfo = null;
         try {
-          if (userType === 'user') {
-            userInfo = localStorage.getItem('userInfo');
-          } else if (userType === 'merchant') {
-            userInfo = localStorage.getItem('merchantInfo');
-          } else if (userType === 'admin') {
-            userInfo = localStorage.getItem('adminInfo');
-          }
-
+          const userInfo = localStorage.getItem(keys.userInfo);
+          
           if (!userInfo) {
             get().clearInvalidAuth();
             return false;
           }
 
           // 如果store中没有用户信息但localStorage有，恢复状态
-          if (!state.user || !state.isAuthenticated) {
+          if (!state.user || !state.isAuthenticated || state.userType !== pathUserType) {
             const userData = JSON.parse(userInfo);
             set({
               isAuthenticated: true,
               user: userData,
-              userType: userType as UserType,
+              userType: pathUserType,
               token,
             });
           }
@@ -155,11 +192,14 @@ export const useAuthStore = create<AuthState>()(
 
       // 清理无效的认证状态
       clearInvalidAuth: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('merchantInfo');
-        localStorage.removeItem('adminInfo');
-        localStorage.removeItem('userType');
+        const pathUserType = getUserTypeFromPath();
+        if (pathUserType) {
+          const keys = getStorageKeys(pathUserType);
+          localStorage.removeItem(keys.token);
+          localStorage.removeItem(keys.userInfo);
+          localStorage.removeItem(keys.userType);
+        }
+        
         set({
           isAuthenticated: false,
           user: null,

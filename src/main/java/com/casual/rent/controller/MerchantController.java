@@ -2,6 +2,9 @@ package com.casual.rent.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.casual.rent.common.Result;
+import com.casual.rent.common.ProductStatus;
+import com.casual.rent.common.AuditStatus;
+import com.casual.rent.common.OrderStatus;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.Product;
@@ -93,8 +96,7 @@ public class MerchantController {
             }
             
             // 注册商家
-            Merchant merchant = merchantService.register(phone, password, companyName, contactName, 
-                                                       idCardFrontUrl, idCardBackUrl, businessLicenseUrl);
+            Merchant merchant = merchantService.register(phone, password, companyName, contactName, businessLicenseUrl);
             return Result.success(merchant);
             
         } catch (Exception e) {
@@ -111,11 +113,9 @@ public class MerchantController {
         String password = (String) params.get("password");
         String companyName = (String) params.get("companyName");
         String contactName = (String) params.get("contactName");
-        String idCardFront = (String) params.get("idCardFront");
-        String idCardBack = (String) params.get("idCardBack");
         String businessLicense = (String) params.get("businessLicense");
         
-        if (phone == null || password == null || contactName == null || idCardFront == null || idCardBack == null) {
+        if (phone == null || password == null || contactName == null) {
             return Result.fail("参数错误");
         }
         
@@ -129,8 +129,7 @@ public class MerchantController {
             return Result.fail("该手机号已注册商家");
         }
         
-        Merchant merchant = merchantService.register(phone, password, companyName, contactName, 
-                                                   idCardFront, idCardBack, businessLicense);
+        Merchant merchant = merchantService.register(phone, password, companyName, contactName, businessLicense);
         return Result.success(merchant);
     }
     
@@ -205,7 +204,7 @@ public class MerchantController {
         }
         
         productService.updateProductStatus(productId, status, merchantId);
-        return Result.success(status == 1 ? "商品已上架" : "商品已下架");
+        return Result.success(status.equals(ProductStatus.ON_SHELF.getCode()) ? "商品已上架" : "商品已下架");
     }
     
     /**
@@ -255,13 +254,13 @@ public class MerchantController {
             
             long onShelfProducts = productService.lambdaQuery()
                 .eq(Product::getMerchantId, merchantId)
-                .eq(Product::getStatus, 1)
-                .eq(Product::getAuditStatus, 1)
+                .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode())
+                .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode())
                 .count();
             
             long pendingAuditProducts = productService.lambdaQuery()
                 .eq(Product::getMerchantId, merchantId)
-                .eq(Product::getAuditStatus, 0)
+                .eq(Product::getAuditStatus, AuditStatus.PENDING.getCode())
                 .count();
             
             // 订单统计
@@ -271,17 +270,18 @@ public class MerchantController {
             
             long pendingOrders = orderService.lambdaQuery()
                 .eq(Order::getMerchantId, merchantId)
-                .in(Order::getStatus, 1, 2) // 待支付和已支付
+                .in(Order::getStatus, OrderStatus.PENDING_PAYMENT.getCode(), OrderStatus.PAID.getCode()) // 待支付和已支付
                 .count();
             
             long inProgressOrders = orderService.lambdaQuery()
                 .eq(Order::getMerchantId, merchantId)
-                .in(Order::getStatus, 3, 4, 5) // 发货中、使用中、返还中
+                .in(Order::getStatus, OrderStatus.MERCHANT_SHIPPING.getCode(), 
+                    OrderStatus.IN_USE.getCode(), OrderStatus.USER_RETURNING.getCode()) // 发货中、使用中、返还中
                 .count();
             
             long completedOrders = orderService.lambdaQuery()
                 .eq(Order::getMerchantId, merchantId)
-                .eq(Order::getStatus, 6) // 已完成
+                .eq(Order::getStatus, OrderStatus.COMPLETED.getCode()) // 已完成
                 .count();
             
             // 收入统计（简化版本，实际应该从订单金额计算）
@@ -292,7 +292,7 @@ public class MerchantController {
             // 示例：获取已完成订单的总金额
             java.util.List<Order> completedOrderList = orderService.lambdaQuery()
                 .eq(Order::getMerchantId, merchantId)
-                .eq(Order::getStatus, 6)
+                .eq(Order::getStatus, OrderStatus.COMPLETED.getCode())
                 .list();
             
             for (Order order : completedOrderList) {
@@ -333,8 +333,8 @@ public class MerchantController {
             // 简化版本：返回该商家的前5个商品
             java.util.List<Product> products = productService.lambdaQuery()
                 .eq(Product::getMerchantId, merchantId)
-                .eq(Product::getStatus, 1)
-                .eq(Product::getAuditStatus, 1)
+                .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode())
+                .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode())
                 .orderByDesc(Product::getCreatedAt)
                 .last("LIMIT 5")
                 .list();

@@ -175,11 +175,13 @@ export type UserType = 'user' | 'merchant' | 'admin';
 
 // 订单状态枚举
 export const OrderStatus = {
-  PENDING: 1,    // 待支付
-  PAID: 2,       // 已支付
-  SHIPPED: 3,    // 已发货
-  COMPLETED: 4,  // 已完成
-  CANCELLED: 5,  // 已取消
+  PENDING_PAYMENT: 1,     // 待支付
+  PAID: 2,               // 已支付
+  MERCHANT_SHIPPING: 3,   // 商家发货中
+  IN_USE: 4,             // 使用中
+  USER_RETURNING: 5,      // 用户返还中
+  COMPLETED: 6,          // 已完成
+  CANCELLED: 7,          // 已取消
 } as const;
 
 // 商品审核状态枚举
@@ -201,4 +203,26 @@ export const RentType = {
   DAILY: 1,      // 日租
   WEEKLY: 2,     // 周租
   MONTHLY: 3,    // 月租
+} as const;
+
+// 用户认证状态枚举
+export const VerificationStatus = {
+  NOT_VERIFIED: -1,  // 未认证
+  PENDING: 0,        // 待审核
+  VERIFIED: 1,       // 已认证
+  REJECTED: 2,       // 认证拒绝
+} as const;
+
+// 商家认证状态枚举（与用户认证状态相同）
+export const MerchantVerificationStatus = {
+  NOT_VERIFIED: -1,  // 未认证
+  PENDING: 0,        // 待审核
+  VERIFIED: 1,       // 已认证
+  REJECTED: 2,       // 认证拒绝
+} as const;
+
+// 用户状态枚举
+export const UserStatus = {
+  DISABLED: 0,       // 禁用
+  ACTIVE: 1,         // 正常
 } as const; 

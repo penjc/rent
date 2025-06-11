@@ -2,6 +2,8 @@ package com.casual.rent.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.casual.rent.common.Result;
+import com.casual.rent.common.ProductStatus;
+import com.casual.rent.common.AuditStatus;
 import com.casual.rent.entity.Product;
 import com.casual.rent.service.ProductService;
 import com.casual.rent.service.FileUploadService;
@@ -91,7 +93,8 @@ public class ProductController {
             product.setCategoryId(categoryId);
             product.setMerchantId(merchantId);
             product.setStock(stock);
-            product.setStatus(0); // 默认待审核
+            product.setStatus(ProductStatus.OFF_SHELF.getCode()); // 发布时下架状态
+            product.setAuditStatus(AuditStatus.PENDING.getCode()); // 待审核
             product.setCreatedAt(LocalDateTime.now());
             product.setUpdatedAt(LocalDateTime.now());
             
@@ -135,7 +138,10 @@ public class ProductController {
     public Result<Product> createProduct(@RequestBody Product product) {
         // 设置默认值
         if (product.getStatus() == null) {
-            product.setStatus(0); // 默认待审核
+            product.setStatus(ProductStatus.OFF_SHELF.getCode());
+        }
+        if (product.getAuditStatus() == null) {
+            product.setAuditStatus(AuditStatus.PENDING.getCode());
         }
         
         // 设置时间戳

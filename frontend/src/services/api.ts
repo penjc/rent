@@ -1,6 +1,43 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios';
 import { message } from 'antd';
 import type { ApiResponse } from '@/types';
+import type { UserType } from '@/types';
+
+// 获取当前路径对应的用户类型
+const getUserTypeFromPath = (): UserType | null => {
+  const path = window.location.pathname;
+  if (path.startsWith('/user')) return 'user';
+  if (path.startsWith('/merchant')) return 'merchant';
+  if (path.startsWith('/admin')) return 'admin';
+  return null;
+};
+
+// 获取用户类型特定的localStorage键
+const getStorageKeys = (userType: UserType) => ({
+  token: `${userType}_token`,
+  userInfo: `${userType}_userInfo`,
+  userType: `${userType}_userType`,
+});
+
+// 获取当前上下文的token
+const getCurrentToken = (): string | null => {
+  const userType = getUserTypeFromPath();
+  if (!userType) return null;
+  
+  const keys = getStorageKeys(userType);
+  return localStorage.getItem(keys.token);
+};
+
+// 清除当前上下文的认证信息
+const clearCurrentAuth = (): void => {
+  const userType = getUserTypeFromPath();
+  if (!userType) return;
+  
+  const keys = getStorageKeys(userType);
+  localStorage.removeItem(keys.token);
+  localStorage.removeItem(keys.userInfo);
+  localStorage.removeItem(keys.userType);
+};
 
 // 创建axios实例
 const api = axios.create({
@@ -14,8 +51,8 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    // 添加token
-    const token = localStorage.getItem('token');
+    // 根据当前路径获取对应的token
+    const token = getCurrentToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -44,10 +81,9 @@ api.interceptors.response.use(
       const { status, data } = error.response;
       
       if (status === 401) {
-        // 未授权，清除token并跳转到登录页
-        localStorage.removeItem('token');
-        localStorage.removeItem('userInfo');
-        window.location.href = '/login';
+        // 未授权，清除当前上下文的token并跳转到登录页
+        clearCurrentAuth();
+        window.location.href = '/auth/login';
         message.error('登录已过期，请重新登录');
       } else if (status === 403) {
         message.error('没有权限访问');

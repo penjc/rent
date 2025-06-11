@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.mapper.MerchantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 /**
  * 商家服务
@@ -32,7 +35,7 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
      * 商家注册
      */
     public Merchant register(String phone, String password, String companyName, String contactName, 
-                           String idCardFront, String idCardBack, String businessLicense) {
+                           String businessLicense) {
         Merchant merchant = new Merchant();
         merchant.setPhone(phone);
         // 密码明文存储（已注释加密操作）
@@ -40,10 +43,8 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
         // merchant.setPassword(passwordEncoder.encode(password));
         merchant.setCompanyName(companyName);
         merchant.setContactName(contactName);
-        merchant.setIdCardFront(idCardFront);
-        merchant.setIdCardBack(idCardBack);
         merchant.setBusinessLicense(businessLicense);
-        merchant.setStatus(0); // 待审核
+        merchant.setStatus(VerificationStatus.NOT_VERIFIED.getCode()); // 商家注册后为未认证状态
         save(merchant);
         return merchant;
     }
@@ -96,7 +97,7 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
     public IPage<Merchant> getPendingMerchants(int page, int size) {
         Page<Merchant> pageObj = new Page<>(page, size);
         QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 0); // 待审核状态
+        wrapper.eq("status", VerificationStatus.PENDING.getCode()); // 待审核状态
         wrapper.orderByAsc("created_at"); // 按创建时间升序排列
         return page(pageObj, wrapper);
     }
@@ -136,9 +137,9 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
                 merchant.setBusinessLicense(businessLicense);
             }
             // 更新状态为待审核（如果之前是审核通过，重新提交认证材料后需要重新审核）
-            if (merchant.getStatus() != 0) {
-                merchant.setStatus(0);
-                merchant.setRemark("商家更新认证材料，待重新审核");
+            if (!Objects.equals(merchant.getStatus(), VerificationStatus.NOT_VERIFIED.getCode())) {
+                merchant.setStatus(VerificationStatus.PENDING.getCode());
+//                merchant.setRemark("商家更新认证材料，待重新审核");
             }
             updateById(merchant);
         }
@@ -151,5 +152,12 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
         QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
         wrapper.eq("status", status);
         return count(wrapper);
+    }
+    
+    /**
+     * 根据认证状态统计商家数量（使用枚举）
+     */
+    public long countByStatus(VerificationStatus status) {
+        return countByStatus(status.getCode());
     }
 } 

@@ -152,6 +152,8 @@ const Merchants: React.FC = () => {
 
   const getStatusTag = (status: number) => {
     switch (status) {
+      case -1:
+        return <Tag color="default">未认证</Tag>;
       case 0:
         return <Tag color="orange">待审核</Tag>;
       case 1:
@@ -189,7 +191,7 @@ const Merchants: React.FC = () => {
       width: 120,
     },
     {
-      title: '审核状态',
+      title: '身份认证',
       dataIndex: 'status',
       key: 'status',
       width: 100,
@@ -268,6 +270,7 @@ const Merchants: React.FC = () => {
               style={{ width: 150 }}
               onChange={handleStatusFilter}
             >
+              <Option value={-1}>未认证</Option>
               <Option value={0}>待审核</Option>
               <Option value={1}>已通过</Option>
               <Option value={2}>已拒绝</Option>
@@ -413,6 +416,7 @@ const Merchants: React.FC = () => {
             rules={[{ required: true, message: '请选择审核状态' }]}
           >
             <Select>
+              <Option value={-1}>未认证</Option>
               <Option value={0}>待审核</Option>
               <Option value={1}>审核通过</Option>
               <Option value={2}>审核拒绝</Option>

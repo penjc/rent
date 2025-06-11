@@ -2,6 +2,7 @@ package com.casual.rent.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.casual.rent.common.Result;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.User;
 import com.casual.rent.service.OrderService;
@@ -204,7 +205,7 @@ public class UserController {
             // 如果提交了认证材料，设置为待验证状态
             if ((idCardFront != null && !idCardFront.isEmpty()) || 
                 (idCardBack != null && !idCardBack.isEmpty())) {
-                user.setVerified(0); // 重新设置为待审核状态
+                user.setVerified(VerificationStatus.PENDING.getCode()); // 重新设置为待审核状态
             }
             
             userService.updateById(user);

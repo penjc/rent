@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.casual.rent.common.OrderStatus;
+import com.casual.rent.common.ProductStatus;
+import com.casual.rent.common.AuditStatus;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.Product;
 import com.casual.rent.mapper.OrderMapper;
@@ -302,8 +304,10 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             productService.updateById(product);
             
             // 如果商品库存恢复后大于0且当前是下架状态，重新上架
-            if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
-                product.setStatus(1); // 重新上架
+            if (product.getStock() > 0 && 
+                product.getStatus().equals(ProductStatus.OFF_SHELF.getCode()) && 
+                product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
+                product.setStatus(ProductStatus.ON_SHELF.getCode()); // 重新上架
                 productService.updateById(product);
             }
         }
@@ -336,8 +340,10 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
             productService.updateById(product);
             
             // 如果商品库存恢复后大于0且当前是下架状态，重新上架
-            if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
-                product.setStatus(1); // 重新上架
+            if (product.getStock() > 0 && 
+                product.getStatus().equals(ProductStatus.OFF_SHELF.getCode()) && 
+                product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
+                product.setStatus(ProductStatus.ON_SHELF.getCode()); // 重新上架
                 productService.updateById(product);
             }
         }
@@ -374,8 +380,10 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
                     productService.updateById(product);
                     
                     // 如果商品库存恢复后大于0且当前是下架状态，重新上架
-                    if (product.getStock() > 0 && product.getStatus() == 0 && product.getAuditStatus() == 1) {
-                        product.setStatus(1); // 重新上架
+                    if (product.getStock() > 0 && 
+                        product.getStatus().equals(ProductStatus.OFF_SHELF.getCode()) && 
+                        product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
+                        product.setStatus(ProductStatus.ON_SHELF.getCode()); // 重新上架
                         productService.updateById(product);
                     }
                 }

@@ -3,6 +3,8 @@ package com.casual.rent.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.casual.rent.common.AuditStatus;
+import com.casual.rent.common.ProductStatus;
 import com.casual.rent.entity.Product;
 import com.casual.rent.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
@@ -21,8 +23,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         
         return lambdaQuery()
                 .eq(categoryId != null, Product::getCategoryId, categoryId)
-                .eq(Product::getStatus, 1) // 只查询上架的商品
-                .eq(Product::getAuditStatus, 1) // 只查询审核通过的商品
+                .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
+                .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
                 .gt(Product::getStock, 0) // 只查询库存大于0的商品
                 .orderByDesc(Product::getCreatedAt)
                 .page(pageParam);
@@ -44,8 +46,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
      * 商家发布商品
      */
     public Product publishProduct(Product product) {
-        product.setStatus(0); // 待审核
-        product.setAuditStatus(0); // 待审核
+        product.setStatus(ProductStatus.OFF_SHELF.getCode()); // 发布时下架状态
+        product.setAuditStatus(AuditStatus.PENDING.getCode()); // 待审核
         save(product);
         return product;
     }
@@ -58,8 +60,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         if (product != null) {
             product.setAuditStatus(auditStatus);
             product.setAuditRemark(auditRemark);
-            if (auditStatus == 1) {
-                product.setStatus(1); // 审核通过后自动上架
+            if (auditStatus.equals(AuditStatus.APPROVED.getCode())) {
+                product.setStatus(ProductStatus.ON_SHELF.getCode()); // 审核通过后自动上架
             }
             updateById(product);
         }
@@ -70,7 +72,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
      */
     public void updateProductStatus(Long productId, Integer status, Long merchantId) {
         Product product = getById(productId);
-        if (product != null && product.getMerchantId().equals(merchantId) && product.getAuditStatus() == 1) {
+        if (product != null && product.getMerchantId().equals(merchantId) && 
+            product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
             product.setStatus(status);
             updateById(product);
         }
@@ -83,7 +86,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         Page<Product> pageParam = new Page<>(page, size);
         
         return lambdaQuery()
-                .eq(Product::getAuditStatus, 0) // 待审核
+                .eq(Product::getAuditStatus, AuditStatus.PENDING.getCode()) // 待审核
                 .orderByAsc(Product::getCreatedAt)
                 .page(pageParam);
     }
@@ -116,8 +119,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     public void autoOffShelfZeroStockProducts() {
         lambdaUpdate()
                 .eq(Product::getStock, 0)
-                .eq(Product::getStatus, 1) // 只处理上架的商品
-                .set(Product::getStatus, 0) // 设置为下架
+                .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只处理上架的商品
+                .set(Product::getStatus, ProductStatus.OFF_SHELF.getCode()) // 设置为下架
                 .update();
     }
     
@@ -126,8 +129,9 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
      */
     public void checkAndUpdateProductStatus(Long productId) {
         Product product = getById(productId);
-        if (product != null && product.getStock() <= 0 && product.getStatus() == 1) {
-            product.setStatus(0); // 自动下架
+        if (product != null && product.getStock() <= 0 && 
+            product.getStatus().equals(ProductStatus.ON_SHELF.getCode())) {
+            product.setStatus(ProductStatus.OFF_SHELF.getCode()); // 自动下架
             updateById(product);
         }
     }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.casual.rent.common.UserStatus;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.User;
 import com.casual.rent.mapper.UserMapper;
 // import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,8 +40,8 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         user.setPassword(password); 
         // user.setPassword(passwordEncoder.encode(password)); // 使用PasswordEncoder加密密码
         user.setNickname(nickname);
-        user.setStatus(1); // 默认激活
-        user.setVerified(1);
+        user.setStatus(UserStatus.ACTIVE.getCode()); // 默认激活
+        user.setVerified(VerificationStatus.NOT_VERIFIED.getCode()); // 注册后为未认证状态
         save(user);
         return user;
     }
@@ -110,7 +112,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             if (idCard != null && !idCard.trim().isEmpty()) {
                 user.setIdCard(idCard.trim());
                 // 如果填写了身份证号，设置为已实名认证
-                user.setVerified(1);
+                user.setVerified(VerificationStatus.VERIFIED.getCode());
             }
             
             // 保存更新
@@ -140,5 +142,12 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("verified", verified);
         return count(wrapper);
+    }
+    
+    /**
+     * 根据认证状态统计用户数量（使用枚举）
+     */
+    public long countByVerificationStatus(VerificationStatus status) {
+        return countByVerificationStatus(status.getCode());
     }
 } 

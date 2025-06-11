@@ -34,7 +34,7 @@ const MerchantLayout: React.FC = () => {
 
   useEffect(() => {
     // 检查是否是商家类型的登录
-    const storedUserType = localStorage.getItem('userType');
+    const storedUserType = localStorage.getItem('merchant_userType');
     
     if (!isAuthenticated || storedUserType !== 'merchant') {
       message.warning('请先登录商家账号');
