@@ -2,10 +2,6 @@
 
 这是一个现代化的C2C短期租赁平台，采用前后端分离架构，支持用户端、商家端、管理端三端应用。
 
-## 🎯 项目概述
-
-Casual Rent 致力于为用户提供安全、便捷的二手物品租赁服务，支持从相机设备到家具用品的各类物品短期租赁。
-
 ## 🚀 技术栈
 
 ### 后端技术
@@ -77,6 +73,7 @@ rent/
 - 👥 **用户管理**: 用户信息查看和管理
 - 🏪 **商家审核**: 商家资质审核和管理
 - ✅ **商品审核**: 商品信息审核和上架控制
+- 📂 **分类管理**: 商品分类的增删改查，支持状态管理和排序
 
 ## 🚀 快速开始
 
@@ -152,6 +149,8 @@ rent/
 - **用户管理**: http://localhost:3000/admin/users
 - **商家管理**: http://localhost:3000/admin/merchants
 - **商品审核**: http://localhost:3000/admin/products
+- **订单管理**: http://localhost:3000/admin/orders
+- **分类管理**: http://localhost:3000/admin/categories
 
 ### 认证页面
 - **登录**: http://localhost:3000/auth/login

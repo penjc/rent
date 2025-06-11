@@ -129,26 +129,30 @@ public class AdminController {
     public Result<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
         
-        // 用户统计
+        // 用户统计 - 四种认证状态
         long totalUsers = userService.count();
+        long notVerifiedUsers = userService.countByVerificationStatus(VerificationStatus.NOT_VERIFIED);
         long pendingVerificationUsers = userService.countByVerificationStatus(VerificationStatus.PENDING);
-        long approvedUsers = userService.countByVerificationStatus(VerificationStatus.VERIFIED);
+        long verifiedUsers = userService.countByVerificationStatus(VerificationStatus.VERIFIED);
         long rejectedUsers = userService.countByVerificationStatus(VerificationStatus.REJECTED);
         
         stats.put("totalUsers", totalUsers);
+        stats.put("notVerifiedUsers", notVerifiedUsers);
         stats.put("pendingVerificationUsers", pendingVerificationUsers);
-        stats.put("approvedUsers", approvedUsers);
+        stats.put("verifiedUsers", verifiedUsers);
         stats.put("rejectedUsers", rejectedUsers);
         
-        // 商家统计
+        // 商家统计 - 四种认证状态
         long totalMerchants = merchantService.count();
+        long notVerifiedMerchants = merchantService.countByStatus(VerificationStatus.NOT_VERIFIED);
         long pendingMerchants = merchantService.countByStatus(VerificationStatus.PENDING);
-        long approvedMerchants = merchantService.countByStatus(VerificationStatus.VERIFIED);
+        long verifiedMerchants = merchantService.countByStatus(VerificationStatus.VERIFIED);
         long rejectedMerchants = merchantService.countByStatus(VerificationStatus.REJECTED);
         
         stats.put("totalMerchants", totalMerchants);
+        stats.put("notVerifiedMerchants", notVerifiedMerchants);
         stats.put("pendingMerchants", pendingMerchants);
-        stats.put("approvedMerchants", approvedMerchants);
+        stats.put("verifiedMerchants", verifiedMerchants);
         stats.put("rejectedMerchants", rejectedMerchants);
         
         // 商品统计

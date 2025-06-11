@@ -15,12 +15,14 @@ import type { Order, User } from '@/types';
 
 interface AdminStats {
   totalUsers: number;
+  notVerifiedUsers: number;
   pendingVerificationUsers: number;
-  approvedUsers: number;
+  verifiedUsers: number;
   rejectedUsers: number;
   totalMerchants: number;
+  notVerifiedMerchants: number;
   pendingMerchants: number;
-  approvedMerchants: number;
+  verifiedMerchants: number;
   rejectedMerchants: number;
   totalProducts: number;
   pendingProducts: number;
@@ -45,12 +47,14 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
+    notVerifiedUsers: 0,
     pendingVerificationUsers: 0,
-    approvedUsers: 0,
+    verifiedUsers: 0,
     rejectedUsers: 0,
     totalMerchants: 0,
+    notVerifiedMerchants: 0,
     pendingMerchants: 0,
-    approvedMerchants: 0,
+    verifiedMerchants: 0,
     rejectedMerchants: 0,
     totalProducts: 0,
     pendingProducts: 0,
@@ -207,7 +211,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#3f8600' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              待审核: {stats.pendingVerificationUsers} | 已认证: {stats.approvedUsers} | 未通过: {stats.rejectedUsers}
+              未认证: {stats.notVerifiedUsers} | 审核: {stats.pendingVerificationUsers} | 已认证: {stats.verifiedUsers} | 认证拒绝: {stats.rejectedUsers}
             </div>
           </Card>
         </Col>
@@ -220,7 +224,7 @@ const Dashboard: React.FC = () => {
               valueStyle={{ color: '#1890ff' }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-              待审核: {stats.pendingMerchants} | 已通过: {stats.approvedMerchants} | 未通过: {stats.rejectedMerchants}
+              未认证: {stats.notVerifiedMerchants} | 审核: {stats.pendingMerchants} | 已认证: {stats.verifiedMerchants} | 认证拒绝: {stats.rejectedMerchants}
             </div>
           </Card>
         </Col>
