@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Layout, 
   Input, 
@@ -9,7 +9,6 @@ import {
   Spin, 
   Empty, 
   Select, 
-  Pagination, 
   Breadcrumb,
   Modal,
   Form,
@@ -43,14 +42,15 @@ const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchText, setSearchText] = useState(searchParams.get('search') || '');
   const [activeSearchText, setActiveSearchText] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     searchParams.get('category') ? Number(searchParams.get('category')) : null
   );
   const [sortBy, setSortBy] = useState<string>('created_desc');
-  const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [hasMoreData, setHasMoreData] = useState(true);
   const pageSize = 20;
 
   // 立即租赁相关状态
@@ -84,34 +84,88 @@ const Products: React.FC = () => {
     fetchCategories();
   }, []);
 
-  // 获取商品数据
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, currentPage, sortBy, activeSearchText]);
-
-  const fetchProducts = async () => {
-    setLoading(true);
+  // 首次加载商品
+  const fetchProducts = async (page = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const response = await getProducts({
-        page: currentPage,
+        page,
         size: pageSize,
         categoryId: selectedCategory || undefined,
         name: activeSearchText || undefined
       });
       
-      setProducts(response?.records || []);
-      setTotal(response?.total || 0);
+      const newProducts = response?.records || [];
+      const newTotal = response?.total || 0;
+      
+      if (isLoadMore) {
+        // 加载更多时追加到现有商品列表
+        setProducts(prev => [...prev, ...newProducts]);
+      } else {
+        // 首次加载或筛选时替换商品列表
+        setProducts(newProducts);
+      }
+      
+      setTotal(newTotal);
+      
+      // 检查是否还有更多数据
+      const totalLoaded = isLoadMore ? products.length + newProducts.length : newProducts.length;
+      setHasMoreData(totalLoaded < newTotal);
+      
     } catch (error) {
       console.error('获取商品失败:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
+
+  // 加载更多商品
+  const loadMoreProducts = useCallback(() => {
+    if (loadingMore || !hasMoreData) return;
+    
+    const nextPage = Math.floor(products.length / pageSize) + 1;
+    fetchProducts(nextPage, true);
+  }, [loadingMore, hasMoreData, products.length, selectedCategory, activeSearchText]);
+
+  // 滚动监听
+  useEffect(() => {
+    const handleScroll = () => {
+      // 检查是否滚动到页面底部
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.offsetHeight;
+      
+      // 当滚动到距离底部100px时开始加载更多
+      if (scrollTop + windowHeight >= documentHeight - 100) {
+        loadMoreProducts();
+      }
+    };
+
+    // 添加滚动事件监听器
+    window.addEventListener('scroll', handleScroll);
+    
+    // 清理函数
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [loadMoreProducts]);
+
+  // 获取商品数据
+  useEffect(() => {
+    setProducts([]); // 清空现有商品列表
+    setHasMoreData(true);
+    fetchProducts(1, false);
+  }, [selectedCategory, sortBy, activeSearchText]);
 
   // 搜索处理
   const handleSearch = () => {
     setActiveSearchText(searchText);
-    setCurrentPage(1);
     
     // 更新URL参数
     const params = new URLSearchParams();
@@ -123,7 +177,6 @@ const Products: React.FC = () => {
   // 分类选择
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
-    setCurrentPage(1);
     
     // 更新URL参数
     const params = new URLSearchParams();
@@ -135,14 +188,9 @@ const Products: React.FC = () => {
   // 排序处理
   const handleSortChange = (value: string) => {
     setSortBy(value);
-    setCurrentPage(1);
   };
 
-  // 分页处理
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+
 
   // 商品点击
   const handleProductClick = (productId: number) => {
@@ -375,7 +423,7 @@ const Products: React.FC = () => {
           <>
             <Row gutter={[20, 20]}>
               {products.map(product => (
-                <Col key={product.id} xs={12} sm={8} md={6} lg={6} xl={4}>
+                <Col key={product.id} xs={12} sm={8} md={6} lg={4} xl={4} xxl={3}>
                   <Card
                     hoverable
                     cover={
@@ -448,20 +496,22 @@ const Products: React.FC = () => {
               ))}
             </Row>
 
-            {/* 分页 */}
-            {total > pageSize && (
-              <div style={{ textAlign: 'center', marginTop: 40 }}>
-                <Pagination
-                  current={currentPage}
-                  total={total}
-                  pageSize={pageSize}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
-                  showQuickJumper
-                  showTotal={(total, range) => 
-                    `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
-                  }
-                />
+            {/* 加载更多状态指示器 */}
+            {loadingMore && (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <Spin tip="正在加载更多商品..." />
+              </div>
+            )}
+            
+            {/* 没有更多数据提示 */}
+            {!hasMoreData && products.length > 0 && (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '20px 0',
+                color: '#999',
+                fontSize: '14px'
+              }}>
+                已加载全部商品
               </div>
             )}
           </>
