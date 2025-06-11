@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Card, Row, Col, Carousel, Spin, Empty, message } from 'antd';
+// import { Button, Card, Row, Col, Carousel, Spin, Empty, message } from 'antd';
+import { Button, Card, Row, Col, Spin, Empty, message } from 'antd';
 
 import { useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
@@ -168,44 +169,43 @@ const Home: React.FC = () => {
 
 
   // 轮播图数据
-  const bannerImages = [
-    '/images/banner1.jpg',
-    '/images/banner2.jpg',
-    '/images/banner3.jpg'
-  ];
+  // const bannerImages = [
+  //   '/images/banner1.jpg',
+  //   '/images/banner2.jpg',
+  //   '/images/banner3.jpg'
+  // ];
 
   return (
     <div style={{ padding: '20px 50px' }}>
         {/* 轮播图 */}
-        <div style={{ marginBottom: 30 }}>
-          <Carousel autoplay style={{ borderRadius: 8, overflow: 'hidden' }}>
-            {bannerImages.map((_, index) => (
-              <div key={index}>
-                <div
-                  style={{
-                    height: 300,
-                    background: `linear-gradient(45deg, #1890ff, #52c41a)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: 24,
-                    fontWeight: 'bold'
-                  }}
-                >
-                  轮播图 {index + 1}
-                </div>
-              </div>
-            ))}
-          </Carousel>
-        </div>
+        {/*<div style={{ marginBottom: 30 }}>*/}
+        {/*  <Carousel autoplay style={{ borderRadius: 8, overflow: 'hidden' }}>*/}
+        {/*    {bannerImages.map((_, index) => (*/}
+        {/*        <div key={index}>*/}
+        {/*          <div*/}
+        {/*              style={{*/}
+        {/*                height: 300,*/}
+        {/*                backgroundImage: `url(${bannerImages[index]})`,*/}
+        {/*                backgroundSize: 'cover',*/}
+        {/*                backgroundPosition: 'center',*/}
+        {/*                display: 'flex',*/}
+        {/*                alignItems: 'center',*/}
+        {/*                justifyContent: 'center'*/}
+        {/*              }}*/}
+        {/*          >*/}
+        {/*            /!* 可以在这里添加文字覆盖层 *!/*/}
+        {/*          </div>*/}
+        {/*        </div>*/}
+        {/*    ))}*/}
+        {/*  </Carousel>*/}
+        {/*</div>*/}
 
-        {/* 分类导航 */}
-        <div style={{ marginBottom: 30 }}>
-          <h2 style={{ marginBottom: 16, color: '#333' }}>商品分类</h2>
-          <div style={{ 
-            display: 'flex', 
-            gap: 12, 
+      {/* 分类导航 */}
+      <div style={{marginBottom: 30}}>
+        <h2 style={{marginBottom: 16, color: '#333'}}>商品分类</h2>
+        <div style={{
+          display: 'flex',
+          gap: 12,
             flexWrap: 'wrap',
             padding: '16px',
             background: '#f5f5f5',

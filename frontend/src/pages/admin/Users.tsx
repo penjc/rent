@@ -208,7 +208,7 @@ const Users: React.FC = () => {
       width: 80,
       render: (status) => (
         <Tag color={status === 1 ? 'green' : 'red'}>
-          {status === 1 ? '正常' : '禁用'}
+          {status === 1 ? '正常' : '封禁'}
         </Tag>
       ),
     },

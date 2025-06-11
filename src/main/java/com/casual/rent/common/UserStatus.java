@@ -4,7 +4,7 @@ package com.casual.rent.common;
  * 用户状态枚举
  */
 public enum UserStatus {
-    DISABLED(0, "禁用"),
+    DISABLED(0, "封禁"),
     ACTIVE(1, "正常");
 
     private final Integer code;

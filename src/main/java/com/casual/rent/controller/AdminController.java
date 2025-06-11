@@ -6,11 +6,13 @@ import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.common.AuditStatus;
 import com.casual.rent.common.Result;
 import com.casual.rent.entity.Admin;
+import com.casual.rent.entity.Category;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.entity.Product;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.User;
 import com.casual.rent.service.AdminService;
+import com.casual.rent.service.CategoryService;
 import com.casual.rent.service.MerchantService;
 import com.casual.rent.service.ProductService;
 import com.casual.rent.service.OrderService;
@@ -30,6 +32,9 @@ public class AdminController {
     
     @Autowired
     private AdminService adminService;
+    
+    @Autowired
+    private CategoryService categoryService;
     
     @Autowired
     private MerchantService merchantService;
@@ -291,6 +296,170 @@ public class AdminController {
             return Result.success("订单取消成功");
         } catch (Exception e) {
             return Result.error("取消订单失败：" + e.getMessage());
+        }
+    }
+    
+    // =================== 分类管理 ===================
+    
+    /**
+     * 获取分类列表
+     */
+    @GetMapping("/categories")
+    public Result<IPage<Category>> getCategories(@RequestParam(defaultValue = "1") int page,
+                                                @RequestParam(defaultValue = "10") int size,
+                                                @RequestParam(required = false) String name,
+                                                @RequestParam(required = false) Integer status) {
+        try {
+            // 参数验证
+            if (page < 1) page = 1;
+            if (size < 1) size = 10;
+            if (size > 100) size = 100; // 限制最大页面大小
+            
+            IPage<Category> categories = categoryService.getCategoriesForAdmin(page, size, name, status);
+            return Result.success(categories);
+        } catch (Exception e) {
+            return Result.error("获取分类列表失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 创建分类
+     */
+    @PostMapping("/categories")
+    public Result<Category> createCategory(@RequestBody Map<String, Object> params) {
+        if (params == null) {
+            return Result.fail("请求参数不能为空");
+        }
+        
+        String name = (String) params.get("name");
+        String icon = (String) params.get("icon");
+        Integer sortOrder = null;
+        
+        if (params.get("sortOrder") != null) {
+            try {
+                sortOrder = Integer.valueOf(params.get("sortOrder").toString());
+            } catch (NumberFormatException e) {
+                return Result.fail("排序号格式不正确");
+            }
+        }
+        
+        if (name == null || name.trim().isEmpty()) {
+            return Result.fail("分类名称不能为空");
+        }
+        
+        try {
+            Category category = categoryService.createCategory(name, icon, sortOrder);
+            return Result.success(category);
+        } catch (Exception e) {
+            return Result.error("创建分类失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 更新分类
+     */
+    @PutMapping("/categories/{categoryId}")
+    public Result<Category> updateCategory(@PathVariable Long categoryId, @RequestBody Map<String, Object> params) {
+        if (params == null) {
+            return Result.fail("请求参数不能为空");
+        }
+        
+        String name = (String) params.get("name");
+        String icon = (String) params.get("icon");
+        Integer sortOrder = null;
+        Integer status = null;
+        
+        if (params.get("sortOrder") != null) {
+            try {
+                sortOrder = Integer.valueOf(params.get("sortOrder").toString());
+            } catch (NumberFormatException e) {
+                return Result.fail("排序号格式不正确");
+            }
+        }
+        
+        if (params.get("status") != null) {
+            try {
+                status = Integer.valueOf(params.get("status").toString());
+            } catch (NumberFormatException e) {
+                return Result.fail("状态格式不正确");
+            }
+        }
+        
+        try {
+            Category category = categoryService.updateCategory(categoryId, name, icon, sortOrder, status);
+            return Result.success(category);
+        } catch (Exception e) {
+            return Result.error("更新分类失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 删除分类
+     */
+    @DeleteMapping("/categories/{categoryId}")
+    public Result<String> deleteCategory(@PathVariable Long categoryId) {
+        try {
+            // 检查是否有商品使用该分类
+            long productCount = productService.lambdaQuery()
+                    .eq(Product::getCategoryId, categoryId)
+                    .count();
+            
+            if (productCount > 0) {
+                return Result.fail("该分类下还有商品，无法删除");
+            }
+            
+            categoryService.deleteCategory(categoryId);
+            return Result.success("分类删除成功");
+        } catch (Exception e) {
+            return Result.error("删除分类失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 更新分类状态
+     */
+    @PutMapping("/categories/{categoryId}/status")
+    public Result<String> updateCategoryStatus(@PathVariable Long categoryId, @RequestBody Map<String, Object> params) {
+        if (params == null || params.get("status") == null) {
+            return Result.fail("状态不能为空");
+        }
+        
+        Integer status;
+        try {
+            status = Integer.valueOf(params.get("status").toString());
+        } catch (NumberFormatException e) {
+            return Result.fail("状态格式不正确");
+        }
+        
+        try {
+            categoryService.updateCategoryStatus(categoryId, status);
+            return Result.success(status == 1 ? "分类已启用" : "分类已禁用");
+        } catch (Exception e) {
+            return Result.error("更新分类状态失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 批量更新分类排序
+     */
+    @PutMapping("/categories/sort")
+    public Result<String> batchUpdateCategorySort(@RequestBody Map<String, Object> params) {
+        try {
+            if (params == null || params.get("categoryIds") == null) {
+                return Result.fail("分类ID列表不能为空");
+            }
+            
+            @SuppressWarnings("unchecked")
+            java.util.List<Long> categoryIds = (java.util.List<Long>) params.get("categoryIds");
+            
+            if (categoryIds == null || categoryIds.isEmpty()) {
+                return Result.fail("分类ID列表不能为空");
+            }
+            
+            categoryService.batchUpdateSortOrder(categoryIds);
+            return Result.success("分类排序更新成功");
+        } catch (Exception e) {
+            return Result.error("更新分类排序失败：" + e.getMessage());
         }
     }
 } 

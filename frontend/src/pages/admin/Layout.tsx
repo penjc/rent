@@ -8,6 +8,7 @@ import {
   AuditOutlined,
   UserOutlined,
   OrderedListOutlined,
+  AppstoreOutlined,
   LogoutOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -16,6 +17,7 @@ import Users from './Users';
 import Merchants from './Merchants';
 import Products from './Products';
 import Orders from './Orders';
+import Categories from './Categories';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -53,6 +55,7 @@ const AdminLayout: React.FC = () => {
     if (path.includes('/users')) return 'users';
     if (path.includes('/merchants')) return 'merchants';
     if (path.includes('/products')) return 'products';
+    if (path.includes('/categories')) return 'categories';
     if (path.includes('/orders')) return 'orders';
     return 'dashboard';
   };
@@ -70,6 +73,9 @@ const AdminLayout: React.FC = () => {
         break;
       case 'products':
         navigate('/admin/products');
+        break;
+      case 'categories':
+        navigate('/admin/categories');
         break;
       case 'orders':
         navigate('/admin/orders');
@@ -156,6 +162,11 @@ const AdminLayout: React.FC = () => {
                 icon: <OrderedListOutlined />,
                 label: '订单管理',
               },
+              {
+                key: 'categories',
+                icon: <AppstoreOutlined />,
+                label: '分类管理',
+              },
             ]}
           />
         </Sider>
@@ -174,6 +185,7 @@ const AdminLayout: React.FC = () => {
               <Route path="users" element={<Users />} />
               <Route path="merchants" element={<Merchants />} />
               <Route path="products" element={<Products />} />
+              <Route path="categories" element={<Categories />} />
               <Route path="orders" element={<Orders />} />
             </Routes>
           </Content>
