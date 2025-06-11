@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
-import { UserOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons';
+// import { UserOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons';
+import { UserOutlined, ShoppingOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import Home from './Home';
 import Products from './Products';
@@ -122,11 +123,11 @@ const UserLayout: React.FC = () => {
                   label: '商品',
                   icon: <ShoppingOutlined />,
                 },
-                {
-                  key: 'favorites',
-                  label: '收藏',
-                  icon: <HeartOutlined />,
-                },
+                // {
+                //   key: 'favorites',
+                //   label: '收藏',
+                //   icon: <HeartOutlined />,
+                // },
                 {
                   key: 'orders',
                   label: '订单',
