@@ -422,9 +422,9 @@ const Products: React.FC = () => {
           </div>
         ) : (
           <>
-            <Row gutter={[20, 20]}>
+            <Row gutter={[16, 16]}>
               {products.map(product => (
-                <Col key={product.id} xs={12} sm={8} md={6} lg={4} xl={4} xxl={3}>
+                <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                   <Card
                     hoverable
                     cover={
@@ -438,8 +438,6 @@ const Products: React.FC = () => {
                       />
                     }
                     onClick={() => handleProductClick(product.id)}
-                    style={{ height: '100%' }}
-                    bodyStyle={{ padding: 12 }}
                     actions={[
                       <Button 
                         type="primary" 
@@ -455,11 +453,8 @@ const Products: React.FC = () => {
                     <Meta
                       title={
                         <div style={{ 
-                          fontSize: 14, 
-                          fontWeight: 'bold',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          fontSize: 16, 
+                          fontWeight: 'bold'
                         }}>
                           {product.name}
                         </div>
@@ -469,25 +464,26 @@ const Products: React.FC = () => {
                           <div style={{ 
                             color: '#666', 
                             fontSize: 12, 
-                            height: 32, 
+                            height: 40, 
                             overflow: 'hidden',
-                            marginBottom: 8,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical'
+                            marginBottom: 8
                           }}>
                             {product.description}
                           </div>
-                          <div>
-                            <div style={{ color: '#ff4d4f', fontSize: 16, fontWeight: 'bold' }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center' 
+                          }}>
+                            <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
                               {formatPrice(product.dailyPrice)}/天
-                            </div>
-                            <div style={{ color: '#999', fontSize: 10 }}>
+                            </span>
+                            <span style={{ color: '#999', fontSize: 12 }}>
                               押金: {formatPrice(product.deposit)}
-                            </div>
-                            <div style={{ color: '#52c41a', fontSize: 10 }}>
-                              库存: {product.stock}件
-                            </div>
+                            </span>
+                          </div>
+                          <div style={{ marginTop: 4, color: '#52c41a', fontSize: 12 }}>
+                            库存: {product.stock}件
                           </div>
                         </div>
                       }
