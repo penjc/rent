@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
-// import { UserOutlined, ShoppingOutlined, HeartOutlined, HistoryOutlined } from '@ant-design/icons';
 import { UserOutlined, ShoppingOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import Home from './Home';
@@ -82,10 +81,12 @@ const UserLayout: React.FC = () => {
       {
         key: 'profile',
         label: '个人信息',
+        icon: <UserOutlined />
       },
       {
         key: 'orders',
         label: '我的订单',
+        icon: <HistoryOutlined />
       },
       {
         type: 'divider' as const,
@@ -93,56 +94,126 @@ const UserLayout: React.FC = () => {
       {
         key: 'logout',
         label: '退出登录',
+        icon: <UserOutlined />
       },
     ],
     onClick: ({ key }: { key: string }) => handleMenuClick(key),
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="header">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <div className="flex items-center">
-            <div className="logo text-white text-xl font-bold mr-8 cursor-pointer" onClick={() => navigate('/user')}>
+    <Layout className="min-h-screen" style={{ background: '#f0f2f5' }}>
+      <Header 
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          padding: '0 24px'
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          maxWidth: '1400px', 
+          margin: '0 auto',
+          height: '64px',
+          padding: '0 16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            <div 
+              style={{ 
+                color: 'white', 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                marginRight: '24px', 
+                cursor: 'pointer',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s ease',
+                flexShrink: 0
+              }} 
+              onClick={() => navigate('/user')}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
               Casual Rent
             </div>
             <Menu
               theme="dark"
               mode="horizontal"
               selectedKeys={[getSelectedKey()]}
-              className="flex-1"
               onClick={handleNavMenuClick}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '16px',
+                flex: 1,
+                minWidth: 0
+              }}
               items={[
                 {
                   key: 'home',
                   label: '首页',
-                  icon: <UserOutlined />,
+                  icon: <UserOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
                 },
                 {
                   key: 'products',
                   label: '商品',
-                  icon: <ShoppingOutlined />,
+                  icon: <ShoppingOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
                 },
-                // {
-                //   key: 'favorites',
-                //   label: '收藏',
-                //   icon: <HeartOutlined />,
-                // },
                 {
                   key: 'orders',
                   label: '订单',
-                  icon: <HistoryOutlined />,
+                  icon: <HistoryOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
                 },
               ]}
             />
           </div>
           
-          <div className="auth-section">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
+            
             {isAuthenticated && user ? (
-              <Dropdown menu={userMenu} placement="bottomRight">
-                <div className="flex items-center cursor-pointer text-white hover:text-gray-300">
-                  <Avatar src={(user as any)?.avatar} icon={<UserOutlined />} />
-                  <span className="ml-2">
+              <Dropdown menu={userMenu} placement="bottomRight" arrow>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  padding: '8px 16px',
+                  transition: 'all 0.3s ease',
+                  maxWidth: window.innerWidth > 768 ? '200px' : '150px',
+                  minWidth: window.innerWidth > 768 ? '120px' : '80px'
+                }}>
+                  <Avatar 
+                    src={(user as any)?.avatar} 
+                    icon={<UserOutlined />}
+                    style={{ marginRight: '8px', flexShrink: 0 }}
+                    size={window.innerWidth > 768 ? 'default' : 'small'}
+                  />
+                  <span style={{ 
+                    fontWeight: '500',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: window.innerWidth > 768 ? '120px' : '80px',
+                    fontSize: window.innerWidth > 768 ? '14px' : '12px'
+                  }}>
                     {(user as any)?.nickname || 
                      (user as any)?.name || 
                      (user as any)?.companyName || 
@@ -152,16 +223,66 @@ const UserLayout: React.FC = () => {
                 </div>
               </Dropdown>
             ) : (
-              <div className="space-x-2">
-                <Button type="text" className="text-white" onClick={() => navigate('/auth/login')}>登录</Button>
-                <Button type="primary" onClick={() => navigate('/auth/register')}>注册</Button>
+              <div style={{ display: 'flex', gap: window.innerWidth > 768 ? '12px' : '8px', flexShrink: 0 }}>
+                <Button 
+                  type="text" 
+                  onClick={() => navigate('/auth/login')}
+                  style={{
+                    color: 'white',
+                    fontSize: window.innerWidth > 768 ? '16px' : '14px',
+                    height: '40px',
+                    padding: window.innerWidth > 768 ? '0 20px' : '0 16px',
+                    borderRadius: '20px',
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    transition: 'all 0.3s ease',
+                    minWidth: window.innerWidth > 768 ? '80px' : '60px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  登录
+                </Button>
+                <Button 
+                  type="primary" 
+                  onClick={() => navigate('/auth/register')}
+                  style={{
+                    height: '40px',
+                    padding: window.innerWidth > 768 ? '0 20px' : '0 16px',
+                    borderRadius: '20px',
+                    background: 'white',
+                    color: '#667eea',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: window.innerWidth > 768 ? '16px' : '14px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    transition: 'all 0.3s ease',
+                    minWidth: window.innerWidth > 768 ? '80px' : '60px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                  }}
+                >
+                  注册
+                </Button>
               </div>
             )}
           </div>
         </div>
       </Header>
 
-      <Content className="flex-1">
+      <Content style={{ flex: 1, background: '#f0f2f5' }}>
         <Routes>
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
@@ -173,8 +294,31 @@ const UserLayout: React.FC = () => {
         </Routes>
       </Content>
 
-      <Footer className="text-center">
-                    Casual Rent ©2025 Created by Genius of CityU
+      <Footer 
+        style={{
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+          color: 'white',
+          padding: '40px 24px',
+          fontSize: '16px'
+        }}
+      >
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <span style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              Casual Rent
+            </span>
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.8)' }}>
+            让闲置物品重新焕发价值 | ©2025 Created by Genius of CityU
+          </div>
+        </div>
       </Footer>
     </Layout>
   );

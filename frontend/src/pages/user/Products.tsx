@@ -296,6 +296,13 @@ const Products: React.FC = () => {
     }
   };
 
+  // 截断描述文本 - 商品页卡片较宽，可以显示更多文字
+  const truncateDescription = (text: string, maxLength: number = 60) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   // 获取当前分类名称
   const getCurrentCategoryName = () => {
     if (!selectedCategory) return '全部商品';
@@ -307,9 +314,9 @@ const Products: React.FC = () => {
     <Layout style={{ minHeight: '100vh', background: '#f5f5f5' }}>
       <Content style={{ padding: '20px 50px' }}>
         {/* 面包屑导航 */}
-        <Breadcrumb style={{ marginBottom: 20 }}>
+        <Breadcrumb style={{ marginBottom: 24 }}>
           <Breadcrumb.Item>
-            <a href="/">首页</a>
+            <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
           </Breadcrumb.Item>
           <Breadcrumb.Item>商品</Breadcrumb.Item>
           {selectedCategory && (
@@ -319,30 +326,48 @@ const Products: React.FC = () => {
 
         {/* 筛选区域 */}
         <div style={{ 
-          background: '#fff', 
-          padding: 20, 
-          borderRadius: 8, 
-          marginBottom: 20,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          background: 'white', 
+          padding: '32px', 
+          borderRadius: '16px', 
+          marginBottom: '32px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          border: '1px solid rgba(102, 126, 234, 0.1)'
         }}>
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={12} md={8}>
-              <Input.Search
-                placeholder="搜索商品名称"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onSearch={handleSearch}
-                enterButton={<SearchOutlined />}
-              />
+          <Row gutter={[24, 24]} align="middle">
+            <Col xs={24} sm={12} md={10}>
+              <div style={{ position: 'relative' }}>
+                <Input.Search
+                  placeholder="搜索您想要的商品..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onSearch={handleSearch}
+                  enterButton={
+                    <Button 
+                      type="primary" 
+                      icon={<SearchOutlined />}
+                      style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        border: 'none',
+                        borderRadius: '0 8px 8px 0'
+                      }}
+                    >
+                      搜索
+                    </Button>
+                  }
+                  size="large"
+                />
+              </div>
             </Col>
             
-            <Col xs={12} sm={6} md={4}>
+            <Col xs={12} sm={6} md={6}>
               <Select
                 placeholder="选择分类"
                 value={selectedCategory}
                 onChange={handleCategorySelect}
                 style={{ width: '100%' }}
+                size="large"
                 allowClear
+                suffixIcon={<FilterOutlined style={{ color: '#667eea' }} />}
               >
                 {categories.map(category => (
                   <Option key={category.id} value={category.id}>
@@ -352,31 +377,60 @@ const Products: React.FC = () => {
               </Select>
             </Col>
             
-            <Col xs={12} sm={6} md={4}>
+            <Col xs={12} sm={6} md={6}>
               <Select
                 value={sortBy}
                 onChange={handleSortChange}
                 style={{ width: '100%' }}
+                size="large"
               >
-                <Option value="created_desc">最新发布</Option>
-                <Option value="price_asc">价格从低到高</Option>
-                <Option value="price_desc">价格从高到低</Option>
-                <Option value="popular">最受欢迎</Option>
+                <Option value="created_desc">🕒 最新发布</Option>
+                <Option value="price_asc">💰 价格从低到高</Option>
+                <Option value="price_desc">💎 价格从高到低</Option>
+                <Option value="popular">🔥 最受欢迎</Option>
               </Select>
             </Col>
           </Row>
         </div>
 
         {/* 分类标签 */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ color: '#666', marginRight: 10 }}>
-              <FilterOutlined /> 快速筛选:
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: 12, 
+            flexWrap: 'wrap', 
+            alignItems: 'center',
+            padding: '24px',
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <span style={{ 
+              color: '#2c3e50', 
+              marginRight: 16, 
+              fontSize: '16px',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <FilterOutlined style={{ color: '#667eea' }} /> 快速筛选:
             </span>
             <Button
               type={selectedCategory === null ? 'primary' : 'default'}
-              size="small"
+              size="large"
               onClick={() => handleCategorySelect(null)}
+              style={{
+                borderRadius: '20px',
+                fontWeight: selectedCategory === null ? 'bold' : 'normal',
+                background: selectedCategory === null ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                border: selectedCategory === null ? 'none' : '2px solid #f0f0f0',
+                color: selectedCategory === null ? 'white' : '#2c3e50',
+                boxShadow: selectedCategory === null ? '0 4px 15px rgba(102, 126, 234, 0.3)' : 'none',
+                padding: '0 24px',
+                height: '42px',
+                transition: 'all 0.3s ease'
+              }}
             >
               全部
             </Button>
@@ -384,8 +438,19 @@ const Products: React.FC = () => {
               <Button
                 key={category.id}
                 type={selectedCategory === category.id ? 'primary' : 'default'}
-                size="small"
+                size="large"
                 onClick={() => handleCategorySelect(category.id)}
+                style={{
+                  borderRadius: '20px',
+                  fontWeight: selectedCategory === category.id ? 'bold' : 'normal',
+                  background: selectedCategory === category.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                  border: selectedCategory === category.id ? 'none' : '2px solid #f0f0f0',
+                  color: selectedCategory === category.id ? 'white' : '#2c3e50',
+                  boxShadow: selectedCategory === category.id ? '0 4px 15px rgba(102, 126, 234, 0.3)' : 'none',
+                  padding: '0 24px',
+                  height: '42px',
+                  transition: 'all 0.3s ease'
+                }}
               >
                 {category.name}
               </Button>
@@ -398,63 +463,168 @@ const Products: React.FC = () => {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          marginBottom: 20 
+          marginBottom: 32,
+          padding: '0 8px'
         }}>
-          <h2 style={{ margin: 0 }}>
+          <h2 style={{ 
+            margin: 0, 
+            color: '#2c3e50',
+            fontSize: '28px',
+            fontWeight: 'bold'
+          }}>
             {getCurrentCategoryName()}
-            <span style={{ fontSize: 14, color: '#666', marginLeft: 10 }}>
-              共 {total} 件商品
-            </span>
+            {activeSearchText && (
+              <span style={{ color: '#667eea', fontSize: '20px', marginLeft: 12 }}>
+                - "{activeSearchText}"
+              </span>
+            )}
           </h2>
+          <div style={{ 
+            fontSize: 16, 
+            color: '#667eea',
+            background: 'white',
+            padding: '12px 24px',
+            borderRadius: '20px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            border: '2px solid rgba(102, 126, 234, 0.1)'
+          }}>
+            共 {total} 件商品
+          </div>
         </div>
 
         {/* 商品列表 */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: 100 }}>
-            <Spin size="large" />
+            <Spin size="large" tip="正在搜索精彩商品..." />
           </div>
         ) : products.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 100 }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: 100,
+            background: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
             <Empty 
-              description="暂无商品"
+              description={
+                <div style={{ color: '#7f8c8d', fontSize: '16px' }}>
+                  {activeSearchText ? `没有找到包含"${activeSearchText}"的商品` : '暂无商品'}
+                </div>
+              }
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            >
+              <Button 
+                type="primary" 
+                size="large"
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '0 30px',
+                  height: '45px'
+                }}
+                onClick={() => {
+                  setActiveSearchText('');
+                  setSearchText('');
+                  setSelectedCategory(null);
+                }}
+              >
+                重新搜索
+              </Button>
+            </Empty>
           </div>
         ) : (
           <>
-            <Row gutter={[16, 16]}>
+            <Row gutter={[24, 24]}>
               {products.map(product => (
                 <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
                   <Card
                     hoverable
                     cover={
-                      <img
-                        alt={product.name}
-                        src={getProductImage(product.images)}
-                        style={{ height: 200, objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.currentTarget.src = '/images/default-product.jpg';
-                        }}
-                      />
+                      <div style={{ position: 'relative', overflow: 'hidden' }}>
+                        <img
+                          alt={product.name}
+                          src={getProductImage(product.images)}
+                          style={{ 
+                            height: 220, 
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease',
+                            width: '100%'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/default-product.jpg';
+                          }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background: 'linear-gradient(transparent, rgba(0,0,0,0.3))',
+                          height: '40px'
+                        }} />
+                      </div>
                     }
                     onClick={() => handleProductClick(product.id)}
                     actions={[
                       <Button 
                         type="primary" 
                         icon={<ShoppingCartOutlined />}
-                        size="small"
+                        size="middle"
                         onClick={(e) => handleRentNow(product, e)}
-                        style={{ width: '90%' }}
+                        style={{ 
+                          width: '90%',
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          border: 'none',
+                          borderRadius: '20px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                        }}
                       >
                         立即租赁
                       </Button>
                     ]}
+                    style={{
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      border: 'none',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s ease',
+                      background: 'white'
+                    }}
+                    bodyStyle={{ padding: '20px' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(0,0,0,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+                    }}
                   >
                     <Meta
                       title={
                         <div style={{ 
                           fontSize: 16, 
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          color: '#2c3e50',
+                          marginBottom: '8px',
+                          lineHeight: '1.4',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical' as any,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
                         }}>
                           {product.name}
                         </div>
@@ -462,28 +632,44 @@ const Products: React.FC = () => {
                       description={
                         <div>
                           <div style={{ 
-                            color: '#666', 
-                            fontSize: 12, 
-                            height: 40, 
+                            color: '#7f8c8d', 
+                            fontSize: 13, 
+                            minHeight: 40,
+                            maxHeight: 40,
                             overflow: 'hidden',
-                            marginBottom: 8
+                            marginBottom: 12,
+                            lineHeight: '1.4',
+                            wordBreak: 'break-word'
                           }}>
-                            {product.description}
+                            {truncateDescription(product.description, 60)}
                           </div>
                           <div style={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
-                            alignItems: 'center' 
+                            alignItems: 'center',
+                            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                            padding: '12px 16px',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(102, 126, 234, 0.1)'
                           }}>
-                            <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
-                              {formatPrice(product.dailyPrice)}/天
-                            </span>
-                            <span style={{ color: '#999', fontSize: 12 }}>
-                              押金: {formatPrice(product.deposit)}
-                            </span>
-                          </div>
-                          <div style={{ marginTop: 4, color: '#52c41a', fontSize: 12 }}>
-                            库存: {product.stock}件
+                            <div>
+                              <div style={{ color: '#e74c3c', fontSize: 18, fontWeight: 'bold' }}>
+                                {formatPrice(product.dailyPrice)}/天
+                              </div>
+                              <div style={{ color: '#95a5a6', fontSize: 11 }}>
+                                押金: {formatPrice(product.deposit)}
+                              </div>
+                            </div>
+                            <div style={{
+                              background: product.stock > 10 ? '#27ae60' : product.stock > 0 ? '#f39c12' : '#e74c3c',
+                              color: 'white',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 'bold'
+                            }}>
+                              {product.stock > 10 ? '充足' : product.stock > 0 ? '紧缺' : '缺货'}
+                            </div>
                           </div>
                         </div>
                       }
@@ -495,8 +681,15 @@ const Products: React.FC = () => {
 
             {/* 加载更多状态指示器 */}
             {loadingMore && (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <Spin tip="正在加载更多商品..." />
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px 0',
+                background: 'white',
+                borderRadius: '16px',
+                marginTop: '24px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <Spin size="large" tip="正在加载更多精彩商品..." />
               </div>
             )}
             
@@ -504,11 +697,15 @@ const Products: React.FC = () => {
             {!hasMoreData && products.length > 0 && (
               <div style={{ 
                 textAlign: 'center', 
-                padding: '20px 0',
-                color: '#999',
-                fontSize: '14px'
+                padding: '40px 0',
+                color: '#95a5a6',
+                fontSize: '16px',
+                background: 'white',
+                borderRadius: '16px',
+                marginTop: '24px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
               }}>
-                已加载全部商品
+                🎉 已展示全部商品，感谢您的浏览！
               </div>
             )}
           </>

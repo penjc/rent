@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// import { Button, Card, Row, Col, Carousel, Spin, Empty, message } from 'antd';
-import { Button, Card, Row, Col, Spin, Empty, message } from 'antd';
-
+import { Button, Card, Row, Col, Spin, Empty, message, Typography, Space } from 'antd';
+import { ShoppingOutlined, RocketOutlined, SafetyCertificateOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
-
 import LoginModal from '../../components/common/LoginModal';
 import type { Product, Category } from '../../types';
 
-
 const { Meta } = Card;
+const { Title, Text } = Typography;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +22,6 @@ const Home: React.FC = () => {
   
   // 用户认证相关状态
   const [loginModalVisible, setLoginModalVisible] = useState(false);
-
-
 
   // 获取分类数据
   useEffect(() => {
@@ -120,8 +116,6 @@ const Home: React.FC = () => {
     fetchProducts(1, false);
   }, [selectedCategory, searchText]);
 
-
-
   // 分类选择
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId);
@@ -166,204 +160,380 @@ const Home: React.FC = () => {
     }
   };
 
-
-
-  // 轮播图数据
-  // const bannerImages = [
-  //   '/images/banner1.jpg',
-  //   '/images/banner2.jpg',
-  //   '/images/banner3.jpg'
-  // ];
+  // 截断描述文本 - 首页卡片截断长度适中
+  const truncateDescription = (text: string, maxLength: number = 45) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
 
   return (
-    <div style={{ padding: '20px 50px' }}>
-        {/* 轮播图 */}
-        {/*<div style={{ marginBottom: 30 }}>*/}
-        {/*  <Carousel autoplay style={{ borderRadius: 8, overflow: 'hidden' }}>*/}
-        {/*    {bannerImages.map((_, index) => (*/}
-        {/*        <div key={index}>*/}
-        {/*          <div*/}
-        {/*              style={{*/}
-        {/*                height: 300,*/}
-        {/*                backgroundImage: `url(${bannerImages[index]})`,*/}
-        {/*                backgroundSize: 'cover',*/}
-        {/*                backgroundPosition: 'center',*/}
-        {/*                display: 'flex',*/}
-        {/*                alignItems: 'center',*/}
-        {/*                justifyContent: 'center'*/}
-        {/*              }}*/}
-        {/*          >*/}
-        {/*            /!* 可以在这里添加文字覆盖层 *!/*/}
-        {/*          </div>*/}
-        {/*        </div>*/}
-        {/*    ))}*/}
-        {/*  </Carousel>*/}
-        {/*</div>*/}
+    <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh' }}>
+      {/* Hero 区域 */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%)',
+        padding: '80px 50px',
+        textAlign: 'center',
+        color: 'white'
+      }}>
+        <Title level={1} style={{ color: 'white', fontSize: '3.5rem', marginBottom: '1rem', fontWeight: 'bold' }}>
+          Casual Rent
+        </Title>
+        <Text style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.9)', marginBottom: '2rem', display: 'block' }}>
+          让闲置物品重新焕发价值，让生活更加便捷美好
+        </Text>
+        <Space size="large" style={{ marginTop: '2rem' }}>
+          <Button 
+            type="primary" 
+            size="large" 
+            icon={<ShoppingOutlined />}
+            style={{ 
+              height: '50px', 
+              padding: '0 30px', 
+              fontSize: '16px',
+              borderRadius: '25px',
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              backdropFilter: 'blur(10px)'
+            }}
+            onClick={() => navigate('/user/products')}
+          >
+            开始租赁
+          </Button>
+          <Button 
+            size="large" 
+            style={{ 
+              height: '50px', 
+              padding: '0 30px', 
+              fontSize: '16px',
+              borderRadius: '25px',
+              background: 'transparent',
+              border: '2px solid rgba(255,255,255,0.5)',
+              color: 'white'
+            }}
+            onClick={() => window.scrollTo({ top: 400, behavior: 'smooth' })}
+          >
+            了解更多
+          </Button>
+        </Space>
+      </div>
 
-      {/* 分类导航 */}
-      <div style={{marginBottom: 30}}>
-        <h2 style={{marginBottom: 16, color: '#333'}}>商品分类</h2>
-        <div style={{
-          display: 'flex',
-          gap: 12,
-            flexWrap: 'wrap',
-            padding: '16px',
-            background: '#f5f5f5',
-            borderRadius: '8px'
-          }}>
-            <Button
-              type={selectedCategory === null ? 'primary' : 'default'}
-              size="large"
-              onClick={() => handleCategorySelect(null)}
-              style={{
-                borderRadius: '20px',
-                fontWeight: selectedCategory === null ? 'bold' : 'normal',
-                boxShadow: selectedCategory === null ? '0 2px 4px rgba(24, 144, 255, 0.3)' : 'none'
-              }}
-            >
-              全部商品
-            </Button>
-            {categories.map(category => (
+      {/* 特色功能区域 */}
+      <div style={{ background: 'white', padding: '60px 50px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <Title level={2} style={{ textAlign: 'center', marginBottom: '3rem', color: '#2c3e50' }}>
+            为什么选择我们？
+          </Title>
+          <Row gutter={[32, 32]}>
+            <Col xs={24} md={8}>
+              <Card 
+                hoverable
+                style={{ 
+                  textAlign: 'center', 
+                  height: '100%',
+                  borderRadius: '15px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  border: 'none'
+                }}
+                bodyStyle={{ padding: '40px 20px' }}
+              >
+                <RocketOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#2c3e50' }}>快速便捷</Title>
+                <Text style={{ color: '#7f8c8d' }}>
+                  一键下单，快速租赁，让您的生活更加便捷高效
+                </Text>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card 
+                hoverable
+                style={{ 
+                  textAlign: 'center', 
+                  height: '100%',
+                  borderRadius: '15px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  border: 'none'
+                }}
+                bodyStyle={{ padding: '40px 20px' }}
+              >
+                <SafetyCertificateOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#2c3e50' }}>安全保障</Title>
+                <Text style={{ color: '#7f8c8d' }}>
+                  专业的审核机制，确保每件商品的品质和安全
+                </Text>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card 
+                hoverable
+                style={{ 
+                  textAlign: 'center', 
+                  height: '100%',
+                  borderRadius: '15px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  border: 'none'
+                }}
+                bodyStyle={{ padding: '40px 20px' }}
+              >
+                <CustomerServiceOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#2c3e50' }}>贴心服务</Title>
+                <Text style={{ color: '#7f8c8d' }}>
+                  7×24小时客服支持，为您提供最贴心的服务体验
+                </Text>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </div>
+
+      {/* 商品分类和列表区域 */}
+      <div style={{ background: '#f8f9fa', padding: '60px 50px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* 分类导航 */}
+          <div style={{ marginBottom: 40 }}>
+            <Title level={2} style={{ textAlign: 'center', marginBottom: '2rem', color: '#2c3e50' }}>
+              商品分类
+            </Title>
+            <div style={{
+              display: 'flex',
+              gap: 16,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              padding: '20px',
+              background: 'white',
+              borderRadius: '20px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+            }}>
               <Button
-                key={category.id}
-                type={selectedCategory === category.id ? 'primary' : 'default'}
+                type={selectedCategory === null ? 'primary' : 'default'}
                 size="large"
-                onClick={() => handleCategorySelect(category.id)}
+                onClick={() => handleCategorySelect(null)}
                 style={{
-                  borderRadius: '20px',
-                  fontWeight: selectedCategory === category.id ? 'bold' : 'normal',
-                  boxShadow: selectedCategory === category.id ? '0 2px 4px rgba(24, 144, 255, 0.3)' : 'none'
+                  borderRadius: '25px',
+                  padding: '0 30px',
+                  height: '45px',
+                  fontWeight: selectedCategory === null ? 'bold' : 'normal',
+                  background: selectedCategory === null ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                  border: selectedCategory === null ? 'none' : '2px solid #e1e5e9',
+                  color: selectedCategory === null ? 'white' : '#2c3e50',
+                  boxShadow: selectedCategory === null ? '0 5px 15px rgba(102, 126, 234, 0.4)' : 'none'
                 }}
               >
-                {category.name}
+                全部商品
               </Button>
-            ))}
+              {categories.map(category => (
+                <Button
+                  key={category.id}
+                  type={selectedCategory === category.id ? 'primary' : 'default'}
+                  size="large"
+                  onClick={() => handleCategorySelect(category.id)}
+                  style={{
+                    borderRadius: '25px',
+                    padding: '0 30px',
+                    height: '45px',
+                    fontWeight: selectedCategory === category.id ? 'bold' : 'normal',
+                    background: selectedCategory === category.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
+                    border: selectedCategory === category.id ? 'none' : '2px solid #e1e5e9',
+                    color: selectedCategory === category.id ? 'white' : '#2c3e50',
+                    boxShadow: selectedCategory === category.id ? '0 5px 15px rgba(102, 126, 234, 0.4)' : 'none'
+                  }}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* 商品列表 */}
-        <div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: 20
-          }}>
-            <h2 style={{ margin: 0, color: '#333' }}>
-              {selectedCategory 
-                ? `${categories.find(c => c.id === selectedCategory)?.name || ''}分类商品` 
-                : '精选商品'
-              }
-            </h2>
+          {/* 商品列表 */}
+          <div>
             <div style={{ 
-              fontSize: 14, 
-              color: '#666',
-              background: '#f0f0f0',
-              padding: '4px 12px',
-              borderRadius: '12px'
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: 30
             }}>
-              共 {total} 件商品
-            </div>
-          </div>
-          
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: 50 }}>
-              <Spin size="large" tip="正在加载商品..." />
-            </div>
-          ) : products.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 60 }}>
-              <Empty 
-                description={
-                  selectedCategory 
-                    ? `该分类暂无商品，试试其他分类吧` 
-                    : '暂无商品'
+              <Title level={3} style={{ margin: 0, color: '#2c3e50' }}>
+                {selectedCategory 
+                  ? `${categories.find(c => c.id === selectedCategory)?.name || ''}分类商品` 
+                  : '精选商品'
                 }
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-              >
-                {selectedCategory ? (
-                  <Button type="primary" onClick={() => handleCategorySelect(null)}>
-                    查看全部商品
-                  </Button>
-                ) : (
-                  <Button type="primary" onClick={() => window.location.reload()}>
-                    刷新页面
-                  </Button>
-                )}
-              </Empty>
+              </Title>
+              <div style={{ 
+                fontSize: 14, 
+                color: '#667eea',
+                background: 'white',
+                padding: '8px 20px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+              }}>
+                共 {total} 件商品
+              </div>
             </div>
-          ) : (
-            <>
-              <Row gutter={[16, 16]}>
-                {products.map(product => (
-                  <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
-                    <Card
-                      hoverable
-                      cover={
-                        <img
-                          alt={product.name}
-                          src={getProductImage(product.images)}
-                          style={{ height: 200, objectFit: 'cover' }}
-                          onError={(e) => {
-                            e.currentTarget.src = '/images/default-product.jpg';
-                          }}
-                        />
-                      }
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <Meta
-                        title={<div style={{ fontSize: 16, fontWeight: 'bold' }}>{product.name}</div>}
-                        description={
-                          <div>
-                            <div style={{ 
-                              color: '#666', 
-                              fontSize: 12, 
-                              height: 40, 
-                              overflow: 'hidden',
-                              marginBottom: 8
-                            }}>
-                              {product.description}
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center' 
-                            }}>
-                              <span style={{ color: '#ff4d4f', fontSize: 18, fontWeight: 'bold' }}>
-                                {formatPrice(product.dailyPrice)}/天
-                              </span>
-                              <span style={{ color: '#999', fontSize: 12 }}>
-                                押金: {formatPrice(product.deposit)}
-                              </span>
-                            </div>
+            
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: 80 }}>
+                <Spin size="large" tip="正在加载精彩商品..." />
+              </div>
+            ) : products.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 80 }}>
+                <Empty 
+                  description={
+                    selectedCategory 
+                      ? `该分类暂无商品，试试其他分类吧` 
+                      : '暂无商品'
+                  }
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                >
+                  {selectedCategory ? (
+                    <Button type="primary" onClick={() => handleCategorySelect(null)}>
+                      查看全部商品
+                    </Button>
+                  ) : (
+                    <Button type="primary" onClick={() => window.location.reload()}>
+                      刷新页面
+                    </Button>
+                  )}
+                </Empty>
+              </div>
+            ) : (
+              <>
+                <Row gutter={[24, 24]}>
+                  {products.map(product => (
+                    <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+                      <Card
+                        hoverable
+                        cover={
+                          <div style={{ position: 'relative', overflow: 'hidden' }}>
+                            <img
+                              alt={product.name}
+                              src={getProductImage(product.images)}
+                              style={{ 
+                                height: 220, 
+                                objectFit: 'cover',
+                                transition: 'transform 0.3s ease',
+                                width: '100%'
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/default-product.jpg';
+                              }}
+                            />
                           </div>
                         }
-                      />
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-              
-              {/* 加载更多状态指示器 */}
-              {loadingMore && (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Spin tip="正在加载更多商品..." />
-                </div>
-              )}
-              
-              {/* 没有更多数据提示 */}
-              {!hasMoreData && products.length > 0 && (
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: '20px 0',
-                  color: '#999',
-                  fontSize: '14px'
-                }}>
-                  已加载全部商品
-                </div>
-              )}
-            </>
-          )}
+                        onClick={() => handleProductClick(product.id)}
+                        style={{
+                          borderRadius: '15px',
+                          overflow: 'hidden',
+                          border: 'none',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        bodyStyle={{ padding: '20px' }}
+                      >
+                        <Meta
+                          title={
+                            <div style={{ 
+                              fontSize: 16, 
+                              fontWeight: 'bold',
+                              color: '#2c3e50',
+                              marginBottom: '8px',
+                              lineHeight: '1.4',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {product.name}
+                            </div>
+                          }
+                          description={
+                            <div>
+                              <div style={{ 
+                                color: '#7f8c8d', 
+                                fontSize: 13, 
+                                minHeight: 42,
+                                maxHeight: 42,
+                                overflow: 'hidden',
+                                marginBottom: 12,
+                                lineHeight: '1.4',
+                                wordBreak: 'break-word'
+                              }}>
+                                {truncateDescription(product.description, 42)}
+                              </div>
+                              <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                background: '#f8f9fa',
+                                padding: '12px',
+                                borderRadius: '10px'
+                              }}>
+                                <div style={{ flex: 1, marginRight: '12px' }}>
+                                  <div style={{ 
+                                    color: '#e74c3c', 
+                                    fontSize: 18, 
+                                    fontWeight: 'bold',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    {formatPrice(product.dailyPrice)}/天
+                                  </div>
+                                  <div style={{ 
+                                    color: '#95a5a6', 
+                                    fontSize: 11,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    押金: {formatPrice(product.deposit)}
+                                  </div>
+                                </div>
+                                <Button 
+                                  type="primary" 
+                                  size="small"
+                                  style={{
+                                    borderRadius: '15px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: 'none',
+                                    padding: '4px 16px',
+                                    flexShrink: 0,
+                                    minWidth: '80px'
+                                  }}
+                                >
+                                  查看详情
+                                </Button>
+                              </div>
+                            </div>
+                          }
+                        />
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+                
+                {/* 加载更多状态指示器 */}
+                {loadingMore && (
+                  <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                    <Spin tip="正在加载更多商品..." />
+                  </div>
+                )}
+                
+                {/* 没有更多数据提示 */}
+                {!hasMoreData && products.length > 0 && (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '30px 0',
+                    color: '#95a5a6',
+                    fontSize: '14px'
+                  }}>
+                    🎉 已加载全部商品
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
+      </div>
 
       {/* 登录注册模态框 */}
       <LoginModal
