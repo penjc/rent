@@ -198,6 +198,60 @@ export const MerchantStatus = {
   REJECTED: 2,   // 审核拒绝
 } as const;
 
+// 聊天相关类型
+export interface ChatMessage {
+  id: number;
+  senderId: number;
+  senderType: 'user' | 'merchant';
+  senderName: string;
+  senderAvatar?: string;
+  receiverId: number;
+  receiverType: 'user' | 'merchant';
+  content: string;
+  messageType: 'text' | 'image' | 'file';
+  fileUrl?: string;
+  fileName?: string;
+  isRead: number;
+  createdAt: string;
+}
+
+export interface ChatSession {
+  id: number;
+  userId: number;
+  merchantId: number;
+  status: 'active' | 'closed';
+  lastMessage?: string;
+  lastMessageTime?: string;
+  userUnreadCount: number;
+  merchantUnreadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SendMessageRequest {
+  senderId: number;
+  senderType: 'user' | 'merchant';
+  receiverId: number;
+  receiverType: 'user' | 'merchant';
+  content: string;
+}
+
+export interface ChatHistoryRequest {
+  senderId: number;
+  senderType: 'user' | 'merchant';
+  receiverId: number;
+  receiverType: 'user' | 'merchant';
+  page?: number;
+  size?: number;
+}
+
+export interface MarkReadRequest {
+  receiverId: number;
+  receiverType: 'user' | 'merchant';
+  senderId: number;
+  senderType: 'user' | 'merchant';
+}
+
 // 租赁类型枚举
 export const RentType = {
   DAILY: 1,      // 日租

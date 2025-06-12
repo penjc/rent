@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, message, Badge } from 'antd';
 import { 
   DashboardOutlined, 
   ShopOutlined, 
   OrderedListOutlined, 
   UserOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  MessageOutlined
 } from '@ant-design/icons';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import Orders from './Orders';
 import Certification from './Certification';
+import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { chatService } from '@/services/chatService';
 import type { MerchantData } from '@/services/merchantApi';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -22,12 +25,41 @@ const MerchantLayout: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, user, userType, logout } = useAuthStore();
   const [merchant, setMerchant] = useState<MerchantData | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // 获取商家ID
+  const getMerchantId = (): number | null => {
+    if (userType === 'merchant' && user) {
+      return Number((user as any).id);
+    }
+    const merchantInfo = localStorage.getItem('merchantInfo');
+    if (merchantInfo) {
+      return Number(JSON.parse(merchantInfo).id);
+    }
+    return null;
+  };
+
+  // 加载未读消息数量
+  const loadUnreadCount = useCallback(async () => {
+    const merchantId = getMerchantId();
+    if (!merchantId) return;
+
+    try {
+      const response = await chatService.getUnreadCount('merchant', merchantId);
+      if (response.code === 200) {
+        setUnreadCount(response.data || 0);
+      }
+    } catch (error) {
+      console.error('获取未读消息数量失败:', error);
+    }
+  }, []);
 
   // 根据当前路径确定选中的菜单项
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
+    if (path.includes('/messages')) return 'messages';
     if (path.includes('/certification')) return 'certification';
     return 'dashboard';
   };
@@ -45,8 +77,18 @@ const MerchantLayout: React.FC = () => {
     // 如果认证有效且是商家类型，设置商家信息
     if (user) {
       setMerchant(user as any);
+      // 加载未读消息数量
+      loadUnreadCount();
     }
-    }, [navigate, isAuthenticated, userType, user]);
+    }, [navigate, isAuthenticated, userType, user, loadUnreadCount]);
+
+  // 定期刷新未读消息数量
+  useEffect(() => {
+    if (getMerchantId()) {
+      const interval = setInterval(loadUnreadCount, 30000); // 每30秒刷新一次
+      return () => clearInterval(interval);
+    }
+  }, [loadUnreadCount]);
 
   const handleLogout = () => {
     logout();
@@ -70,6 +112,13 @@ const MerchantLayout: React.FC = () => {
         break;
       case 'orders':
         navigate('/merchant/orders');
+        break;
+      case 'messages':
+        navigate('/merchant/messages');
+        // 进入消息页面时清零未读数量显示
+        setTimeout(() => {
+          loadUnreadCount();
+        }, 1000);
         break;
       case 'certification':
         navigate('/merchant/certification');
@@ -118,6 +167,14 @@ const MerchantLayout: React.FC = () => {
                 <div className="flex items-center cursor-pointer text-white hover:text-green-100 transition-colors">
                   <Avatar icon={<UserOutlined />} className="bg-green-500" />
                   <span className="ml-2 font-medium">{merchant.contactName || merchant.companyName || '商家用户'}</span>
+                  {unreadCount > 0 && (
+                    <Badge 
+                      count={unreadCount} 
+                      size="small" 
+                      style={{ marginLeft: 8 }}
+                      title={`${unreadCount}条未读消息`}
+                    />
+                  )}
                 </div>
               </Dropdown>
             ) : (
@@ -158,6 +215,13 @@ const MerchantLayout: React.FC = () => {
                 label: '订单管理',
               },
               {
+                key: 'messages',
+                icon: <Badge count={unreadCount} size="small" offset={[10, 0]}>
+                  <MessageOutlined />
+                </Badge>,
+                label: '客户消息',
+              },
+              {
                 key: 'certification',
                 icon: <UserOutlined />,
                 label: '商家认证',
@@ -172,6 +236,7 @@ const MerchantLayout: React.FC = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/messages" element={<Messages />} />
               <Route path="/certification" element={<Certification />} />
             </Routes>
           </Content>

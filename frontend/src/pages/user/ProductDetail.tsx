@@ -6,12 +6,13 @@ import {
 } from 'antd';
 import { 
   ShoppingCartOutlined, SafetyCertificateOutlined, 
- 
+  MessageOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/stores/useAuthStore';
 import api from '@/services/api';
+import ChatWindow from '@/components/common/ChatWindow';
 import type { Product } from '../../types';
 
 const { Content } = Layout;
@@ -29,6 +30,10 @@ const ProductDetail: React.FC = () => {
   const [rentDays, setRentDays] = useState<number>(1);
   const [quantity, setQuantity] = useState(1);
   const [form] = Form.useForm();
+  
+  // 聊天相关状态
+  const [chatVisible, setChatVisible] = useState(false);
+  const [merchantInfo, setMerchantInfo] = useState<any>(null);
 
   // 获取当前用户ID
   const getUserId = () => {
@@ -54,6 +59,8 @@ const ProductDetail: React.FC = () => {
       const response = await api.get(`/products/${id}`);
       if (response.data.code === 200) {
         setProduct(response.data.data);
+        // 获取商家信息
+        await fetchMerchantInfo(response.data.data.merchantId);
       } else {
         message.error('商品不存在');
         navigate('/user/products');
@@ -64,6 +71,18 @@ const ProductDetail: React.FC = () => {
       navigate('/user/products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取商家信息
+  const fetchMerchantInfo = async (merchantId: number) => {
+    try {
+      const response = await api.get(`/merchants/${merchantId}`);
+      if (response.data.code === 200) {
+        setMerchantInfo(response.data.data);
+      }
+    } catch (error) {
+      console.error('获取商家信息失败:', error);
     }
   };
 
@@ -90,6 +109,22 @@ const ProductDetail: React.FC = () => {
   const calculateTotalDeposit = () => {
     if (!product || !quantity) return 0;
     return Number(product.deposit) * quantity;
+  };
+
+  // 联系商家
+  const handleContactMerchant = () => {
+    if (!user || userType !== 'user') {
+      message.warning('请先登录用户账号');
+      navigate('/auth/login');
+      return;
+    }
+    
+    if (!merchantInfo) {
+      message.error('商家信息获取失败');
+      return;
+    }
+    
+    setChatVisible(true);
   };
 
   // 处理订单创建
@@ -415,24 +450,42 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 租赁按钮 */}
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<ShoppingCartOutlined />}
-                  loading={createOrderLoading}
-                  onClick={handleCreateOrder}
-                  disabled={product.status !== 1 || product.stock < quantity}
-                  style={{
-                    height: 50,
-                    fontSize: 16,
-                    background: 'linear-gradient(to right, #1890ff, #36cfc9)',
-                    border: 'none'
-                  }}
-                  block
-                >
-                  立即租赁
-                </Button>
+                {/* 操作按钮 */}
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Button
+                      size="large"
+                      icon={<MessageOutlined />}
+                      onClick={handleContactMerchant}
+                      style={{
+                        height: 50,
+                        fontSize: 16,
+                      }}
+                      block
+                    >
+                      联系商家
+                    </Button>
+                  </Col>
+                  <Col span={12}>
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      loading={createOrderLoading}
+                      onClick={handleCreateOrder}
+                      disabled={product.status !== 1 || product.stock < quantity}
+                      style={{
+                        height: 50,
+                        fontSize: 16,
+                        background: 'linear-gradient(to right, #1890ff, #36cfc9)',
+                        border: 'none'
+                      }}
+                      block
+                    >
+                      立即租赁
+                    </Button>
+                  </Col>
+                </Row>
 
                 {product.stock < quantity && (
                   <Alert
@@ -476,6 +529,20 @@ const ProductDetail: React.FC = () => {
           </Col>
         </Row>
       </Content>
+      
+      {/* 聊天窗口 */}
+      {merchantInfo && (
+        <ChatWindow
+          visible={chatVisible}
+          onClose={() => setChatVisible(false)}
+          currentUserId={getUserId()}
+          currentUserType="user"
+          targetUserId={merchantInfo.id}
+          targetUserType="merchant"
+          targetUserName={merchantInfo.companyName || merchantInfo.contactName}
+          targetUserAvatar={merchantInfo.avatar}
+        />
+      )}
     </Layout>
   );
 };

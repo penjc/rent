@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { User, Merchant, Admin, UserType } from '@/types';
 
 // 联合用户类型
@@ -38,9 +37,7 @@ const getStorageKeys = (userType: UserType) => ({
   userType: `${userType}_userType`,
 });
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
       isAuthenticated: false,
       user: null,
       userType: null,
@@ -207,17 +204,4 @@ export const useAuthStore = create<AuthState>()(
           token: null,
         });
       },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: () => ({
-        // 不持久化认证状态，每次刷新都重新验证
-        isAuthenticated: false,
-        user: null,
-        userType: null,
-        token: null,
-        isInitialized: false,
-      }),
-    }
-  )
-); 
+    })); 
