@@ -97,7 +97,8 @@ const Products: React.FC = () => {
         page,
         size: pageSize,
         categoryId: selectedCategory || undefined,
-        name: activeSearchText || undefined
+        name: activeSearchText || undefined,
+        sortBy: sortBy || undefined
       });
       
       const newProducts = response?.records || [];
@@ -131,7 +132,7 @@ const Products: React.FC = () => {
     
     const nextPage = Math.floor(products.length / pageSize) + 1;
     fetchProducts(nextPage, true);
-  }, [loadingMore, hasMoreData, products.length, selectedCategory, activeSearchText]);
+  }, [loadingMore, hasMoreData, products.length, selectedCategory, activeSearchText, sortBy]);
 
   // 滚动监听
   useEffect(() => {

@@ -36,9 +36,11 @@ public class ProductController {
     public Result<IPage<Product>> getProducts(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long categoryId) {
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String name,
+            @RequestParam(defaultValue = "created_desc") String sortBy) {
         
-        IPage<Product> productPage = productService.getProductPage(page, size, categoryId);
+        IPage<Product> productPage = productService.getProductPage(page, size, categoryId, name, sortBy);
         return Result.success(productPage);
     }
     

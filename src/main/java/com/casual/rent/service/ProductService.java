@@ -18,16 +18,49 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     /**
      * 分页查询商品
      */
-    public IPage<Product> getProductPage(int page, int size, Long categoryId) {
+    public IPage<Product> getProductPage(int page, int size, Long categoryId, String name, String sortBy) {
         Page<Product> pageParam = new Page<>(page, size);
         
-        return lambdaQuery()
-                .eq(categoryId != null, Product::getCategoryId, categoryId)
-                .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
-                .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
-                .gt(Product::getStock, 0) // 只查询库存大于0的商品
-                .orderByDesc(Product::getCreatedAt)
-                .page(pageParam);
+        // 根据排序方式进行排序
+        if ("price_asc".equals(sortBy)) {
+            return lambdaQuery()
+                    .eq(categoryId != null, Product::getCategoryId, categoryId)
+                    .like(name != null && !name.trim().isEmpty(), Product::getName, name)
+                    .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
+                    .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
+                    .gt(Product::getStock, 0) // 只查询库存大于0的商品
+                    .orderByAsc(Product::getDailyPrice)
+                    .page(pageParam);
+        } else if ("price_desc".equals(sortBy)) {
+            return lambdaQuery()
+                    .eq(categoryId != null, Product::getCategoryId, categoryId)
+                    .like(name != null && !name.trim().isEmpty(), Product::getName, name)
+                    .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
+                    .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
+                    .gt(Product::getStock, 0) // 只查询库存大于0的商品
+                    .orderByDesc(Product::getDailyPrice)
+                    .page(pageParam);
+        } else if ("popular".equals(sortBy)) {
+            // 暂时使用商品ID倒序作为热度排序，后续可以加入真实的热度统计
+            return lambdaQuery()
+                    .eq(categoryId != null, Product::getCategoryId, categoryId)
+                    .like(name != null && !name.trim().isEmpty(), Product::getName, name)
+                    .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
+                    .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
+                    .gt(Product::getStock, 0) // 只查询库存大于0的商品
+                    .orderByDesc(Product::getId)
+                    .page(pageParam);
+        } else {
+            // 默认按创建时间倒序
+            return lambdaQuery()
+                    .eq(categoryId != null, Product::getCategoryId, categoryId)
+                    .like(name != null && !name.trim().isEmpty(), Product::getName, name)
+                    .eq(Product::getStatus, ProductStatus.ON_SHELF.getCode()) // 只查询上架的商品
+                    .eq(Product::getAuditStatus, AuditStatus.APPROVED.getCode()) // 只查询审核通过的商品
+                    .gt(Product::getStock, 0) // 只查询库存大于0的商品
+                    .orderByDesc(Product::getCreatedAt)
+                    .page(pageParam);
+        }
     }
     
     /**

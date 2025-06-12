@@ -6,6 +6,7 @@ export interface ProductQueryParams {
   size?: number;
   categoryId?: number;
   name?: string;
+  sortBy?: string;
 }
 
 export interface CreateProductData {
@@ -29,7 +30,7 @@ export const getCategories = async (): Promise<Category[]> => {
 
 // 获取商品列表（分页）
 export const getProducts = async (params: ProductQueryParams = {}): Promise<PaginationResponse<Product>> => {
-  const { page = 1, size = 10, categoryId, name } = params;
+  const { page = 1, size = 10, categoryId, name, sortBy } = params;
   const queryParams = new URLSearchParams({
     page: page.toString(),
     size: size.toString(),
@@ -41,6 +42,10 @@ export const getProducts = async (params: ProductQueryParams = {}): Promise<Pagi
   
   if (name) {
     queryParams.append('name', name);
+  }
+  
+  if (sortBy) {
+    queryParams.append('sortBy', sortBy);
   }
   
   const response = await api.get<ApiResponse<PaginationResponse<Product>>>(`/products?${queryParams}`);
