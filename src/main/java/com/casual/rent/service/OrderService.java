@@ -258,10 +258,18 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         // 恢复商品库存
         Product product = productService.getById(order.getProductId());
         if (product != null) {
-            // 订单完成后，商品库存+1（假设每个订单只租赁1件商品）
-            // 如果订单表中有数量字段，应该使用订单的数量
-            product.setStock(product.getStock() + 1);
+            // 使用订单的数量恢复库存，默认1
+            Integer quantity = order.getQuantity() != null ? order.getQuantity() : 1;
+            product.setStock(product.getStock() + quantity);
             productService.updateById(product);
+
+            // 如果商品库存恢复后大于0且当前是下架状态，重新上架
+            if (product.getStock() > 0
+                    && product.getStatus().equals(ProductStatus.OFF_SHELF.getCode())
+                    && product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
+                product.setStatus(ProductStatus.ON_SHELF.getCode());
+                productService.updateById(product);
+            }
         }
     }
     
