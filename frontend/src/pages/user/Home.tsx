@@ -215,6 +215,21 @@ const Home: React.FC = () => {
           >
             了解更多
           </Button>
+          {/*<Button */}
+          {/*  size="large" */}
+          {/*  style={{ */}
+          {/*    height: '50px', */}
+          {/*    padding: '0 30px', */}
+          {/*    fontSize: '16px',*/}
+          {/*    borderRadius: '25px',*/}
+          {/*    background: 'rgba(255,255,255,0.1)',*/}
+          {/*    border: '2px solid rgba(255,255,255,0.4)',*/}
+          {/*    color: 'white'*/}
+          {/*  }}*/}
+          {/*  onClick={() => navigate('/user/message-demo')}*/}
+          {/*>*/}
+          {/*  消息演示*/}
+          {/*</Button>*/}
         </Space>
       </div>
 

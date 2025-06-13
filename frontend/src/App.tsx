@@ -17,6 +17,9 @@ import AdminLayout from './pages/admin/Layout';
 import Login from './pages/common/Login';
 import Register from './pages/common/Register';
 
+// 消息系统
+import MessageProvider from './components/common/MessageProvider';
+
 // 状态管理
 import { useAuthStore } from './stores/useAuthStore';
 
@@ -47,30 +50,32 @@ const App: React.FC = () => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <Router>
-        <div className="app">
-          <Routes>
-            {/* 默认重定向到用户端首页 */}
-            <Route path="/" element={<Navigate to="/user" replace />} />
-            
-            {/* 通用认证页面 */}
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/register" element={<Register />} />
-            
-            {/* 用户端路由 */}
-            <Route path="/user/*" element={<UserLayout />} />
-            
-            {/* 商家端路由 */}
-            <Route path="/merchant/*" element={<MerchantLayout />} />
-            
-            {/* 管理员端路由 */}
-            <Route path="/admin/*" element={<AdminLayout />} />
-            
-            {/* 404页面重定向到用户端首页 */}
-            <Route path="*" element={<Navigate to="/user" replace />} />
-          </Routes>
-        </div>
-      </Router>
+      <MessageProvider>
+        <Router>
+          <div className="app">
+            <Routes>
+              {/* 默认重定向到用户端首页 */}
+              <Route path="/" element={<Navigate to="/user" replace />} />
+              
+              {/* 通用认证页面 */}
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              
+              {/* 用户端路由 */}
+              <Route path="/user/*" element={<UserLayout />} />
+              
+              {/* 商家端路由 */}
+              <Route path="/merchant/*" element={<MerchantLayout />} />
+              
+              {/* 管理员端路由 */}
+              <Route path="/admin/*" element={<AdminLayout />} />
+              
+              {/* 404页面重定向到用户端首页 */}
+              <Route path="*" element={<Navigate to="/user" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </MessageProvider>
     </ConfigProvider>
   );
 };

@@ -12,6 +12,7 @@ import Profile from './Profile';
 import Favorites from './Favorites';
 import Chat from './Chat';
 import Messages from './Messages';
+import MessageDemo from '@/components/common/MessageDemo';
 
 const { Header, Content, Footer } = Layout;
 
@@ -309,6 +310,7 @@ const UserLayout: React.FC = () => {
           <Route path="favorites" element={<Favorites />} />
           <Route path="chat" element={<Chat />} />
           <Route path="messages" element={<Messages />} />
+          <Route path="message-demo" element={<MessageDemo />} />
         </Routes>
       </Content>
 

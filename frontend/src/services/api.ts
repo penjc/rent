@@ -1,5 +1,5 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios';
-import { message } from 'antd';
+import { showMessage } from '@/hooks/useMessage';
 import type { ApiResponse } from '@/types';
 import type { UserType } from '@/types';
 
@@ -72,7 +72,7 @@ api.interceptors.response.use(
     if (data.code === 200) {
       return response;
     } else {
-      message.error(data.message || '请求失败');
+      showMessage.error(data.message || '请求失败');
       return Promise.reject(new Error(data.message || '请求失败'));
     }
   },
@@ -84,18 +84,18 @@ api.interceptors.response.use(
         // 未授权，清除当前上下文的token并跳转到登录页
         clearCurrentAuth();
         window.location.href = '/auth/login';
-        message.error('登录已过期，请重新登录');
+        showMessage.error('登录已过期，请重新登录');
       } else if (status === 403) {
-        message.error('没有权限访问');
+        showMessage.error('没有权限访问');
       } else if (status >= 500) {
-        message.error('服务器错误，请稍后重试');
+        showMessage.error('服务器错误，请稍后重试');
       } else {
-        message.error(data?.message || `请求失败 (${status})`);
+        showMessage.error(data?.message || `请求失败 (${status})`);
       }
     } else if (error.request) {
-      message.error('网络错误，请检查网络连接');
+      showMessage.error('网络错误，请检查网络连接');
     } else {
-      message.error('请求配置错误');
+      showMessage.error('请求配置错误');
     }
     
     return Promise.reject(error);
