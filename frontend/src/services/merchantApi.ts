@@ -13,6 +13,8 @@ export interface MerchantData {
   remark?: string;
   createdAt?: string;
   updatedAt?: string;
+  name: string;
+  avatar: string;
 }
 
 export interface MerchantLoginData {
@@ -43,9 +45,12 @@ export const merchantRegister = async (data: MerchantRegisterData): Promise<ApiR
 };
 
 // 获取商家信息
-export const getMerchantInfo = async (phone: string): Promise<ApiResponse<MerchantData>> => {
-  const response = await api.get(`/merchant/info/${phone}`);
-  return response.data;
+export const getMerchantInfo = async (merchantId: string): Promise<MerchantData> => {
+  const response = await api.get<ApiResponse<MerchantData>>(`/merchants/${merchantId}`);
+  if (!response.data.data) {
+    throw new Error('商家信息不存在');
+  }
+  return response.data.data;
 };
 
 export const getMerchantCompanyNames = async (merchantIds: number[]): Promise<Record<number, string>> => {

@@ -267,4 +267,12 @@ public class UserController {
         Map<Long, String> nicknames = userService.getUserNicknames(userIds);
         return Result.success(nicknames);
     }
+
+    @GetMapping("/avatars")
+    @Operation(summary = "批量获取用户头像", description = "根据用户ID列表获取对应的用户头像")
+    public Result<Map<Long, String>> getUserAvatars(
+            @Parameter(description = "用户ID列表，用逗号分隔") @RequestParam List<Long> userIds) {
+        Map<Long, String> avatars = userService.getUserAvatars(userIds);
+        return Result.success(avatars);
+    }
 } 

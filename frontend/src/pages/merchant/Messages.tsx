@@ -4,7 +4,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getUserMessages } from '@/services/chatService';
-import { getUserNicknames } from '@/services/userApi';
+import { getUserNicknames, getUserAvatars } from '@/services/userApi';
 import type { ChatMessage } from '@/types';
 
 const { Title, Text } = Typography;
@@ -12,6 +12,7 @@ const { Title, Text } = Typography;
 interface UserChat {
   userId: number;
   userName: string;
+  userAvatar: string;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;
@@ -47,8 +48,11 @@ const Messages: React.FC = () => {
       });
       const userIds = Array.from(userIdSet);
       
-      // 获取用户昵称
-      const userNicknames = await getUserNicknames(userIds);
+      // 获取用户昵称和头像
+      const [userNicknames, userAvatars] = await Promise.all([
+        getUserNicknames(userIds),
+        getUserAvatars(userIds)
+      ]);
       
       // 按用户分组消息
       const userMap = new Map<number, UserChat>();
@@ -59,6 +63,7 @@ const Messages: React.FC = () => {
           userMap.set(userId, {
             userId,
             userName: userNicknames[userId] || `用户${userId}`,
+            userAvatar: userAvatars[userId] || '',
             lastMessage: msg.content,
             lastMessageTime: msg.createdAt,
             unreadCount: 0
@@ -145,7 +150,8 @@ const Messages: React.FC = () => {
               }}
             >
               <Avatar
-                icon={<UserOutlined />}
+                src={chat.userAvatar}
+                icon={!chat.userAvatar && <UserOutlined />}
                 style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
                 size={48}
               />

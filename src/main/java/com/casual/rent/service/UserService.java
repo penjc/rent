@@ -172,4 +172,21 @@ public class UserService extends ServiceImpl<UserMapper, User> {
                         user -> user.getNickname() != null ? user.getNickname() : "用户" + user.getId()
                 ));
     }
+
+    /**
+     * 批量获取用户头像
+     */
+    public Map<Long, String> getUserAvatars(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return lambdaQuery()
+                .in(User::getId, userIds)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        user -> user.getAvatar() != null ? user.getAvatar() : ""
+                ));
+    }
 } 
