@@ -6,13 +6,15 @@ import {
   ShopOutlined, 
   OrderedListOutlined, 
   UserOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  MessageOutlined
 } from '@ant-design/icons';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import Orders from './Orders';
 import Certification from './Certification';
 import Chat from './Chat';
+import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { MerchantData } from '@/services/merchantApi';
 
@@ -30,6 +32,7 @@ const MerchantLayout: React.FC = () => {
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
     if (path.includes('/certification')) return 'certification';
+    if (path.includes('/messages')) return 'messages';
     return 'dashboard';
   };
 
@@ -47,7 +50,7 @@ const MerchantLayout: React.FC = () => {
     if (user) {
       setMerchant(user as any);
     }
-    }, [navigate, isAuthenticated, userType, user]);
+  }, [navigate, isAuthenticated, userType, user]);
 
   const handleLogout = () => {
     logout();
@@ -55,133 +58,84 @@ const MerchantLayout: React.FC = () => {
     navigate('/auth/login');
   };
 
-  const handleMenuClick = (key: string) => {
-    if (key === 'logout') {
-      handleLogout();
+  const menuItems = [
+    {
+      key: 'dashboard',
+      icon: <DashboardOutlined />,
+      label: '控制台',
+      onClick: () => navigate('/merchant/dashboard')
+    },
+    {
+      key: 'products',
+      icon: <ShopOutlined />,
+      label: '商品管理',
+      onClick: () => navigate('/merchant/products')
+    },
+    {
+      key: 'orders',
+      icon: <OrderedListOutlined />,
+      label: '订单管理',
+      onClick: () => navigate('/merchant/orders')
+    },
+    {
+      key: 'messages',
+      icon: <MessageOutlined />,
+      label: '消息列表',
+      onClick: () => navigate('/merchant/messages')
+    },
+    {
+      key: 'certification',
+      icon: <UserOutlined />,
+      label: '商家认证',
+      onClick: () => navigate('/merchant/certification')
     }
-  };
-
-  const handleNavMenuClick = ({ key }: { key: string }) => {
-    switch (key) {
-      case 'dashboard':
-        navigate('/merchant');
-        break;
-      case 'products':
-        navigate('/merchant/products');
-        break;
-      case 'orders':
-        navigate('/merchant/orders');
-        break;
-      case 'certification':
-        navigate('/merchant/certification');
-        break;
-      default:
-        break;
-    }
-  };
-
-  const userMenu = {
-    items: [
-      {
-        key: 'logout',
-        label: '退出登录',
-        icon: <LogoutOutlined />,
-      },
-    ],
-    onClick: ({ key }: { key: string }) => handleMenuClick(key),
-  };
-
-  // 如果没有有效的认证状态，显示加载状态
-  if (!isAuthenticated || !merchant) {
-    return (
-      <Layout className="min-h-screen">
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">正在验证商家身份...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  ];
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="header bg-green-600">
-        <div className="flex justify-between items-center">
-          <div className="logo text-white text-xl font-bold">
-            Casual Rent - 商家中心
-          </div>
-          
-          <div className="auth-section">
-            {merchant ? (
-              <Dropdown menu={userMenu} placement="bottomRight">
-                <div className="flex items-center cursor-pointer text-white hover:text-green-100 transition-colors">
-                  <Avatar icon={<UserOutlined />} className="bg-green-500" />
-                  <span className="ml-2 font-medium">{merchant.contactName || merchant.companyName || '商家用户'}</span>
-                </div>
-              </Dropdown>
-            ) : (
-              <div className="space-x-2">
-                <Button type="text" className="text-white hover:text-green-100" onClick={() => navigate('/auth/login')}>
-                  登录
-                </Button>
-                <Button type="primary" className="bg-white text-green-600 border-white hover:bg-green-50" onClick={() => navigate('/auth/register')}>
-                  注册
-                </Button>
-              </div>
-            )}
-          </div>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider width={200} theme="light" style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.06)' }}>
+        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}>
+          <h1 style={{ margin: 0, fontSize: 20, color: '#1890ff' }}>商家中心</h1>
         </div>
-      </Header>
-
+        <Menu
+          mode="inline"
+          selectedKeys={[getSelectedKey()]}
+          items={menuItems}
+          style={{ borderRight: 0 }}
+        />
+      </Sider>
       <Layout>
-        <Sider width={250} className="site-layout-background bg-white shadow-lg">
-          <Menu
-            mode="inline"
-            selectedKeys={[getSelectedKey()]}
-            className="h-full border-right-0 pt-4"
-            onClick={handleNavMenuClick}
-            items={[
-              {
-                key: 'dashboard',
-                icon: <DashboardOutlined />,
-                label: '商家概览',
-              },
-              {
-                key: 'products',
-                icon: <ShopOutlined />,
-                label: '商品管理',
-              },
-              {
-                key: 'orders',
-                icon: <OrderedListOutlined />,
-                label: '订单管理',
-              },
-              {
-                key: 'certification',
-                icon: <UserOutlined />,
-                label: '商家认证',
-              },
-            ]}
-          />
-        </Sider>
-
-        <Layout className="site-layout">
-          <Content className="site-layout-background bg-gray-50 p-6">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/certification" element={<Certification />} />
-              <Route path="/chat" element={<Chat />} />
-            </Routes>
-          </Content>
-
-          <Footer className="text-center bg-white border-t">
-            Casual Rent ©2025 Created by Genius of CityU
-          </Footer>
-        </Layout>
+        <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'logout',
+                  icon: <LogoutOutlined />,
+                  label: '退出登录',
+                  onClick: handleLogout
+                }
+              ]
+            }}
+          >
+            <Button type="text" icon={<Avatar icon={<UserOutlined />} />}>
+              {merchant?.companyName || '商家'}
+            </Button>
+          </Dropdown>
+        </Header>
+        <Content style={{ margin: '24px', background: '#fff', padding: 24, minHeight: 280 }}>
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/certification" element={<Certification />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/messages" element={<Messages />} />
+          </Routes>
+        </Content>
+        <Footer style={{ textAlign: 'center' }}>
+          租赁平台商家中心 ©{new Date().getFullYear()} Created by Your Company
+        </Footer>
       </Layout>
     </Layout>
   );

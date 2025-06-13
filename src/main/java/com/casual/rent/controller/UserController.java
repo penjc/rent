@@ -12,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -256,5 +258,13 @@ public class UserController {
                                           @RequestParam(required = false) Integer status) {
         IPage<Order> orders = orderService.getUserOrders(page, size, userId, status);
         return Result.success(orders);
+    }
+
+    @GetMapping("/nicknames")
+    @Operation(summary = "批量获取用户昵称", description = "根据用户ID列表获取对应的用户昵称")
+    public Result<Map<Long, String>> getUserNicknames(
+            @Parameter(description = "用户ID列表，用逗号分隔") @RequestParam List<Long> userIds) {
+        Map<Long, String> nicknames = userService.getUserNicknames(userIds);
+        return Result.success(nicknames);
     }
 } 

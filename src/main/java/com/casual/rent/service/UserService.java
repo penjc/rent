@@ -12,6 +12,11 @@ import com.casual.rent.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * 用户服务
  */
@@ -149,5 +154,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      */
     public long countByVerificationStatus(VerificationStatus status) {
         return countByVerificationStatus(status.getCode());
+    }
+
+    /**
+     * 批量获取用户昵称
+     */
+    public Map<Long, String> getUserNicknames(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return lambdaQuery()
+                .in(User::getId, userIds)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        user -> user.getNickname() != null ? user.getNickname() : "用户" + user.getId()
+                ));
     }
 } 

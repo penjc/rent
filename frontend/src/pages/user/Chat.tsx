@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { List, Input, Button, message } from 'antd';
+import { List, Input, Button, message, Typography } from 'antd';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getMessages, sendMessage, type ChatMessage } from '@/services/chatService';
+import { getMerchantCompanyNames } from '@/services/merchantApi';
+
+const { Title } = Typography;
 
 const Chat: React.FC = () => {
   const [params] = useSearchParams();
@@ -10,10 +13,12 @@ const Chat: React.FC = () => {
   const { user } = useAuthStore();
   const [messagesList, setMessagesList] = useState<ChatMessage[]>([]);
   const [content, setContent] = useState('');
+  const [merchantName, setMerchantName] = useState('');
 
   useEffect(() => {
     if (user && merchantId) {
       loadMessages();
+      loadMerchantName();
     }
   }, [user, merchantId]);
 
@@ -21,6 +26,12 @@ const Chat: React.FC = () => {
     if (!user) return;
     const list = await getMessages(user.id as unknown as number, merchantId);
     setMessagesList(list);
+  };
+
+  const loadMerchantName = async () => {
+    if (!merchantId) return;
+    const names = await getMerchantCompanyNames([merchantId]);
+    setMerchantName(names[merchantId] || `商家${merchantId}`);
   };
 
   const handleSend = async () => {
@@ -40,13 +51,14 @@ const Chat: React.FC = () => {
 
   return (
     <div style={{ padding: 24 }}>
+      <Title level={4} style={{ marginBottom: 24 }}>与 {merchantName} 的对话</Title>
       <List
         bordered
         dataSource={messagesList}
         renderItem={(item) => (
           <List.Item>
             <div>
-              <b>{item.senderId === (user as any)?.id ? '我' : '对方'}:</b> {item.content}
+              <b>{item.senderId === (user as any)?.id ? '我' : merchantName}:</b> {item.content}
             </div>
           </List.Item>
         )}

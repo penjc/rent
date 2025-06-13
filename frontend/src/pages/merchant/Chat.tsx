@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { List, Input, Button, message } from 'antd';
+import { List, Input, Button, message, Typography } from 'antd';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getMessages, sendMessage, type ChatMessage } from '@/services/chatService';
+import { getUserNicknames } from '@/services/userApi';
+
+const { Title } = Typography;
 
 const Chat: React.FC = () => {
   const [params] = useSearchParams();
@@ -10,10 +13,12 @@ const Chat: React.FC = () => {
   const { user } = useAuthStore();
   const [messagesList, setMessagesList] = useState<ChatMessage[]>([]);
   const [content, setContent] = useState('');
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     if (user && userId) {
       loadMessages();
+      loadUserName();
     }
   }, [user, userId]);
 
@@ -21,6 +26,12 @@ const Chat: React.FC = () => {
     if (!user) return;
     const list = await getMessages(user.id as unknown as number, userId);
     setMessagesList(list);
+  };
+
+  const loadUserName = async () => {
+    if (!userId) return;
+    const nicknames = await getUserNicknames([userId]);
+    setUserName(nicknames[userId] || `用户${userId}`);
   };
 
   const handleSend = async () => {
@@ -40,13 +51,14 @@ const Chat: React.FC = () => {
 
   return (
     <div style={{ padding: 24 }}>
+      <Title level={4} style={{ marginBottom: 24 }}>与 {userName} 的对话</Title>
       <List
         bordered
         dataSource={messagesList}
         renderItem={(item) => (
           <List.Item>
             <div>
-              <b>{item.senderId === (user as any)?.id ? '我' : '对方'}:</b> {item.content}
+              <b>{item.senderId === (user as any)?.id ? '我' : userName}:</b> {item.content}
             </div>
           </List.Item>
         )}
