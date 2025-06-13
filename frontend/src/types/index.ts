@@ -146,6 +146,15 @@ export interface OrderCreateData {
   startDate: string;
 }
 
+// 聊天消息类型
+export interface ChatMessage {
+  id: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  createdAt: string;
+}
+
 // 管理员相关类型
 export interface Admin {
   id: number;

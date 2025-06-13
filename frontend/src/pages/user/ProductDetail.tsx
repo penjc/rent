@@ -433,6 +433,12 @@ const ProductDetail: React.FC = () => {
                 >
                   立即租赁
                 </Button>
+                <Button
+                  style={{ marginTop: 8 }}
+                  onClick={() => navigate(`/user/chat?merchantId=${product.merchantId}`)}
+                >
+                  联系商家
+                </Button>
 
                 {product.stock < quantity && (
                   <Alert

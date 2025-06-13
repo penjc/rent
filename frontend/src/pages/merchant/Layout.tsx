@@ -12,6 +12,7 @@ import Dashboard from './Dashboard';
 import Products from './Products';
 import Orders from './Orders';
 import Certification from './Certification';
+import Chat from './Chat';
 import { useAuthStore } from '@/stores/useAuthStore';
 import type { MerchantData } from '@/services/merchantApi';
 
@@ -173,6 +174,7 @@ const MerchantLayout: React.FC = () => {
               <Route path="/products" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/certification" element={<Certification />} />
+              <Route path="/chat" element={<Chat />} />
             </Routes>
           </Content>
 

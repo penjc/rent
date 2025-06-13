@@ -10,6 +10,7 @@ import Orders from './Orders';
 import OrderManagement from './OrderManagement';
 import Profile from './Profile';
 import Favorites from './Favorites';
+import Chat from './Chat';
 
 const { Header, Content, Footer } = Layout;
 
@@ -291,6 +292,7 @@ const UserLayout: React.FC = () => {
           <Route path="order-management" element={<OrderManagement />} />
           <Route path="profile" element={<Profile />} />
           <Route path="favorites" element={<Favorites />} />
+          <Route path="chat" element={<Chat />} />
         </Routes>
       </Content>
 

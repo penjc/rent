@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   Table, 
@@ -48,6 +49,7 @@ const Orders: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
   const { user, userType } = useAuthStore();
+  const navigate = useNavigate();
 
   // 获取当前商家ID
   const getMerchantId = () => {
@@ -208,6 +210,15 @@ const Orders: React.FC = () => {
         onClick={() => handleViewDetail(record)}
       >
         详情
+      </Button>
+    );
+    actions.push(
+      <Button
+        key="chat"
+        size="small"
+        onClick={() => navigate(`/merchant/chat?userId=${record.userId}`)}
+      >
+        联系买家
       </Button>
     );
 

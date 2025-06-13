@@ -266,12 +266,21 @@ const Orders: React.FC = () => {
     }
 
     actions.push(
-      <Button 
-        key="detail" 
+      <Button
+        key="detail"
         size="small"
         onClick={() => handleViewOrderDetail(order)}
       >
         查看详情
+      </Button>
+    );
+    actions.push(
+      <Button
+        key="chat"
+        size="small"
+        onClick={() => navigate(`/user/chat?merchantId=${order.merchantId}`)}
+      >
+        联系商家
       </Button>
     );
 
