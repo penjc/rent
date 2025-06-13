@@ -90,13 +90,14 @@ rent/
    git clone https://github.com/penjc/rent
    cd rent
    ```
-
-2. **配置数据库**
-
+2. **安装依赖**
+```bash
+./install-dependencies.sh
+```
+3. **配置数据库**
    使用[sql脚本](sql/database.sql)创建数据库和表结构。
+4. **修改配置**
 
-
-3. **修改配置**
    ```yaml
    # src/main/resources/application-pro.yml
    spring:
@@ -106,29 +107,29 @@ rent/
        password: your_password
    ```
 
-4. **配置腾讯云COS**
+5. **配置腾讯云COS**
 
    修改`.env.example`为 `.env` 并填写相关配置。
 
 
-5. **安装前端依赖**
+6. **安装前端依赖**
    ```bash
    cd frontend
    npm install
    cd ..
    ```
 
-6. **构建后端**
+7. **构建后端**
    ```bash
    mvn clean compile
    ```
 
-7. **一键启动**
+8. **一键启动**
    ```bash
    ./start-all.sh
    ```
 
-8. **访问应用**
+9. **访问应用**
    - 前端应用: http://localhost:3000
    - 后端API: http://localhost:8080/api
 
