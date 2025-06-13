@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { List, Avatar, Typography, Empty, Spin, message } from 'antd';
-import { UserOutlined, ShopOutlined } from '@ant-design/icons';
+import { ShopOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getUserMessages } from '@/services/chatService';
@@ -99,82 +99,69 @@ const Messages: React.FC = () => {
 
   if (merchantChats.length === 0) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '400px',
-        background: 'white',
-        borderRadius: '8px',
-        padding: '24px'
-      }}>
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="暂无消息"
-        />
+      <div style={{ padding: '32px 0', minHeight: '80vh', background: 'linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%)' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', background: 'white', borderRadius: 18, boxShadow: '0 8px 32px rgba(102,126,234,0.10)', padding: '32px 32px 24px 32px' }}>
+          <Title level={2} style={{ marginBottom: 32, textAlign: 'center', fontWeight: 700, color: '#3b5998', letterSpacing: 2 }}>我的消息</Title>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0' }}>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<span style={{ color: '#888', fontSize: 16 }}>暂无消息，快去联系商家吧！</span>}
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
-      <Title level={2} style={{ marginBottom: '24px' }}>我的消息</Title>
-      <List
-        itemLayout="horizontal"
-        dataSource={merchantChats}
-        renderItem={(chat) => (
-          <List.Item
-            onClick={() => handleChatClick(chat.merchantId)}
-            style={{
-              cursor: 'pointer',
-              padding: '16px',
-              borderRadius: '8px',
-              transition: 'all 0.3s ease',
-              background: 'white',
-              marginBottom: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            }}
-          >
-            <List.Item.Meta
-              avatar={
-                <Avatar 
-                  icon={<ShopOutlined />} 
-                  style={{ 
-                    backgroundColor: '#1890ff',
-                    fontSize: '16px'
-                  }} 
-                />
-              }
-              title={
+    <div style={{ padding: '32px 0', minHeight: '80vh', background: 'linear-gradient(135deg, #f0f4ff 0%, #e6f7ff 100%)' }}>
+      <div style={{ maxWidth: 600, margin: '0 auto', background: 'white', borderRadius: 18, boxShadow: '0 8px 32px rgba(102,126,234,0.10)', padding: '32px 32px 24px 32px' }}>
+        <Title level={2} style={{ marginBottom: 32, textAlign: 'center', fontWeight: 700, color: '#3b5998', letterSpacing: 2 }}>我的消息</Title>
+        <List
+          itemLayout="horizontal"
+          dataSource={merchantChats}
+          renderItem={(chat) => (
+            <List.Item
+              onClick={() => handleChatClick(chat.merchantId)}
+              style={{
+                cursor: 'pointer',
+                padding: '20px 18px',
+                borderRadius: '14px',
+                marginBottom: '18px',
+                background: 'linear-gradient(90deg, #f6fbff 0%, #f0f4ff 100%)',
+                boxShadow: '0 2px 8px rgba(102,126,234,0.08)',
+                border: '1.5px solid #e6f7ff',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.01)';
+                e.currentTarget.style.boxShadow = '0 6px 18px rgba(102,126,234,0.15)';
+                e.currentTarget.style.background = '#f0f8ff';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(102,126,234,0.08)';
+                e.currentTarget.style.background = 'linear-gradient(90deg, #f6fbff 0%, #f0f4ff 100%)';
+              }}
+            >
+              <Avatar
+                icon={<ShopOutlined />}
+                style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
+                size={48}
+              />
+              <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text strong>{chat.merchantName}</Text>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {new Date(chat.lastMessageTime).toLocaleString()}
-                  </Text>
+                  <Text strong style={{ fontSize: 18, color: '#222' }}>{chat.merchantName}</Text>
+                  <Text type="secondary" style={{ fontSize: 13, color: '#888' }}>{new Date(chat.lastMessageTime).toLocaleString()}</Text>
                 </div>
-              }
-              description={
-                <Text 
-                  type="secondary" 
-                  ellipsis
-                  style={{ marginTop: '4px' }}
-                >
-                  {chat.lastMessage}
-                </Text>
-              }
-            />
-          </List.Item>
-        )}
-      />
+                <Text type="secondary" ellipsis style={{ marginTop: 6, fontSize: 15, color: '#666', display: 'block' }}>{chat.lastMessage}</Text>
+              </div>
+            </List.Item>
+          )}
+        />
+      </div>
     </div>
   );
 };

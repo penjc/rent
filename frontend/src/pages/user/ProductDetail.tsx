@@ -5,8 +5,7 @@ import {
   Breadcrumb, Typography, Space, Tag, Form
 } from 'antd';
 import { 
-  ShoppingCartOutlined, SafetyCertificateOutlined, 
- 
+  ShoppingCartOutlined, SafetyCertificateOutlined, CustomerServiceOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
@@ -416,35 +415,49 @@ const ProductDetail: React.FC = () => {
                 </div>
 
                 {/* 租赁按钮 */}
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<ShoppingCartOutlined />}
-                  loading={createOrderLoading}
-                  onClick={handleCreateOrder}
-                  disabled={product.status !== 1 || product.stock < quantity}
-                  style={{
-                    height: 50,
-                    fontSize: 16,
-                    background: 'linear-gradient(to right, #1890ff, #36cfc9)',
-                    border: 'none'
-                  }}
-                  block
-                >
-                  立即租赁
-                </Button>
-                <Button
-                  style={{ marginTop: 8 }}
-                  onClick={() => {
-                    if (!isAuthenticated) {
-                      navigate('/auth/login');
-                      return;
-                    }
-                    navigate(`/user/chat?merchantId=${product.merchantId}`);
-                  }}
-                >
-                  联系商家
-                </Button>
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<ShoppingCartOutlined />}
+                    loading={createOrderLoading}
+                    onClick={handleCreateOrder}
+                    disabled={product.status !== 1 || product.stock < quantity}
+                    style={{
+                      height: 50,
+                      fontSize: 16,
+                      background: 'linear-gradient(to right, #1890ff, #36cfc9)',
+                      border: 'none',
+                      width: '100%'
+                    }}
+                    block
+                  >
+                    立即租赁
+                  </Button>
+                  <Button
+                    type="default"
+                    size="large"
+                    icon={<CustomerServiceOutlined />}
+                    style={{
+                      height: 50,
+                      fontSize: 16,
+                      border: '1.5px solid #36cfc9',
+                      color: '#1890ff',
+                      background: '#f6fbff',
+                      width: '100%'
+                    }}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        navigate('/auth/login');
+                        return;
+                      }
+                      navigate(`/user/chat?merchantId=${product.merchantId}`);
+                    }}
+                    block
+                  >
+                    联系商家
+                  </Button>
+                </Space>
 
                 {product.stock < quantity && (
                   <Alert
