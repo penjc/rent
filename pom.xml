@@ -15,7 +15,7 @@
     <groupId>com.casual</groupId>
     <artifactId>rent</artifactId>
     <version>1.0.0</version>
-    <name>causal-rent</name>
+    <name>casual-rent</name>
     <description>Casual Rent</description>
     <packaging>jar</packaging>
 

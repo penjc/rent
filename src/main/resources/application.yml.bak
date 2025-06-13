@@ -5,7 +5,7 @@ server:
 
 spring:
   application:
-    name: causal-rent
+    name: casual-rent
   
   # 数据源配置
   datasource:
@@ -47,7 +47,7 @@ logging:
 # 自定义配置
 app:
   jwt:
-    secret: causal-rent-2024-secret-key
+    secret: casual-rent-2024-secret-key
     expiration: 86400000  # 24小时
   sms:
     code-length: 6

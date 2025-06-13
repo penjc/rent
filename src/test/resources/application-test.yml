@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: causal-rent-test
+    name: casual-rent-test
   
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
