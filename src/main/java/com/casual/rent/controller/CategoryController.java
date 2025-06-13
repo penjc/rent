@@ -5,12 +5,15 @@ import com.casual.rent.entity.Category;
 import com.casual.rent.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 /**
  * 分类控制器
  */
+@Tag(name = "分类接口")
 @RestController
 @RequestMapping("/categories")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -22,6 +25,7 @@ public class CategoryController {
     /**
      * 获取所有启用的分类列表
      */
+    @Operation(summary = "获取所有启用的分类列表")
     @GetMapping
     public Result<List<Category>> getCategories() {
         List<Category> categories = categoryService.getActiveCategories();
@@ -31,6 +35,7 @@ public class CategoryController {
     /**
      * 根据ID获取分类详情
      */
+    @Operation(summary = "根据ID获取分类详情")
     @GetMapping("/{id}")
     public Result<Category> getCategoryById(@PathVariable Long id) {
         Category category = categoryService.getById(id);

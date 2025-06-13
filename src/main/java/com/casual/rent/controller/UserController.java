@@ -11,6 +11,8 @@ import com.casual.rent.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ import java.util.Map;
 /**
  * 用户控制器
  */
+@Tag(name = "用户接口")
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -35,6 +38,7 @@ public class UserController {
     /**
      * 获取用户信息
      */
+    @Operation(summary = "获取用户信息")
     @GetMapping("/profile/{userId}")
     public Result<User> getProfile(@PathVariable Long userId) {
         User user = userService.getById(userId);
@@ -47,6 +51,7 @@ public class UserController {
     /**
      * 上传头像
      */
+    @Operation(summary = "上传头像")
     @PostMapping("/avatar/{userId}")
     public Result<?> uploadAvatar(@PathVariable Long userId, 
                                  @RequestParam("avatar") MultipartFile avatar) {
@@ -93,6 +98,7 @@ public class UserController {
     /**
      * 更新用户信息（支持头像）
      */
+    @Operation(summary = "更新用户信息(含头像)")
     @PutMapping("/profile-with-avatar/{userId}")
     public Result<String> updateProfileWithAvatar(
             @PathVariable Long userId,
@@ -146,6 +152,7 @@ public class UserController {
     /**
      * 更新用户信息（原JSON格式，保持向后兼容）
      */
+    @Operation(summary = "更新用户信息(JSON)")
     @PutMapping("/profile/{userId}")
     public Result<String> updateProfile(@PathVariable Long userId, @RequestBody Map<String, Object> params) {
         String nickname = (String) params.get("nickname");
@@ -159,6 +166,7 @@ public class UserController {
     /**
      * 用户身份认证 - 上传身份证
      */
+    @Operation(summary = "用户身份认证")
     @PostMapping("/certification/{userId}")
     public Result<?> uploadCertification(@PathVariable Long userId,
                                         @RequestParam(value = "idCardFront", required = false) MultipartFile idCardFront,
@@ -219,6 +227,7 @@ public class UserController {
     /**
      * 获取用户认证状态
      */
+    @Operation(summary = "获取用户认证状态")
     @GetMapping("/certification/status/{userId}")
     public Result<Map<String, Object>> getCertificationStatus(@PathVariable Long userId) {
         User user = userService.getById(userId);
@@ -239,6 +248,7 @@ public class UserController {
     /**
      * 获取我的订单
      */
+    @Operation(summary = "获取我的订单")
     @GetMapping("/orders/{userId}")
     public Result<IPage<Order>> getMyOrders(@PathVariable Long userId,
                                           @RequestParam(defaultValue = "1") int page,

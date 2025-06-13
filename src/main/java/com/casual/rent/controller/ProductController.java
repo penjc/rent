@@ -10,6 +10,8 @@ import com.casual.rent.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 /**
  * 商品控制器
  */
+@Tag(name = "商品接口")
 @RestController
 @RequestMapping("/products")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -32,6 +35,7 @@ public class ProductController {
     /**
      * 分页查询商品列表
      */
+    @Operation(summary = "分页查询商品列表")
     @GetMapping
     public Result<IPage<Product>> getProducts(
             @RequestParam(defaultValue = "1") int page,
@@ -47,6 +51,7 @@ public class ProductController {
     /**
      * 根据ID获取商品详情
      */
+    @Operation(summary = "根据ID获取商品详情")
     @GetMapping("/{id}")
     public Result<Product> getProductById(@PathVariable Long id) {
         Product product = productService.getById(id);
@@ -59,6 +64,7 @@ public class ProductController {
     /**
      * 商家查询自己的商品
      */
+    @Operation(summary = "商家查询自己的商品")
     @GetMapping("/merchant/{merchantId}")
     public Result<IPage<Product>> getProductsByMerchant(
             @PathVariable Long merchantId,
@@ -72,6 +78,7 @@ public class ProductController {
     /**
      * 创建商品（支持文件上传）
      */
+    @Operation(summary = "创建商品（上传图片）")
     @PostMapping("/with-images")
     public Result<Product> createProductWithImages(
             @RequestParam("name") String name,
@@ -136,6 +143,7 @@ public class ProductController {
     /**
      * 创建商品（原JSON格式，保持向后兼容）
      */
+    @Operation(summary = "创建商品（兼容JSON）")
     @PostMapping
     public Result<Product> createProduct(@RequestBody Product product) {
         // 设置默认值
@@ -157,6 +165,7 @@ public class ProductController {
     /**
      * 更新商品
      */
+    @Operation(summary = "更新商品")
     @PutMapping("/{id}")
     public Result<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         product.setId(id);
@@ -167,6 +176,7 @@ public class ProductController {
     /**
      * 删除商品
      */
+    @Operation(summary = "删除商品")
     @DeleteMapping("/{id}")
     public Result<String> deleteProduct(@PathVariable Long id, @RequestParam Long merchantId) {
         // 验证商品是否属于该商家
