@@ -42,7 +42,7 @@ const MerchantLayout: React.FC = () => {
     const storedUserType = localStorage.getItem('merchant_userType');
     
     if (!isAuthenticated || storedUserType !== 'merchant') {
-      showMessage.warning('请先登录商家账号');
+      // showMessage.warning('请先登录商家账号');
       navigate('/auth/login');
       return;
     }
@@ -64,7 +64,7 @@ const MerchantLayout: React.FC = () => {
       key: 'dashboard',
       icon: <DashboardOutlined />,
       label: '控制台',
-      onClick: () => navigate('/merchant/dashboard')
+      onClick: () => navigate('/merchant')
     },
     {
       key: 'products',
@@ -126,12 +126,13 @@ const MerchantLayout: React.FC = () => {
         </Header>
         <Content style={{ margin: '24px', background: '#fff', padding: 24, minHeight: 280 }}>
           <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/certification" element={<Certification />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/messages" element={<Messages />} />
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="certification" element={<Certification />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="messages" element={<Messages />} />
           </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
