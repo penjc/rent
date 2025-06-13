@@ -79,18 +79,19 @@ api.interceptors.response.use(
   (error: AxiosError<ApiResponse>) => {
     if (error.response) {
       const { status, data } = error.response;
-      
+      const backendMessage = data?.message;
+
       if (status === 401) {
         // 未授权，清除当前上下文的token并跳转到登录页
         clearCurrentAuth();
         window.location.href = '/auth/login';
-        message.error('登录已过期，请重新登录');
+        message.error(backendMessage || '登录已过期，请重新登录');
       } else if (status === 403) {
-        message.error('没有权限访问');
+        message.error(backendMessage || '没有权限访问');
       } else if (status >= 500) {
-        message.error('服务器错误，请稍后重试');
+        message.error(backendMessage || '服务器错误，请稍后重试');
       } else {
-        message.error(data?.message || `请求失败 (${status})`);
+        message.error(backendMessage || `请求失败 (${status})`);
       }
     } else if (error.request) {
       message.error('网络错误，请检查网络连接');
