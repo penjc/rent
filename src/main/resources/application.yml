@@ -41,12 +41,6 @@ logging:
 
 # 自定义配置
 app:
-  jwt:
-    secret: casual-rent-2024-secret-key
-    expiration: 86400000  # 24小时
-  sms:
-    code-length: 6
-    expiration: 300  # 5分钟
   # 腾讯云OSS配置
   tencent:
     cos:
@@ -55,6 +49,7 @@ app:
       region: ${TENCENT_COS_REGION}
       bucket-name: ${TENCENT_COS_BUCKET}
       domain: ${TENCENT_COS_DOMAIN}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
