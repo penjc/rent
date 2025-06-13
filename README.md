@@ -79,7 +79,7 @@ rent/
 
 ### 环境要求
 - **Java**: JDK 8+
-- **Node.js**: 16+
+- **Node.js**: 22+
 - **MySQL**: 5.7+
 - **Maven**: 3.6+
 
@@ -91,9 +91,17 @@ rent/
    cd rent
    ```
 2. **安装依赖**
-```bash
-./install-dependencies.sh
-```
+   根据系统选择对应脚本：
+   ```bash
+   # Linux
+   ./install-dependencies.sh
+
+   # macOS
+   ./install-dependencies-mac.sh
+
+   # Windows
+   PowerShell -ExecutionPolicy Bypass -File .\install-dependencies-win.ps1
+   ```
 3. **配置数据库**
    使用[sql脚本](sql/database.sql)创建数据库和表结构。
 4. **修改配置**

@@ -11,7 +11,7 @@ fi
 
 # 检查Node.js环境
 if ! command -v node &> /dev/null; then
-    echo "❌ 未找到Node.js环境，请先安装Node.js 16+"
+    echo "❌ 未找到Node.js环境，请先安装Node.js 22+"
     exit 1
 fi
 

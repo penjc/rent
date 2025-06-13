@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 安装项目依赖脚本
-# 适用于 Ubuntu/Debian 系统，安装 Java、Maven、Node.js、npm 和 MySQL
+# 适用于 Ubuntu/Debian 系统，安装 Java 8、Maven、Node.js 22 和 MySQL 5.7
 
 set -e
 
@@ -16,9 +16,9 @@ apt-get update
 # 安装基本依赖
 apt-get install -y curl gnupg2
 
-# 安装 Java (OpenJDK 11)
+# 安装 Java (OpenJDK 8)
 if ! command -v java >/dev/null 2>&1; then
-  apt-get install -y openjdk-11-jdk
+  apt-get install -y openjdk-8-jdk
 fi
 
 # 安装 Maven
@@ -26,15 +26,15 @@ if ! command -v mvn >/dev/null 2>&1; then
   apt-get install -y maven
 fi
 
-# 安装 Node.js 16.x (包含 npm)
+# 安装 Node.js 22.x (包含 npm)
 if ! command -v node >/dev/null 2>&1; then
-  curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y nodejs
 fi
 
-# 安装 MySQL Server
+# 安装 MySQL Server 5.7
 if ! command -v mysql >/dev/null 2>&1; then
-  DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+  DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.7
 fi
 
 # 安装前端依赖
