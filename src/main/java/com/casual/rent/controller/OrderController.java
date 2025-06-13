@@ -7,6 +7,8 @@ import com.casual.rent.entity.Order;
 import com.casual.rent.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -15,6 +17,7 @@ import java.util.Map;
 /**
  * 订单控制器
  */
+@Tag(name = "订单接口")
 @RestController
 @RequestMapping("/orders")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -26,6 +29,7 @@ public class OrderController {
     /**
      * 创建订单
      */
+    @Operation(summary = "创建订单")
     @PostMapping
     public Result<Order> createOrder(@RequestBody Map<String, Object> params) {
         Long userId = Long.valueOf(params.get("userId").toString());
@@ -41,6 +45,7 @@ public class OrderController {
     /**
      * 根据ID获取订单详情
      */
+    @Operation(summary = "根据ID获取订单详情")
     @GetMapping("/{id}")
     public Result<Order> getOrderById(@PathVariable Long id) {
         Order order = orderService.getById(id);
@@ -53,6 +58,7 @@ public class OrderController {
     /**
      * 用户查询自己的订单
      */
+    @Operation(summary = "用户查询自己的订单")
     @GetMapping("/user/{userId}")
     public Result<IPage<Order>> getOrdersByUser(
             @PathVariable Long userId,
@@ -66,6 +72,7 @@ public class OrderController {
     /**
      * 商家查询自己的订单
      */
+    @Operation(summary = "商家查询自己的订单")
     @GetMapping("/merchant/{merchantId}")
     public Result<IPage<Order>> getOrdersByMerchant(
             @PathVariable Long merchantId,
@@ -79,6 +86,7 @@ public class OrderController {
     /**
      * 更新订单状态
      */
+    @Operation(summary = "更新订单状态")
     @PutMapping("/{id}/status")
     public Result<Order> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, Integer> params) {
         Integer status = params.get("status");
@@ -98,6 +106,7 @@ public class OrderController {
     /**
      * 支付订单
      */
+    @Operation(summary = "支付订单")
     @PostMapping("/{id}/pay")
     public Result<String> payOrder(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         Long userId = Long.valueOf(params.get("userId").toString());
@@ -109,6 +118,7 @@ public class OrderController {
     /**
      * 商家发货
      */
+    @Operation(summary = "商家发货")
     @PutMapping("/{id}/ship")
     public Result<String> shipOrder(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         Long merchantId = Long.valueOf(params.get("merchantId").toString());
@@ -124,6 +134,7 @@ public class OrderController {
     /**
      * 用户确认收货
      */
+    @Operation(summary = "用户确认收货")
     @PutMapping("/{id}/receive")
     public Result<String> receiveOrder(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         Long userId = Long.valueOf(params.get("userId").toString());
@@ -139,6 +150,7 @@ public class OrderController {
     /**
      * 用户申请返还
      */
+    @Operation(summary = "用户申请返还")
     @PutMapping("/{id}/return")
     public Result<String> returnOrder(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         Long userId = Long.valueOf(params.get("userId").toString());
@@ -154,6 +166,7 @@ public class OrderController {
     /**
      * 商家确认收货
      */
+    @Operation(summary = "商家确认收货")
     @PutMapping("/{id}/confirm-return")
     public Result<String> confirmReturn(@PathVariable Long id, @RequestBody Map<String, Object> params) {
         Long merchantId = Long.valueOf(params.get("merchantId").toString());
@@ -169,6 +182,7 @@ public class OrderController {
     /**
      * 取消订单
      */
+    @Operation(summary = "取消订单")
     @PutMapping("/{orderId}/cancel")
     public Result<String> cancelOrder(@PathVariable Long orderId, @RequestParam Long userId) {
         try {

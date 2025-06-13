@@ -55,3 +55,6 @@ app:
       region: ${TENCENT_COS_REGION}
       bucket-name: ${TENCENT_COS_BUCKET}
       domain: ${TENCENT_COS_DOMAIN}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
