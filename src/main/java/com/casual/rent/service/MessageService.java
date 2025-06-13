@@ -40,4 +40,17 @@ public class MessageService extends ServiceImpl<MessageMapper, Message> {
                 .orderByAsc(Message::getCreatedAt)
                 .list();
     }
+
+    /**
+     * 获取用户的所有消息，按创建时间降序
+     */
+    public List<Message> getUserMessages(Long userId) {
+        return lambdaQuery()
+                .and(wrapper -> wrapper
+                        .eq(Message::getSenderId, userId)
+                        .or()
+                        .eq(Message::getReceiverId, userId))
+                .orderByDesc(Message::getCreatedAt)
+                .list();
+    }
 }

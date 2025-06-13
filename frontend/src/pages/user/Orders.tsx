@@ -36,7 +36,7 @@ const RENT_TYPE_MAP = {
 
 const Orders: React.FC = () => {
   const navigate = useNavigate();
-  const { user, userType } = useAuthStore();
+  const { user, userType, isAuthenticated } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -278,7 +278,13 @@ const Orders: React.FC = () => {
       <Button
         key="chat"
         size="small"
-        onClick={() => navigate(`/user/chat?merchantId=${order.merchantId}`)}
+        onClick={() => {
+          if (!isAuthenticated) {
+            navigate('/auth/login');
+            return;
+          }
+          navigate(`/user/chat?merchantId=${order.merchantId}`);
+        }}
       >
         联系商家
       </Button>

@@ -46,4 +46,11 @@ export const merchantRegister = async (data: MerchantRegisterData): Promise<ApiR
 export const getMerchantInfo = async (phone: string): Promise<ApiResponse<MerchantData>> => {
   const response = await api.get(`/merchant/info/${phone}`);
   return response.data;
+};
+
+export const getMerchantCompanyNames = async (merchantIds: number[]): Promise<Record<number, string>> => {
+  const response = await api.post<ApiResponse<Record<number, string>>>(
+    '/merchant/batch-info', merchantIds
+  );
+  return response.data.data || {};
 }; 

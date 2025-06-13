@@ -40,4 +40,13 @@ public class MessageController {
         List<Message> list = messageService.getMessages(userA, userB);
         return Result.success(list);
     }
+
+    /**
+     * 获取用户的所有消息
+     */
+    @GetMapping("/user/{userId}")
+    public Result<List<Message>> getUserMessages(@PathVariable Long userId) {
+        List<Message> list = messageService.getUserMessages(userId);
+        return Result.success(list);
+    }
 }

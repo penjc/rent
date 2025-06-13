@@ -31,3 +31,11 @@ export const getMessages = async (
   );
   return response.data.data || [];
 };
+
+// 获取用户的所有消息
+export const getUserMessages = async (userId: number): Promise<ChatMessage[]> => {
+  const response = await api.get<ApiResponse<ChatMessage[]>>(
+    `/messages/user/${userId}`
+  );
+  return response.data.data || [];
+};

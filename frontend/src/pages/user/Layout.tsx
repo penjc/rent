@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
-import { UserOutlined, ShoppingOutlined, HistoryOutlined } from '@ant-design/icons';
+import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import Home from './Home';
 import Products from './Products';
@@ -11,6 +11,7 @@ import OrderManagement from './OrderManagement';
 import Profile from './Profile';
 import Favorites from './Favorites';
 import Chat from './Chat';
+import Messages from './Messages';
 
 const { Header, Content, Footer } = Layout;
 
@@ -36,6 +37,7 @@ const UserLayout: React.FC = () => {
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
     if (path.includes('/favorites')) return 'favorites';
+    if (path.includes('/messages') || path.includes('/chat')) return 'messages';
     return 'home';
   };
 
@@ -52,7 +54,7 @@ const UserLayout: React.FC = () => {
 
   const handleNavMenuClick = ({ key }: { key: string }) => {
     // 对于需要登录的功能，先检查登录状态
-    const requireLoginRoutes = ['orders', 'favorites'];
+    const requireLoginRoutes = ['orders', 'favorites', 'messages'];
     
     if (requireLoginRoutes.includes(key) && !isAuthenticated) {
       navigate('/auth/login');
@@ -71,6 +73,9 @@ const UserLayout: React.FC = () => {
         break;
       case 'favorites':
         navigate('/user/favorites');
+        break;
+      case 'messages':
+        navigate('/user/messages');
         break;
       default:
         break;
@@ -177,6 +182,16 @@ const UserLayout: React.FC = () => {
                   key: 'orders',
                   label: '订单',
                   icon: <HistoryOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
+                },
+                {
+                  key: 'messages',
+                  label: '消息',
+                  icon: <MessageOutlined style={{ fontSize: '16px' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
@@ -293,6 +308,7 @@ const UserLayout: React.FC = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="favorites" element={<Favorites />} />
           <Route path="chat" element={<Chat />} />
+          <Route path="messages" element={<Messages />} />
         </Routes>
       </Content>
 

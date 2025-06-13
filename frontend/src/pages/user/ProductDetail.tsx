@@ -20,7 +20,7 @@ const { Title, Text } = Typography;
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, userType } = useAuthStore();
+  const { user, userType, isAuthenticated } = useAuthStore();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -435,7 +435,13 @@ const ProductDetail: React.FC = () => {
                 </Button>
                 <Button
                   style={{ marginTop: 8 }}
-                  onClick={() => navigate(`/user/chat?merchantId=${product.merchantId}`)}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      navigate('/auth/login');
+                      return;
+                    }
+                    navigate(`/user/chat?merchantId=${product.merchantId}`);
+                  }}
                 >
                   联系商家
                 </Button>
