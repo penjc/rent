@@ -5,10 +5,13 @@ import com.casual.rent.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "文件接口")
 @RestController
 @RequestMapping("/files")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -30,6 +33,7 @@ public class FileController {
     /**
      * 测试OSS连接
      */
+    @Operation(summary = "测试OSS连接")
     @GetMapping("/test")
     public Result<?> testOSSConnection() {
         try {
@@ -47,6 +51,7 @@ public class FileController {
     /**
      * 上传商品图片
      */
+    @Operation(summary = "上传商品图片")
     @PostMapping("/upload/product")
     public Result<?> uploadProductImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -80,6 +85,7 @@ public class FileController {
     /**
      * 批量上传商品图片 - 修复接口路径
      */
+    @Operation(summary = "批量上传商品图片")
     @PostMapping("/upload/products")
     public Result<?> uploadProductImages(@RequestParam("images") MultipartFile[] files) {
         try {
@@ -119,6 +125,7 @@ public class FileController {
     /**
      * 上传用户头像
      */
+    @Operation(summary = "上传用户头像")
     @PostMapping("/upload/avatar")
     public Result<?> uploadAvatar(@RequestParam("file") MultipartFile file) {
         try {
@@ -152,6 +159,7 @@ public class FileController {
     /**
      * 上传商家证件（营业执照、身份证等）
      */
+    @Operation(summary = "上传商家证件")
     @PostMapping("/upload/certificate")
     public Result<?> uploadCertificate(@RequestParam("file") MultipartFile file) {
         try {
@@ -185,6 +193,7 @@ public class FileController {
     /**
      * 删除文件
      */
+    @Operation(summary = "删除文件")
     @DeleteMapping("/delete")
     public Result<?> deleteFile(@RequestParam("url") String fileUrl) {
         try {

@@ -19,6 +19,8 @@ import com.casual.rent.service.OrderService;
 import com.casual.rent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.Map;
 /**
  * 管理员控制器
  */
+@Tag(name = "管理员接口")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -51,6 +54,7 @@ public class AdminController {
     /**
      * 管理员登录
      */
+    @Operation(summary = "管理员登录")
     @PostMapping("/login")
     public Result<Admin> login(@RequestBody Map<String, Object> params) {
         String username = (String) params.get("username");
@@ -73,6 +77,7 @@ public class AdminController {
     /**
      * 获取用户列表
      */
+    @Operation(summary = "获取用户列表")
     @GetMapping("/users")
     public Result<IPage<User>> getUsers(@RequestParam(defaultValue = "1") int page,
                                        @RequestParam(defaultValue = "10") int size,
@@ -84,6 +89,7 @@ public class AdminController {
     /**
      * 更新用户信息
      */
+    @Operation(summary = "更新用户信息")
     @PutMapping("/users/{userId}")
     public Result<String> updateUser(@PathVariable Long userId, @RequestBody User user) {
         user.setId(userId);
@@ -94,6 +100,7 @@ public class AdminController {
     /**
      * 删除用户
      */
+    @Operation(summary = "删除用户")
     @DeleteMapping("/users/{userId}")
     public Result<String> deleteUser(@PathVariable Long userId) {
         userService.removeById(userId);
@@ -103,6 +110,7 @@ public class AdminController {
     /**
      * 用户认证审核
      */
+    @Operation(summary = "用户认证审核")
     @PutMapping("/users/{userId}/verify")
     public Result<String> verifyUser(@PathVariable Long userId, @RequestBody Map<String, Object> params) {
         Integer verified = (Integer) params.get("verified");
@@ -125,6 +133,7 @@ public class AdminController {
     /**
      * 获取仪表盘统计数据
      */
+    @Operation(summary = "获取仪表盘统计数据")
     @GetMapping("/dashboard/stats")
     public Result<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -186,6 +195,7 @@ public class AdminController {
     /**
      * 获取商家列表
      */
+    @Operation(summary = "获取商家列表")
     @GetMapping("/merchants")
     public Result<IPage<Merchant>> getMerchants(@RequestParam(defaultValue = "1") int page,
                                                @RequestParam(defaultValue = "10") int size,
@@ -198,6 +208,7 @@ public class AdminController {
     /**
      * 获取待审核商家列表
      */
+    @Operation(summary = "获取待审核商家列表")
     @GetMapping("/merchants/pending")
     public Result<IPage<Merchant>> getPendingMerchants(@RequestParam(defaultValue = "1") int page,
                                                        @RequestParam(defaultValue = "10") int size) {
@@ -208,6 +219,7 @@ public class AdminController {
     /**
      * 审核商家
      */
+    @Operation(summary = "审核商家")
     @PutMapping("/merchants/{merchantId}/audit")
     public Result<String> auditMerchant(@PathVariable Long merchantId, @RequestBody Map<String, Object> params) {
         Integer status = (Integer) params.get("status");
@@ -226,6 +238,7 @@ public class AdminController {
     /**
      * 获取商品列表
      */
+    @Operation(summary = "获取商品列表")
     @GetMapping("/products")
     public Result<IPage<Product>> getProducts(@RequestParam(defaultValue = "1") int page,
                                              @RequestParam(defaultValue = "10") int size,
@@ -238,6 +251,7 @@ public class AdminController {
     /**
      * 获取待审核商品列表
      */
+    @Operation(summary = "获取待审核商品列表")
     @GetMapping("/products/pending")
     public Result<IPage<Product>> getPendingProducts(@RequestParam(defaultValue = "1") int page,
                                                     @RequestParam(defaultValue = "10") int size) {
@@ -248,6 +262,7 @@ public class AdminController {
     /**
      * 审核商品
      */
+    @Operation(summary = "审核商品")
     @PutMapping("/products/{productId}/audit")
     public Result<String> auditProduct(@PathVariable Long productId, @RequestBody Map<String, Object> params) {
         Integer auditStatus = (Integer) params.get("auditStatus");
@@ -266,6 +281,7 @@ public class AdminController {
     /**
      * 获取所有订单
      */
+    @Operation(summary = "获取所有订单")
     @GetMapping("/orders")
     public Result<IPage<Order>> getAllOrders(@RequestParam(defaultValue = "1") int page,
                                            @RequestParam(defaultValue = "10") int size,
@@ -278,6 +294,7 @@ public class AdminController {
     /**
      * 手动修改订单状态
      */
+    @Operation(summary = "手动修改订单状态")
     @PutMapping("/orders/{orderId}/status")
     public Result<String> updateOrderStatus(@PathVariable Long orderId, @RequestBody Map<String, Object> params) {
         Integer status = (Integer) params.get("status");
@@ -293,6 +310,7 @@ public class AdminController {
     /**
      * 管理员取消订单
      */
+    @Operation(summary = "管理员取消订单")
     @PutMapping("/orders/{orderId}/cancel")
     public Result<String> cancelOrderByAdmin(@PathVariable Long orderId) {
         try {
@@ -308,6 +326,7 @@ public class AdminController {
     /**
      * 获取分类列表
      */
+    @Operation(summary = "获取分类列表")
     @GetMapping("/categories")
     public Result<IPage<Category>> getCategories(@RequestParam(defaultValue = "1") int page,
                                                 @RequestParam(defaultValue = "10") int size,
@@ -329,6 +348,7 @@ public class AdminController {
     /**
      * 创建分类
      */
+    @Operation(summary = "创建分类")
     @PostMapping("/categories")
     public Result<Category> createCategory(@RequestBody Map<String, Object> params) {
         if (params == null) {
@@ -362,6 +382,7 @@ public class AdminController {
     /**
      * 更新分类
      */
+    @Operation(summary = "更新分类")
     @PutMapping("/categories/{categoryId}")
     public Result<Category> updateCategory(@PathVariable Long categoryId, @RequestBody Map<String, Object> params) {
         if (params == null) {
@@ -400,6 +421,7 @@ public class AdminController {
     /**
      * 删除分类
      */
+    @Operation(summary = "删除分类")
     @DeleteMapping("/categories/{categoryId}")
     public Result<String> deleteCategory(@PathVariable Long categoryId) {
         try {
@@ -422,6 +444,7 @@ public class AdminController {
     /**
      * 更新分类状态
      */
+    @Operation(summary = "更新分类状态")
     @PutMapping("/categories/{categoryId}/status")
     public Result<String> updateCategoryStatus(@PathVariable Long categoryId, @RequestBody Map<String, Object> params) {
         if (params == null || params.get("status") == null) {
@@ -446,6 +469,7 @@ public class AdminController {
     /**
      * 批量更新分类排序
      */
+    @Operation(summary = "批量更新分类排序")
     @PutMapping("/categories/sort")
     public Result<String> batchUpdateCategorySort(@RequestBody Map<String, Object> params) {
         try {

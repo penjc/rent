@@ -15,12 +15,15 @@ import com.casual.rent.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Map;
 
 /**
  * 商家控制器
  */
+@Tag(name = "商家接口")
 @RestController
 @RequestMapping("/merchant")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
@@ -41,6 +44,7 @@ public class MerchantController {
     /**
      * 商家注册（支持文件上传）
      */
+    @Operation(summary = "商家注册(文件上传)")
     @PostMapping("/register-with-files")
     public Result<Merchant> registerWithFiles(
             @RequestParam("phone") String phone,
@@ -107,6 +111,7 @@ public class MerchantController {
     /**
      * 商家注册（原JSON格式，保持向后兼容）
      */
+    @Operation(summary = "商家注册(JSON)")
     @PostMapping("/register")
     public Result<Merchant> register(@RequestBody Map<String, Object> params) {
         String phone = (String) params.get("phone");
@@ -136,6 +141,7 @@ public class MerchantController {
     /**
      * 商家登录
      */
+    @Operation(summary = "商家登录")
     @PostMapping("/login")
     public Result<Merchant> login(@RequestBody Map<String, Object> params) {
         String phone = (String) params.get("phone");
@@ -157,6 +163,7 @@ public class MerchantController {
     /**
      * 根据手机号查找商家
      */
+    @Operation(summary = "根据手机号查找商家")
     @GetMapping("/info/{phone}")
     public Result<Merchant> getMerchantInfo(@PathVariable String phone) {
         Merchant merchant = merchantService.findByPhone(phone);
@@ -169,6 +176,7 @@ public class MerchantController {
     /**
      * 发布商品
      */
+    @Operation(summary = "发布商品")
     @PostMapping("/product")
     public Result<Product> publishProduct(@RequestBody Product product) {
         if (product.getMerchantId() == null || product.getName() == null || product.getDailyPrice() == null) {
@@ -182,6 +190,7 @@ public class MerchantController {
     /**
      * 获取商家商品列表
      */
+    @Operation(summary = "获取商家商品列表")
     @GetMapping("/products/{merchantId}")
     public Result<IPage<Product>> getMerchantProducts(@PathVariable Long merchantId,
                                                      @RequestParam(defaultValue = "1") int page,
@@ -193,6 +202,7 @@ public class MerchantController {
     /**
      * 上架/下架商品
      */
+    @Operation(summary = "上架/下架商品")
     @PutMapping("/product/{productId}/status")
     public Result<String> updateProductStatus(@PathVariable Long productId, 
                                              @RequestBody Map<String, Object> params) {
@@ -210,6 +220,7 @@ public class MerchantController {
     /**
      * 获取商家订单
      */
+    @Operation(summary = "获取商家订单")
     @GetMapping("/orders/{merchantId}")
     public Result<IPage<Order>> getMerchantOrders(@PathVariable Long merchantId,
                                                  @RequestParam(defaultValue = "1") int page,
@@ -222,6 +233,7 @@ public class MerchantController {
     /**
      * 确认发货
      */
+    @Operation(summary = "确认发货")
     @PutMapping("/order/{orderId}/ship")
     public Result<String> shipOrder(@PathVariable Long orderId, @RequestBody Map<String, Object> params) {
         Long merchantId = Long.valueOf(params.get("merchantId").toString());
@@ -232,6 +244,7 @@ public class MerchantController {
     /**
      * 确认收回
      */
+    @Operation(summary = "确认收回")
     @PutMapping("/order/{orderId}/return")
     public Result<String> returnOrder(@PathVariable Long orderId, @RequestBody Map<String, Object> params) {
         Long merchantId = Long.valueOf(params.get("merchantId").toString());
@@ -242,6 +255,7 @@ public class MerchantController {
     /**
      * 获取商家统计数据
      */
+    @Operation(summary = "获取商家统计数据")
     @GetMapping("/{merchantId}/stats")
     public Result<Map<String, Object>> getMerchantStats(@PathVariable Long merchantId) {
         try {
@@ -327,6 +341,7 @@ public class MerchantController {
     /**
      * 获取热门商品
      */
+    @Operation(summary = "获取热门商品")
     @GetMapping("/{merchantId}/popular-products")
     public Result<java.util.List<Product>> getPopularProducts(@PathVariable Long merchantId) {
         try {
@@ -348,6 +363,7 @@ public class MerchantController {
     /**
      * 更新商家认证信息（上传身份证和营业执照）
      */
+    @Operation(summary = "更新商家认证信息")
     @PostMapping("/{merchantId}/certification")
     public Result<String> updateCertification(
             @PathVariable Long merchantId,
