@@ -39,7 +39,7 @@ CREATE TABLE `merchants` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商家表';
+) ENGINE=InnoDB AUTO_INCREMENT=1000000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商家表';
 
 -- 3. 管理员表
 CREATE TABLE `admins` (
@@ -124,6 +124,16 @@ CREATE TABLE `orders` (
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
+-- 7. 聊天消息表
+CREATE TABLE `messages` (
+                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+                            `sender_id` bigint(20) NOT NULL COMMENT '发送者ID',
+                            `receiver_id` bigint(20) NOT NULL COMMENT '接收者ID',
+                            `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息内容',
+                            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                            PRIMARY KEY (`id`),
+                            KEY `idx_sender_receiver` (`sender_id`,`receiver_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天消息表';
 -- 插入默认数据
 
 -- 默认管理员
@@ -138,3 +148,4 @@ INSERT INTO `categories` (`name`, `icon`, `sort_order`) VALUES
 ('乐器', 'music', 4),
 ('工具设备', 'tools', 5),
 ('其他', 'other', 99);
+

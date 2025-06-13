@@ -18,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 商家控制器
@@ -420,5 +422,23 @@ public class MerchantController {
         } catch (Exception e) {
             return Result.error("更新认证信息失败：" + e.getMessage());
         }
+    }
+
+    /**
+     * 批量获取商家公司名
+     */
+    @Operation(summary = "批量获取商家公司名")
+    @PostMapping("/batch-info")
+    public Result<Map<Long, String>> getMerchantCompanyNames(@RequestBody List<Long> merchantIds) {
+        Map<Long, String> result = new HashMap<>();
+        if (merchantIds != null && !merchantIds.isEmpty()) {
+            merchantIds.forEach(id -> {
+                Merchant merchant = merchantService.getById(id);
+                if (merchant != null) {
+                    result.put(id, merchant.getCompanyName());
+                }
+            });
+        }
+        return Result.success(result);
     }
 } 
