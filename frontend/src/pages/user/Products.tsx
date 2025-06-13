@@ -384,10 +384,10 @@ const Products: React.FC = () => {
                 style={{ width: '100%' }}
                 size="large"
               >
-                <Option value="created_desc">🕒 最新发布</Option>
-                <Option value="price_asc">💰 价格从低到高</Option>
-                <Option value="price_desc">💎 价格从高到低</Option>
-                <Option value="popular">🔥 最受欢迎</Option>
+                <Option value="created_desc">最新发布</Option>
+                <Option value="price_asc">价格从低到高</Option>
+                <Option value="price_desc">价格从高到低</Option>
+                {/*<Option value="popular">最受欢迎</Option>*/}
               </Select>
             </Col>
           </Row>
@@ -705,7 +705,7 @@ const Products: React.FC = () => {
                 marginTop: '24px',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
               }}>
-                🎉 已展示全部商品，感谢您的浏览！
+                已展示全部商品！
               </div>
             )}
           </>

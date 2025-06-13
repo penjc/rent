@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, message } from 'antd';
+import { Layout, Menu, Avatar, Dropdown } from 'antd';
 import { 
   DashboardOutlined, 
   UsergroupAddOutlined, 
@@ -12,6 +12,7 @@ import {
   LogoutOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import Dashboard from './Dashboard';
 import Users from './Users';
 import Merchants from './Merchants';
@@ -31,7 +32,7 @@ const AdminLayout: React.FC = () => {
     const storedUserType = localStorage.getItem('admin_userType');
     
     if (!isAuthenticated || storedUserType !== 'admin') {
-      message.warning('请先登录管理员账号');
+      showMessage.warning('请先登录管理员账号');
       navigate('/auth/login');
       return;
     }
@@ -39,7 +40,7 @@ const AdminLayout: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    message.success('已退出登录');
+    showMessage.success('已退出登录');
     navigate('/auth/login');
   };
 

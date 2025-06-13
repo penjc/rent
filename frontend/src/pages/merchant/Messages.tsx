@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { List, Avatar, Typography, Empty, Spin, message } from 'antd';
+import { List, Avatar, Typography, Empty, Spin } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import { getUserMessages } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
 import type { ChatMessage } from '@/types';
@@ -82,7 +83,7 @@ const Messages: React.FC = () => {
       setUserChats(chats);
     } catch (error) {
       console.error('加载消息失败:', error);
-      message.error('加载消息失败');
+      showMessage.error('加载消息失败');
     } finally {
       setLoading(false);
     }

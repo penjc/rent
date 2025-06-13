@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Select, Image } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, Select, Image } from 'antd';
 import {SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Merchant } from '@/types';
 
@@ -72,7 +73,7 @@ const Merchants: React.FC = () => {
       }
     } catch (error) {
       console.error('获取商家列表失败:', error);
-      message.error('获取商家列表失败');
+      showMessage.error('获取商家列表失败');
     } finally {
       setLoading(false);
     }
@@ -123,7 +124,7 @@ const Merchants: React.FC = () => {
       const response = await api.put(`/admin/merchants/${selectedMerchant?.id}/audit`, values);
       
       if (response.data.code === 200) {
-        message.success('审核提交成功');
+        showMessage.success('审核提交成功');
         setAuditModalVisible(false);
         setSelectedMerchant(null);
         auditForm.resetFields();
@@ -131,7 +132,7 @@ const Merchants: React.FC = () => {
       }
     } catch (error) {
       console.error('审核提交失败:', error);
-      message.error('审核提交失败');
+      showMessage.error('审核提交失败');
     }
   };
 
@@ -141,12 +142,12 @@ const Merchants: React.FC = () => {
       const response = await api.put(`/admin/merchants/${merchantId}/audit`, { status });
       
       if (response.data.code === 200) {
-        message.success(status === 1 ? '审核通过' : '审核拒绝');
+        showMessage.success(status === 1 ? '审核通过' : '审核拒绝');
         fetchMerchants(pagination.current, pagination.pageSize, searchText, statusFilter);
       }
     } catch (error) {
       console.error('审核失败:', error);
-      message.error('审核失败');
+      showMessage.error('审核失败');
     }
   };
 

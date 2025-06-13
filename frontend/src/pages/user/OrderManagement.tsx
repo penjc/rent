@@ -6,7 +6,6 @@ import {
   Tag, 
   Space, 
   Modal, 
-  message,
   Descriptions,
   Select,
   Input,
@@ -35,6 +34,7 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Order } from '@/types';
 import { OrderStatus } from '@/types';
@@ -110,7 +110,7 @@ const OrderManagement: React.FC = () => {
   useEffect(() => {
     const userId = getUserId();
     if (!userId) {
-      message.warning('请先登录用户账号');
+      showMessage.warning('请先登录用户账号');
       navigate('/login');
       return;
     }
@@ -150,7 +150,7 @@ const OrderManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('获取订单列表失败:', error);
-      message.error('获取订单列表失败');
+      showMessage.error('获取订单列表失败');
     } finally {
       setLoading(false);
     }
@@ -232,15 +232,15 @@ const OrderManagement: React.FC = () => {
     try {
       const response = await api.post(`/orders/${orderId}/pay`, { userId });
       if (response.data.code === 200) {
-        message.success('支付成功');
+        showMessage.success('支付成功');
         fetchOrders();
         fetchStats();
       } else {
-        message.error(response.data.message || '支付失败');
+        showMessage.error(response.data.message || '支付失败');
       }
     } catch (error: any) {
       console.error('支付失败:', error);
-      message.error('支付失败');
+      showMessage.error('支付失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [orderId]: false }));
     }
@@ -255,15 +255,15 @@ const OrderManagement: React.FC = () => {
     try {
       const response = await api.put(`/orders/${orderId}/cancel?userId=${userId}`);
       if (response.data.code === 200) {
-        message.success('订单已取消');
+        showMessage.success('订单已取消');
         fetchOrders();
         fetchStats();
       } else {
-        message.error(response.data.message || '取消订单失败');
+        showMessage.error(response.data.message || '取消订单失败');
       }
     } catch (error: any) {
       console.error('取消订单失败:', error);
-      message.error('取消订单失败');
+      showMessage.error('取消订单失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [orderId]: false }));
     }
@@ -278,15 +278,15 @@ const OrderManagement: React.FC = () => {
     try {
       const response = await api.put(`/orders/${orderId}/receive`, { userId });
       if (response.data.code === 200) {
-        message.success('确认收货成功');
+        showMessage.success('确认收货成功');
         fetchOrders();
         fetchStats();
-      } else {
-        message.error(response.data.message || '确认收货失败');
-      }
-    } catch (error: any) {
-      console.error('确认收货失败:', error);
-      message.error('确认收货失败');
+              } else {
+          showMessage.error(response.data.message || '确认收货失败');
+        }
+      } catch (error: any) {
+        console.error('确认收货失败:', error);
+        showMessage.error('确认收货失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [orderId]: false }));
     }
@@ -301,15 +301,15 @@ const OrderManagement: React.FC = () => {
     try {
       const response = await api.put(`/orders/${orderId}/return`, { userId });
       if (response.data.code === 200) {
-        message.success('申请返还成功');
+        showMessage.success('申请返还成功');
         fetchOrders();
         fetchStats();
       } else {
-        message.error(response.data.message || '申请返还失败');
+        showMessage.error(response.data.message || '申请返还失败');
       }
     } catch (error: any) {
       console.error('申请返还失败:', error);
-      message.error('申请返还失败');
+      showMessage.error('申请返还失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [orderId]: false }));
     }

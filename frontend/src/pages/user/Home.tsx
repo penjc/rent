@@ -294,7 +294,7 @@ const Home: React.FC = () => {
                 <CustomerServiceOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
                 <Title level={4} style={{ color: '#2c3e50' }}>贴心服务</Title>
                 <Text style={{ color: '#7f8c8d' }}>
-                  7×24小时客服支持，为您提供最贴心的服务体验
+                  用户和商家之间的直接沟通，提供更好的服务体验
                 </Text>
               </Card>
             </Col>
@@ -542,7 +542,7 @@ const Home: React.FC = () => {
                     color: '#95a5a6',
                     fontSize: '14px'
                   }}>
-                    🎉 已加载全部商品
+                    已加载全部商品
                   </div>
                 )}
               </>

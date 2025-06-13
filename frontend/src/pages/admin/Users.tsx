@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Switch, Popconfirm, Image, Row, Col } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, Switch, Popconfirm, Image, Row, Col } from 'antd';
 import {SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, EyeOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { User } from '@/types';
 
@@ -51,7 +52,7 @@ const Users: React.FC = () => {
       }
     } catch (error) {
       console.error('获取用户列表失败:', error);
-      message.error('获取用户列表失败');
+      showMessage.error('获取用户列表失败');
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ const Users: React.FC = () => {
       const response = await api.put(`/admin/users/${editingUser?.id}`, updateData);
       
       if (response.data.code === 200) {
-        message.success('用户信息更新成功');
+        showMessage.success('用户信息更新成功');
         setEditModalVisible(false);
         setEditingUser(null);
         form.resetFields();
@@ -111,7 +112,7 @@ const Users: React.FC = () => {
       }
     } catch (error) {
       console.error('更新用户信息失败:', error);
-      message.error('更新用户信息失败');
+      showMessage.error('更新用户信息失败');
     }
   };
 
@@ -121,12 +122,12 @@ const Users: React.FC = () => {
       const response = await api.delete(`/admin/users/${userId}`);
       
       if (response.data.code === 200) {
-        message.success('用户删除成功');
+        showMessage.success('用户删除成功');
         fetchUsers(pagination.current, pagination.pageSize, searchText);
       }
     } catch (error) {
       console.error('删除用户失败:', error);
-      message.error('删除用户失败');
+      showMessage.error('删除用户失败');
     }
   };
 
@@ -142,13 +143,13 @@ const Users: React.FC = () => {
       const response = await api.put(`/admin/users/${userId}/verify`, { verified });
       
       if (response.data.code === 200) {
-        message.success(verified === 1 ? '用户认证通过' : '用户认证拒绝');
+        showMessage.success(verified === 1 ? '用户认证通过' : '用户认证拒绝');
         setCertModalVisible(false);
         fetchUsers(pagination.current, pagination.pageSize, searchText);
       }
     } catch (error) {
       console.error('用户认证审核失败:', error);
-      message.error('用户认证审核失败');
+      showMessage.error('用户认证审核失败');
     }
   };
 

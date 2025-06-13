@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Upload, Button, message, Row, Col, Tag, Progress, Image, Typography } from 'antd';
+import { Card, Upload, Button, Row, Col, Tag, Progress, Image, Typography } from 'antd';
 import { InboxOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd/es/upload/interface';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 
 // 处理图片URL - 确保URL格式正确
@@ -66,11 +67,11 @@ const Certification: React.FC = () => {
       if (response.data.code === 200) {
         setMerchantInfo(response.data.data);
       } else {
-        message.error('获取商家信息失败');
+        showMessage.error('获取商家信息失败');
       }
     } catch (error) {
       console.error('获取商家信息失败:', error);
-      message.error('获取商家信息失败');
+      showMessage.error('获取商家信息失败');
     } finally {
       setLoading(false);
     }
@@ -112,7 +113,7 @@ const Certification: React.FC = () => {
   const customUpload = async (file: File, type: 'idCardFront' | 'idCardBack' | 'businessLicense') => {
     const merchantId = getMerchantId();
     if (!merchantId) {
-      message.error('获取商家信息失败');
+      showMessage.error('获取商家信息失败');
       return;
     }
 
@@ -136,17 +137,17 @@ const Certification: React.FC = () => {
       });
 
       if (response.data.code === 200) {
-        message.success('上传成功');
+        showMessage.success('上传成功');
         // 延迟一点时间再获取数据，确保后端数据已更新
         setTimeout(() => {
           fetchMerchantInfo();
         }, 500);
       } else {
-        message.error(response.data.message || '上传失败');
+        showMessage.error(response.data.message || '上传失败');
       }
     } catch (error) {
       console.error('上传失败:', error);
-      message.error('上传失败');
+      showMessage.error('上传失败');
     } finally {
       setUploading(false);
       setUploadProgress(prev => ({ ...prev, [type]: 0 }));
@@ -161,12 +162,12 @@ const Certification: React.FC = () => {
     beforeUpload: (file) => {
       const isValidType = file.type.startsWith('image/') || file.type === 'application/pdf';
       if (!isValidType) {
-        message.error('只能上传图片或PDF文件！');
+        showMessage.error('只能上传图片或PDF文件！');
         return false;
       }
       const isLt10M = file.size / 1024 / 1024 < 10;
       if (!isLt10M) {
-        message.error('文件大小必须小于 10MB！');
+        showMessage.error('文件大小必须小于 10MB！');
         return false;
       }
       

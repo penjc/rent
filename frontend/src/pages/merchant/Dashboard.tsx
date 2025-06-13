@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Progress, message, List, Avatar } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Progress, List, Avatar } from 'antd';
 import { 
   ShopOutlined, 
   OrderedListOutlined, 
@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 import type { Product, Order } from '@/types';
@@ -134,7 +135,7 @@ const Dashboard: React.FC = () => {
     if (getMerchantId()) {
       loadData();
     } else {
-      message.error('获取商家信息失败');
+      showMessage.error('获取商家信息失败');
       setLoading(false);
     }
   }, [user, userType]);

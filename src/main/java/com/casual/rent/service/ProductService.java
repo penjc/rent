@@ -103,13 +103,17 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     /**
      * 商家上架/下架商品
      */
-    public void updateProductStatus(Long productId, Integer status, Long merchantId) {
+    public Integer updateProductStatus(Long productId, Integer status, Long merchantId) {
         Product product = getById(productId);
+        if(product == null) {
+            return null;
+        }
         if (product != null && product.getMerchantId().equals(merchantId) && 
             product.getAuditStatus().equals(AuditStatus.APPROVED.getCode())) {
             product.setStatus(status);
             updateById(product);
         }
+        return product.getAuditStatus();
     }
     
     /**

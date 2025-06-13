@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Layout, Card, Row, Col, Button, InputNumber, DatePicker, 
-  Descriptions, Divider, Spin, Alert, message, 
+  Descriptions, Divider, Spin, Alert, 
   Breadcrumb, Typography, Space, Tag, Form
 } from 'antd';
 import { 
@@ -10,6 +10,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Product } from '../../types';
 
@@ -54,12 +55,12 @@ const ProductDetail: React.FC = () => {
       if (response.data.code === 200) {
         setProduct(response.data.data);
       } else {
-        message.error('商品不存在');
+        showMessage.error('商品不存在');
         navigate('/user/products');
       }
     } catch (error) {
       console.error('获取商品详情失败:', error);
-      message.error('获取商品详情失败');
+      showMessage.error('获取商品详情失败');
       navigate('/user/products');
     } finally {
       setLoading(false);
@@ -95,13 +96,13 @@ const ProductDetail: React.FC = () => {
   const handleCreateOrder = async () => {
     // 检查用户登录状态
     if (!user || userType !== 'user') {
-      message.warning('请先登录用户账号');
+      showMessage.warning('请先登录用户账号');
       navigate('/auth/login');
       return;
     }
 
     if (!startDate || !rentDays) {
-      message.error('请选择租赁开始时间和天数');
+      showMessage.error('请选择租赁开始时间和天数');
       return;
     }
 
@@ -109,7 +110,7 @@ const ProductDetail: React.FC = () => {
 
     const userId = getUserId();
     if (!userId) {
-      message.error('未找到用户信息');
+      showMessage.error('未找到用户信息');
       return;
     }
 
@@ -126,14 +127,14 @@ const ProductDetail: React.FC = () => {
       const response = await api.post('/orders', orderData);
       
       if (response.data.code === 200) {
-        message.success('订单创建成功！请及时支付');
+        showMessage.success('订单创建成功！请及时支付');
         navigate('/user/orders');
       } else {
-        message.error(response.data.message || '下单失败');
+        showMessage.error(response.data.message || '下单失败');
       }
     } catch (error: any) {
       console.error('创建订单失败:', error);
-      message.error('创建订单失败');
+      showMessage.error('创建订单失败');
     } finally {
       setCreateOrderLoading(false);
     }

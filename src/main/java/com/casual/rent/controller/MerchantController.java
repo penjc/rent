@@ -228,7 +228,10 @@ public class MerchantController {
             return Result.fail("参数错误");
         }
         
-        productService.updateProductStatus(productId, status, merchantId);
+        Integer auditStatus = productService.updateProductStatus(productId, status, merchantId);
+        if(auditStatus != AuditStatus.APPROVED.getCode()) {
+            return Result.fail("商品未通过审核，无法上架/下架");
+        }
         return Result.success(status.equals(ProductStatus.ON_SHELF.getCode()) ? "商品已上架" : "商品已下架");
     }
     

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, Tabs, message } from 'antd';
+import { Modal, Form, Input, Button, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
+import { showMessage } from '@/hooks/useMessage';
 import { authService } from '../../services/authService';
 import type { LoginRequest, RegisterRequest } from '../../services/authService';
 
@@ -22,11 +23,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
     setLoading(true);
     try {
       await authService.login(values);
-      message.success('登录成功');
+      showMessage.success('登录成功');
       onSuccess();
       onClose();
     } catch (error: any) {
-      message.error(error.message || '登录失败');
+      showMessage.error(error.message || '登录失败');
     } finally {
       setLoading(false);
     }
@@ -37,11 +38,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose, onSuccess }) 
     setLoading(true);
     try {
       await authService.register(values);
-      message.success('注册成功');
+      showMessage.success('注册成功');
       onSuccess();
       onClose();
     } catch (error: any) {
-      message.error(error.message || '注册失败');
+      showMessage.error(error.message || '注册失败');
     } finally {
       setLoading(false);
     }

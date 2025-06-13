@@ -5,7 +5,6 @@ import {
   Button, 
   Input, 
   Space, 
-  message, 
   Modal, 
   Form, 
   Select, 
@@ -21,6 +20,7 @@ import {
   ReloadOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Category } from '@/types';
 
@@ -73,7 +73,7 @@ const Categories: React.FC = () => {
       }
     } catch (error) {
       console.error('获取分类列表失败:', error);
-      message.error('获取分类列表失败');
+      showMessage.error('获取分类列表失败');
     } finally {
       setLoading(false);
     }
@@ -124,14 +124,14 @@ const Categories: React.FC = () => {
     try {
       const response = await api.delete(`/admin/categories/${id}`);
       if (response.data.code === 200) {
-        message.success('分类删除成功');
+        showMessage.success('分类删除成功');
         fetchCategories(pagination.current, pagination.pageSize, searchText, statusFilter);
       } else {
-        message.error(response.data.message || '删除失败');
+        showMessage.error(response.data.message || '删除失败');
       }
     } catch (error) {
       console.error('删除分类失败:', error);
-      message.error('删除分类失败');
+      showMessage.error('删除分类失败');
     }
   };
 
@@ -143,14 +143,14 @@ const Categories: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success(response.data.data);
+        showMessage.success(response.data.data);
         fetchCategories(pagination.current, pagination.pageSize, searchText, statusFilter);
       } else {
-        message.error(response.data.message || '状态更新失败');
+        showMessage.error(response.data.message || '状态更新失败');
       }
     } catch (error) {
       console.error('状态更新失败:', error);
-      message.error('状态更新失败');
+      showMessage.error('状态更新失败');
     }
   };
 
@@ -163,15 +163,15 @@ const Categories: React.FC = () => {
       const response = await api[method](url, values);
       
       if (response.data.code === 200) {
-        message.success(editingCategory ? '分类更新成功' : '分类创建成功');
+        showMessage.success(editingCategory ? '分类更新成功' : '分类创建成功');
         setModalVisible(false);
         fetchCategories(pagination.current, pagination.pageSize, searchText, statusFilter);
       } else {
-        message.error(response.data.message || '操作失败');
+        showMessage.error(response.data.message || '操作失败');
       }
     } catch (error) {
       console.error('操作失败:', error);
-      message.error('操作失败');
+      showMessage.error('操作失败');
     }
   };
 

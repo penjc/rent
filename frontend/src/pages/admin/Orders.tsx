@@ -6,7 +6,6 @@ import {
   Button, 
   Input, 
   Select, 
-  message, 
   Tag, 
   Modal, 
   Descriptions, 
@@ -21,6 +20,7 @@ import {
   ReloadOutlined
 } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Order } from '@/types';
 
@@ -99,7 +99,7 @@ const Orders: React.FC = () => {
       }
     } catch (error) {
       console.error('获取订单列表失败:', error);
-      message.error('获取订单列表失败');
+      showMessage.error('获取订单列表失败');
     } finally {
       setLoading(false);
     }
@@ -148,15 +148,15 @@ const Orders: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success('订单状态更新成功');
+        showMessage.success('订单状态更新成功');
         fetchOrders();
         setDetailVisible(false);
       } else {
-        message.error(response.data.message || '更新失败');
+        showMessage.error(response.data.message || '更新失败');
       }
     } catch (error) {
       console.error('更新订单状态失败:', error);
-      message.error('更新订单状态失败');
+      showMessage.error('更新订单状态失败');
     } finally {
       setStatusUpdateLoading(false);
     }

@@ -7,7 +7,6 @@ import {
   Tag, 
   Space, 
   Modal, 
-  message,
   Descriptions,
   Select,
   // DatePicker,
@@ -23,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Order } from '@/types';
 import dayjs from 'dayjs';
@@ -71,7 +71,7 @@ const Orders: React.FC = () => {
   const loadOrders = async () => {
     const merchantId = getMerchantId();
     if (!merchantId) {
-      message.error('未找到商家信息');
+      showMessage.error('未找到商家信息');
       return;
     }
 
@@ -92,7 +92,7 @@ const Orders: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load orders:', error);
-      message.error('加载订单列表失败');
+      showMessage.error('加载订单列表失败');
     } finally {
       setLoading(false);
     }
@@ -122,14 +122,14 @@ const Orders: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success('发货成功');
+        showMessage.success('发货成功');
         loadOrders();
       } else {
-        message.error(response.data.message || '发货失败');
+        showMessage.error(response.data.message || '发货失败');
       }
     } catch (error) {
       console.error('Failed to ship order:', error);
-      message.error('发货操作失败');
+      showMessage.error('发货操作失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [record.id]: false }));
     }
@@ -147,14 +147,14 @@ const Orders: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success('确认收货成功，订单已完成');
+        showMessage.success('确认收货成功，订单已完成');
         loadOrders();
       } else {
-        message.error(response.data.message || '操作失败');
+        showMessage.error(response.data.message || '操作失败');
       }
     } catch (error) {
       console.error('Failed to confirm return:', error);
-      message.error('确认收货操作失败');
+      showMessage.error('确认收货操作失败');
     } finally {
       setActionLoading(prev => ({ ...prev, [record.id]: false }));
     }

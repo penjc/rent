@@ -11,7 +11,6 @@ import {
   Select, 
   InputNumber,
   Upload,
-  message,
   Popconfirm,
   Image,
   Row,
@@ -29,6 +28,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Product, Category } from '@/types';
 
@@ -66,7 +66,7 @@ const Products: React.FC = () => {
   const loadProducts = async () => {
     const merchantId = getMerchantId();
     if (!merchantId) {
-      message.error('未找到商家信息');
+      showMessage.error('未找到商家信息');
       return;
     }
 
@@ -78,7 +78,7 @@ const Products: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load products:', error);
-      message.error('加载商品列表失败');
+      showMessage.error('加载商品列表失败');
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ const Products: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to load categories:', error);
-      message.error('加载分类列表失败');
+      showMessage.error('加载分类列表失败');
     }
   };
 
@@ -171,14 +171,14 @@ const Products: React.FC = () => {
     try {
       const response = await api.delete(`/products/${record.id}?merchantId=${merchantId}`);
       if (response.data.code === 200) {
-        message.success('商品删除成功');
+        showMessage.success('商品删除成功');
         loadProducts();
       } else {
-        message.error(response.data.message || '删除失败');
+        showMessage.error(response.data.message || '删除失败');
       }
     } catch (error) {
       console.error('Failed to delete product:', error);
-      message.error('删除商品失败');
+      showMessage.error('删除商品失败');
     }
   };
 
@@ -195,14 +195,14 @@ const Products: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success(response.data.data);
+        showMessage.success(response.data.data);
         loadProducts();
       } else {
-        message.error(response.data.message || '操作失败');
+        showMessage.error(response.data.message || '操作失败');
       }
     } catch (error) {
       console.error('Failed to toggle status:', error);
-      message.error('状态更新失败');
+      showMessage.error('状态更新失败');
     }
   };
 
@@ -210,7 +210,7 @@ const Products: React.FC = () => {
   const handleSubmit = async (values: any) => {
     const merchantId = getMerchantId();
     if (!merchantId) {
-      message.error('未找到商家信息');
+      showMessage.error('未找到商家信息');
       return;
     }
 
@@ -255,17 +255,17 @@ const Products: React.FC = () => {
       }
 
       if (response.data.code === 200) {
-        message.success(editingProduct ? '商品更新成功' : '商品发布成功，等待审核');
+        showMessage.success(editingProduct ? '商品更新成功' : '商品发布成功，等待审核');
         setIsModalVisible(false);
         form.resetFields();
         setFileList([]);
         loadProducts();
       } else {
-        message.error(response.data.message || '操作失败');
+        showMessage.error(response.data.message || '操作失败');
       }
     } catch (error) {
       console.error('Failed to submit product:', error);
-      message.error(editingProduct ? '更新商品失败' : '发布商品失败');
+      showMessage.error(editingProduct ? '更新商品失败' : '发布商品失败');
     } finally {
       setLoading(false);
     }
@@ -273,92 +273,68 @@ const Products: React.FC = () => {
 
   // 自定义上传函数
   const customUpload = async (options: any) => {
-    const { file, onSuccess, onError } = options;
+    const { file, onSuccess, onError, onProgress } = options;
     
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
-      // 获取token
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('/api/files/upload/product', {
-        method: 'POST',
-        body: formData,
+    try {
+      const response = await api.post('/files/upload', formData, {
         headers: {
-          'Authorization': `Bearer ${token || ''}`
-        }
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress({ percent });
+          }
+        },
       });
 
-      const result = await response.json();
-      
-      if (result.code === 200) {
-        onSuccess(result, file);
+      if (response.data.code === 200) {
+        onSuccess(response.data, file);
       } else {
-        onError(new Error(result.message || '上传失败'));
+        onError(new Error(response.data.message || '上传失败'));
       }
     } catch (error) {
+      console.error('Upload failed:', error);
       onError(error);
     }
   };
 
-  // 上传配置
+  // 上传属性配置
   const uploadProps: UploadProps = {
+    customRequest: customUpload,
     listType: 'picture-card',
     fileList: fileList,
-    customRequest: customUpload,
-    multiple: true,
-    accept: 'image/*',
     beforeUpload: (file) => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
-        message.error('只能上传图片文件!');
+        showMessage.error('只能上传图片文件!');
         return false;
       }
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!isLt5M) {
-        message.error('图片大小不能超过5MB!');
+        showMessage.error('图片大小不能超过5MB!');
         return false;
       }
       return true;
     },
-    onChange: ({ fileList: newFileList }) => {
-      console.log('Upload onChange:', newFileList);
+    onChange: (info) => {
+      console.log('Upload onChange:', info);
+      setFileList(info.fileList);
       
-      // 处理上传完成的文件
-      const updatedFileList = newFileList.map(file => {
-        if (file.status === 'done' && file.response) {
-          console.log('Upload response for', file.name, ':', file.response);
-          if (file.response.code === 200 && file.response.data) {
-            // 确保文件有正确的URL
-            if (!file.url) {
-              file.url = file.response.data.url;
-              message.success(`${file.name} 上传成功`);
-            }
-          } else {
-            message.error(`${file.name} 上传失败: ${file.response.message}`);
-          }
-        } else if (file.status === 'error') {
-          message.error(`${file.name} 上传失败`);
-        }
-        return file;
-      });
-      
-      setFileList(updatedFileList);
-    },
-    onPreview: async (file) => {
-      let src = file.url;
-      if (!src) {
-        src = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file.originFileObj as Blob);
-          reader.onload = () => resolve(reader.result as string);
-        });
+      if (info.file.status === 'done') {
+        console.log('Upload success:', info.file);
+        showMessage.success(`${info.file.name} 上传成功`);
+      } else if (info.file.status === 'error') {
+        console.error('Upload error:', info.file);
+        showMessage.error(`${info.file.name} 上传失败: ${info.file.response?.message || '未知错误'}`);
       }
-      const image = new window.Image();
-      image.src = src;
-      const imgWindow = window.open(src);
-      imgWindow?.document.write(image.outerHTML);
+    },
+    onRemove: (file) => {
+      console.log('Remove file:', file);
+      setFileList(prev => prev.filter(item => item.uid !== file.uid));
     },
   };
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, message, Modal, Form, Select, Image } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, Select, Image } from 'antd';
 import {SearchOutlined, EyeOutlined, CheckOutlined, CloseOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Product } from '@/types';
 
@@ -55,7 +56,7 @@ const Products: React.FC = () => {
       }
     } catch (error) {
       console.error('获取商品列表失败:', error);
-      message.error('获取商品列表失败');
+      showMessage.error('获取商品列表失败');
     } finally {
       setLoading(false);
     }
@@ -106,7 +107,7 @@ const Products: React.FC = () => {
       const response = await api.put(`/admin/products/${selectedProduct?.id}/audit`, values);
       
       if (response.data.code === 200) {
-        message.success('审核提交成功');
+        showMessage.success('审核提交成功');
         setAuditModalVisible(false);
         setSelectedProduct(null);
         auditForm.resetFields();
@@ -114,7 +115,7 @@ const Products: React.FC = () => {
       }
     } catch (error) {
       console.error('审核提交失败:', error);
-      message.error('审核提交失败');
+      showMessage.error('审核提交失败');
     }
   };
 
@@ -124,12 +125,12 @@ const Products: React.FC = () => {
       const response = await api.put(`/admin/products/${productId}/audit`, { auditStatus });
       
       if (response.data.code === 200) {
-        message.success(auditStatus === 1 ? '审核通过' : '审核拒绝');
+        showMessage.success(auditStatus === 1 ? '审核通过' : '审核拒绝');
         fetchProducts(pagination.current, pagination.pageSize, searchText, auditStatusFilter);
       }
     } catch (error) {
       console.error('审核失败:', error);
-      message.error('审核失败');
+      showMessage.error('审核失败');
     }
   };
 
