@@ -32,6 +32,13 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
     }
     
     /**
+     * 根据ID查找商家
+     */
+    public Merchant findById(Long merchantId) {
+        return getById(merchantId);
+    }
+    
+    /**
      * 商家注册
      */
     public Merchant register(String phone, String password, String companyName, String contactName, 

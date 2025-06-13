@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Input, Button, Typography, Spin, message, Avatar } from 'antd';
+import { Input, Button, Typography, Spin, Avatar } from 'antd';
 import { UserOutlined, ShopOutlined, SendOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getUserMessages, sendMessage } from '@/services/chatService';
 import { getMerchantInfo } from '@/services/merchantApi';
 import { getUserAvatars } from '@/services/userApi';
+import { showMessage } from '@/hooks/useMessage';
 import type { ChatMessage } from '@/types';
 
 const { Title, Text } = Typography;
@@ -19,7 +20,7 @@ const Chat: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [merchantInfo, setMerchantInfo] = useState<{ name: string; avatar: string } | null>(null);
+  const [merchantInfo, setMerchantInfo] = useState<{ companyName: string } | null>(null);
   const [userAvatar, setUserAvatar] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -50,12 +51,11 @@ const Chat: React.FC = () => {
     try {
       const info = await getMerchantInfo(merchantId);
       setMerchantInfo({
-        name: info.name,
-        avatar: info.avatar || ''
+        companyName: info.companyName || '商家'
       });
     } catch (error) {
       console.error('加载商家信息失败:', error);
-      message.error('加载商家信息失败');
+      showMessage.error('加载商家信息失败');
     }
   };
 
@@ -73,7 +73,7 @@ const Chat: React.FC = () => {
       setMessages(filteredMessages);
     } catch (error) {
       console.error('加载消息失败:', error);
-      message.error('加载消息失败');
+      showMessage.error('加载消息失败');
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ const Chat: React.FC = () => {
       setNewMessage('');
     } catch (error) {
       console.error('发送消息失败:', error);
-      message.error('发送消息失败');
+      showMessage.error('发送消息失败');
     } finally {
       setSending(false);
     }
@@ -142,12 +142,11 @@ const Chat: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
           <Avatar
-            src={merchantInfo?.avatar}
-            icon={!merchantInfo?.avatar && <ShopOutlined />}
+            icon={<ShopOutlined />}
             style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 12 }}
             size={40}
           />
-          <Title level={3} style={{ margin: 0, color: '#3b5998' }}>{merchantInfo?.name || '商家'}</Title>
+          <Title level={3} style={{ margin: 0, color: '#3b5998' }}>{merchantInfo?.companyName || '商家'}</Title>
         </div>
         <div style={{ 
           flex: 1,
@@ -169,7 +168,7 @@ const Chat: React.FC = () => {
               }}
             >
               <Avatar
-                src={msg.senderId === user?.id ? userAvatar : merchantInfo?.avatar}
+                src={msg.senderId === user?.id ? userAvatar : undefined}
                 icon={msg.senderId === user?.id ? <UserOutlined /> : <ShopOutlined />}
                 style={{ 
                   backgroundColor: msg.senderId === user?.id ? '#1890ff' : '#52c41a',

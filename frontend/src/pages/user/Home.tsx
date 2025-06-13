@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Card, Row, Col, Spin, Empty, message, Typography, Space } from 'antd';
+import { Button, Card, Row, Col, Spin, Empty, Typography, Space } from 'antd';
 import { ShoppingOutlined, RocketOutlined, SafetyCertificateOutlined, CustomerServiceOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
 import LoginModal from '../../components/common/LoginModal';
+import { showMessage } from '@/hooks/useMessage';
 import type { Product, Category } from '../../types';
 
 const { Meta } = Card;
@@ -71,7 +72,7 @@ const Home: React.FC = () => {
       
     } catch (error) {
       console.error('获取商品失败:', error);
-      message.error('获取商品失败');
+      showMessage.error('获取商品失败');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -123,10 +124,10 @@ const Home: React.FC = () => {
     
     // 添加用户反馈
     if (categoryId === null) {
-      message.info('已切换到全部商品');
+      showMessage.info('已切换到全部商品');
     } else {
       const categoryName = categories.find(c => c.id === categoryId)?.name;
-      message.info(`已切换到${categoryName}分类`);
+      showMessage.info(`已切换到${categoryName}分类`);
     }
   };
 
@@ -137,7 +138,7 @@ const Home: React.FC = () => {
 
   // 登录成功处理
   const handleLoginSuccess = () => {
-    message.success('登录成功');
+    showMessage.success('登录成功');
   };
 
   // 格式化价格

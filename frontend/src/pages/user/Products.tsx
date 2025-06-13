@@ -14,7 +14,6 @@ import {
   Form,
   DatePicker,
   InputNumber,
-  message,
   Space
 } from 'antd';
 import { 
@@ -26,6 +25,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { Product, Category } from '../../types';
 import dayjs from 'dayjs';
@@ -203,7 +203,7 @@ const Products: React.FC = () => {
     e.stopPropagation(); // 阻止事件冒泡
     
     if (!user || userType !== 'user') {
-      message.warning('请先登录用户账号');
+      showMessage.warning('请先登录用户账号');
       navigate('/auth/login');
       return;
     }
@@ -224,7 +224,7 @@ const Products: React.FC = () => {
 
     const userId = getUserId();
     if (!userId) {
-      message.error('未找到用户信息');
+      showMessage.error('未找到用户信息');
       return;
     }
 
@@ -242,17 +242,17 @@ const Products: React.FC = () => {
       const response = await api.post('/orders', orderData);
       
       if (response.data.code === 200) {
-        message.success('订单创建成功！请及时支付');
+        showMessage.success('订单创建成功！请及时支付');
         setIsRentModalVisible(false);
         rentForm.resetFields();
         // 跳转到订单页面
         navigate('/user/orders');
       } else {
-        message.error(response.data.message || '下单失败');
+        showMessage.error(response.data.message || '下单失败');
       }
     } catch (error) {
       console.error('Failed to create order:', error);
-      message.error('下单失败，请重试');
+      showMessage.error('下单失败，请重试');
     } finally {
       setRentLoading(false);
     }

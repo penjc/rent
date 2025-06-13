@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Tabs, message } from 'antd';
+import { Card, Form, Input, Button, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { userRegister, type UserRegisterData } from '@/services/authApi';
 import { merchantRegister, type MerchantRegisterData } from '@/services/merchantApi';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -27,10 +28,10 @@ const Register: React.FC = () => {
         login(token, response.data as any, 'user');
         localStorage.setItem('userInfo', JSON.stringify(response.data));
         localStorage.setItem('userType', 'user');
-        message.success('注册成功，欢迎加入Casual Rent！');
+        showMessage.success('注册成功，欢迎加入Casual Rent！');
         navigate('/user');
       } else {
-        message.success('注册成功，请登录');
+        showMessage.success('注册成功，请登录');
         navigate('/auth/login');
       }
     } catch (error) {
@@ -59,10 +60,10 @@ const Register: React.FC = () => {
         login(token, response.data as any, 'merchant');
         localStorage.setItem('merchantInfo', JSON.stringify(response.data));
         localStorage.setItem('userType', 'merchant');
-        message.success('商家入驻申请已提交，欢迎来到Casual Rent！');
+        showMessage.success('商家入驻申请已提交，欢迎来到Casual Rent！');
         navigate('/merchant');
       } else {
-        message.success('商家入驻申请已提交，请等待审核');
+        showMessage.success('商家入驻申请已提交，请等待审核');
         navigate('/auth/login');
       }
     } catch (error) {

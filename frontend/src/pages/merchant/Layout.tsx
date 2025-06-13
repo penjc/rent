@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
 import { 
   DashboardOutlined, 
   ShopOutlined, 
@@ -16,6 +16,7 @@ import Certification from './Certification';
 import Chat from './Chat';
 import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import type { MerchantData } from '@/services/merchantApi';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -41,7 +42,7 @@ const MerchantLayout: React.FC = () => {
     const storedUserType = localStorage.getItem('merchant_userType');
     
     if (!isAuthenticated || storedUserType !== 'merchant') {
-      message.warning('请先登录商家账号');
+      showMessage.warning('请先登录商家账号');
       navigate('/auth/login');
       return;
     }
@@ -54,7 +55,7 @@ const MerchantLayout: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    message.success('已退出登录');
+    showMessage.success('已退出登录');
     navigate('/auth/login');
   };
 

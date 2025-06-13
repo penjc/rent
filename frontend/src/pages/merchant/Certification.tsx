@@ -358,7 +358,7 @@ const Certification: React.FC = () => {
 
         {/* 营业执照 */}
         <Col xs={24} md={8}>
-          <Card title="营业执照（可选）" size="small">
+          <Card title="营业执照" size="small">
             {merchantInfo.businessLicense ? (
               <div className="text-center">
                 <Image

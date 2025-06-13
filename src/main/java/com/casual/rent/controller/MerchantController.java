@@ -176,6 +176,19 @@ public class MerchantController {
     }
     
     /**
+     * 根据商家ID获取商家信息
+     */
+    @Operation(summary = "根据商家ID获取商家信息")
+    @GetMapping("/{merchantId}")
+    public Result<Merchant> getMerchantById(@PathVariable Long merchantId) {
+        Merchant merchant = merchantService.findById(merchantId);
+        if (merchant == null) {
+            return Result.fail("商家信息不存在");
+        }
+        return Result.success(merchant);
+    }
+    
+    /**
      * 发布商品
      */
     @Operation(summary = "发布商品")

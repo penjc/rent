@@ -46,7 +46,7 @@ export const merchantRegister = async (data: MerchantRegisterData): Promise<ApiR
 
 // 获取商家信息
 export const getMerchantInfo = async (merchantId: string): Promise<MerchantData> => {
-  const response = await api.get<ApiResponse<MerchantData>>(`/merchants/${merchantId}`);
+  const response = await api.get<ApiResponse<MerchantData>>(`/merchant/${merchantId}`);
   if (!response.data.data) {
     throw new Error('商家信息不存在');
   }

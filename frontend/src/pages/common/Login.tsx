@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Tabs, message } from 'antd';
+import { Card, Form, Input, Button, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { userLogin, type UserLoginData } from '@/services/authApi';
 import { merchantLogin, type MerchantLoginData } from '@/services/merchantApi';
 import { adminLogin, type AdminLoginData } from '@/services/authApi';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -26,7 +27,7 @@ const Login: React.FC = () => {
         // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
         const token = (response.data as any).token || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'user');
-        message.success('登录成功');
+        showMessage.success('登录成功');
         navigate('/user');
       }
     } catch (error) {
@@ -46,7 +47,7 @@ const Login: React.FC = () => {
         // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
         const token = (response.data as any).token || `merchant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'merchant');
-        message.success('登录成功');
+        showMessage.success('登录成功');
         navigate('/merchant');
       }
     } catch (error) {
@@ -66,7 +67,7 @@ const Login: React.FC = () => {
         // 设置真实的token，如果后端返回token则使用，否则生成一个有效的token
         const token = (response.data as any).token || `admin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         login(token, response.data as any, 'admin');
-        message.success('登录成功');
+        showMessage.success('登录成功');
         navigate('/admin');
       }
     } catch (error) {

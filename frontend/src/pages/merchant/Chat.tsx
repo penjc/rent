@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Input, Button, Typography, Spin, message, Avatar } from 'antd';
+import { Input, Button, Typography, Spin, Avatar } from 'antd';
 import { UserOutlined, ShopOutlined, SendOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getMerchantMessages, sendMessage } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
+import { showMessage } from '@/hooks/useMessage';
 import type { ChatMessage } from '@/types';
 
 const { Title, Text } = Typography;
@@ -45,7 +46,7 @@ const Chat: React.FC = () => {
       });
     } catch (error) {
       console.error('加载用户信息失败:', error);
-      message.error('加载用户信息失败');
+      showMessage.error('加载用户信息失败');
     }
   };
 
@@ -63,7 +64,7 @@ const Chat: React.FC = () => {
       setMessages(filteredMessages);
     } catch (error) {
       console.error('加载消息失败:', error);
-      message.error('加载消息失败');
+      showMessage.error('加载消息失败');
     } finally {
       setLoading(false);
     }
@@ -82,7 +83,7 @@ const Chat: React.FC = () => {
       setNewMessage('');
     } catch (error) {
       console.error('发送消息失败:', error);
-      message.error('发送消息失败');
+      showMessage.error('发送消息失败');
     } finally {
       setSending(false);
     }

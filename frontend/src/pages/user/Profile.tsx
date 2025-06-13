@@ -11,7 +11,6 @@ import {
   Typography,
   Divider,
   Space,
-  message,
   Modal,
   Tabs,
   Image,
@@ -31,6 +30,7 @@ import {
   IdcardOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { User } from '@/types';
 
@@ -65,7 +65,7 @@ const Profile: React.FC = () => {
       }
     } catch (error) {
       console.error('获取用户信息失败:', error);
-      message.error('获取用户信息失败');
+      showMessage.error('获取用户信息失败');
     } finally {
       setLoading(false);
     }
@@ -108,11 +108,11 @@ const Profile: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success('头像更新成功');
+        showMessage.success('头像更新成功');
         await fetchUserInfo(); // 重新获取用户信息
       }
     } catch (error) {
-      message.error('头像上传失败');
+      showMessage.error('头像上传失败');
     } finally {
       setLoading(false);
     }
@@ -126,12 +126,12 @@ const Profile: React.FC = () => {
     try {
       const response = await api.put(`/user/profile/${authUser.id}`, values);
       if (response.data.code === 200) {
-        message.success('个人信息更新成功');
+        showMessage.success('个人信息更新成功');
         setEditMode(false);
         await fetchUserInfo();
       }
     } catch (error) {
-      message.error('更新失败');
+      showMessage.error('更新失败');
     } finally {
       setLoading(false);
     }
@@ -148,7 +148,7 @@ const Profile: React.FC = () => {
         setPasswordModalVisible(false);
         passwordForm.resetFields();
         setLoading(false);
-        message.success('密码修改成功');
+        showMessage.success('密码修改成功');
       }, 1000);
     } catch (error) {
       console.log('表单验证失败:', error);
@@ -179,13 +179,13 @@ const Profile: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        message.success('认证材料提交成功');
+        showMessage.success('认证材料提交成功');
         setCertificationModalVisible(false);
         certificationForm.resetFields();
         await fetchCertificationStatus();
       }
     } catch (error) {
-      message.error('认证材料提交失败');
+      showMessage.error('认证材料提交失败');
     } finally {
       setUploading(false);
       setUploadProgress({});
