@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { List, Avatar, Typography, Empty, Spin } from 'antd';
+import { List, Avatar, Typography, Empty, Spin, Badge } from 'antd';
 import { ShopOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { showMessage } from '@/hooks/useMessage';
-import { getUserMessages } from '@/services/chatService';
+import { getUserMessages, getUnreadCountByUser, markConversationAsRead } from '@/services/chatService';
 import { getMerchantCompanyNames } from '@/services/merchantApi';
 import type { ChatMessage } from '@/types';
 
@@ -21,6 +22,7 @@ interface MerchantChat {
 const Messages: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { refreshUnreadCount } = useUnreadMessages();
   const [loading, setLoading] = useState(true);
   const [merchantChats, setMerchantChats] = useState<MerchantChat[]>([]);
 
@@ -30,12 +32,20 @@ const Messages: React.FC = () => {
     }
   }, [user]);
 
+  // 页面加载时刷新未读消息数量
+  useEffect(() => {
+    refreshUnreadCount();
+  }, [refreshUnreadCount]);
+
   const loadMerchantChats = async () => {
     if (!user) return;
     try {
       setLoading(true);
       // 获取所有消息
       const messages = await getUserMessages(user.id as unknown as number);
+      // 获取未读消息数量
+      const unreadCountMap = await getUnreadCountByUser(user.id as unknown as number);
+      
       // 收集所有对方ID（商家ID）
       const merchantIdSet = new Set<number>();
       messages.forEach((msg: ChatMessage) => {
@@ -47,24 +57,28 @@ const Messages: React.FC = () => {
         }
       });
       const merchantIds = Array.from(merchantIdSet);
+      
       // 批量获取公司名
       let merchantNameMap: Record<number, string> = {};
       if (merchantIds.length > 0) {
         merchantNameMap = await getMerchantCompanyNames(merchantIds);
       }
+      
       // 按商家分组消息
       const merchantMap = new Map<number, MerchantChat>();
       messages.forEach((msg: ChatMessage) => {
         const merchantId = msg.senderId === user.id ? msg.receiverId : msg.senderId;
         if (merchantId === user.id) return;
         const merchantName = merchantNameMap[merchantId] || '商家';
+        const unreadCount = unreadCountMap[merchantId] || 0;
+        
         if (!merchantMap.has(merchantId)) {
           merchantMap.set(merchantId, {
             merchantId,
             merchantName,
             lastMessage: msg.content,
             lastMessageTime: msg.createdAt,
-            unreadCount: 0
+            unreadCount
           });
         } else {
           const chat = merchantMap.get(merchantId)!;
@@ -72,8 +86,10 @@ const Messages: React.FC = () => {
             chat.lastMessage = msg.content;
             chat.lastMessageTime = msg.createdAt;
           }
+          chat.unreadCount = unreadCount;
         }
       });
+      
       // 转换为数组并排序
       const chats = Array.from(merchantMap.values())
         .sort((a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime());
@@ -86,7 +102,24 @@ const Messages: React.FC = () => {
     }
   };
 
-  const handleChatClick = (merchantId: number) => {
+  const handleChatClick = async (merchantId: number) => {
+    // 标记与该商家的对话为已读
+    try {
+      await markConversationAsRead(user!.id as unknown as number, merchantId);
+      // 更新本地状态
+      setMerchantChats(prev => 
+        prev.map(chat => 
+          chat.merchantId === merchantId 
+            ? { ...chat, unreadCount: 0 }
+            : chat
+        )
+      );
+      // 刷新全局未读消息数量
+      refreshUnreadCount();
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
+    
     navigate(`/user/chat?merchantId=${merchantId}`);
   };
 
@@ -147,12 +180,14 @@ const Messages: React.FC = () => {
                 e.currentTarget.style.background = 'linear-gradient(90deg, #f6fbff 0%, #f0f4ff 100%)';
               }}
             >
-              <Avatar
-                icon={<ShopOutlined />}
-                style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
-                size={48}
-              />
-              <div style={{ flex: 1 }}>
+              <Badge count={chat.unreadCount} offset={[-5, 5]}>
+                <Avatar
+                  icon={<ShopOutlined />}
+                  style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
+                  size={48}
+                />
+              </Badge>
+              <div style={{ flex: 1, marginLeft: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 18, color: '#222' }}>{chat.merchantName}</Text>
                   <Text type="secondary" style={{ fontSize: 13, color: '#888' }}>{new Date(chat.lastMessageTime).toLocaleString()}</Text>

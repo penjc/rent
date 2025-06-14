@@ -19,6 +19,8 @@ public class Message {
 
     private String content;
 
+    private Boolean isRead = false;
+
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -51,6 +53,14 @@ public class Message {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Boolean getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(Boolean isRead) {
+        this.isRead = isRead;
     }
 
     public LocalDateTime getCreatedAt() {

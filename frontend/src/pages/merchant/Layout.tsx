@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Badge } from 'antd';
 import { 
   DashboardOutlined, 
   ShopOutlined, 
@@ -16,6 +16,7 @@ import Certification from './Certification';
 import Chat from './Chat';
 import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { showMessage } from '@/hooks/useMessage';
 import type { MerchantData } from '@/services/merchantApi';
 
@@ -25,6 +26,7 @@ const MerchantLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user, userType, logout } = useAuthStore();
+  const { unreadCount, refreshUnreadCount } = useUnreadMessages();
   const [merchant, setMerchant] = useState<MerchantData | null>(null);
 
   // 根据当前路径确定选中的菜单项
@@ -59,36 +61,64 @@ const MerchantLayout: React.FC = () => {
     navigate('/auth/login?type=merchant');
   };
 
+  const handleMenuClick = (key: string) => {
+    switch (key) {
+      case 'dashboard':
+        navigate('/merchant');
+        break;
+      case 'products':
+        navigate('/merchant/products');
+        break;
+      case 'orders':
+        navigate('/merchant/orders');
+        break;
+      case 'messages':
+        navigate('/merchant/messages');
+        // 刷新未读消息数量
+        setTimeout(() => refreshUnreadCount(), 1000);
+        break;
+      case 'certification':
+        navigate('/merchant/certification');
+        break;
+      default:
+        break;
+    }
+  };
+
   const menuItems = [
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
       label: '控制台',
-      onClick: () => navigate('/merchant')
+      onClick: () => handleMenuClick('dashboard')
     },
     {
       key: 'products',
       icon: <ShopOutlined />,
       label: '商品管理',
-      onClick: () => navigate('/merchant/products')
+      onClick: () => handleMenuClick('products')
     },
     {
       key: 'orders',
       icon: <OrderedListOutlined />,
       label: '订单管理',
-      onClick: () => navigate('/merchant/orders')
+      onClick: () => handleMenuClick('orders')
     },
     {
       key: 'messages',
       icon: <MessageOutlined />,
-      label: '消息列表',
-      onClick: () => navigate('/merchant/messages')
+      label: (
+        <Badge count={unreadCount} size="small" offset={[10, 0]}>
+          <span>消息列表</span>
+        </Badge>
+      ),
+      onClick: () => handleMenuClick('messages')
     },
     {
       key: 'certification',
       icon: <UserOutlined />,
       label: '商家认证',
-      onClick: () => navigate('/merchant/certification')
+      onClick: () => handleMenuClick('certification')
     }
   ];
 

@@ -85,4 +85,119 @@ public class MessageController {
         List<Message> list = messageService.getUserMessages(userId);
         return Result.success(list);
     }
+
+    /**
+     * 获取用户的未读消息数量
+     */
+    @Operation(
+        summary = "获取未读消息数量",
+        description = "获取指定用户的未读消息总数",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "获取成功",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class))
+            )
+        }
+    )
+    @GetMapping("/unread-count/{userId}")
+    public Result<Long> getUnreadCount(
+        @Parameter(description = "用户ID", required = true)
+        @PathVariable Long userId
+    ) {
+        long count = messageService.getUnreadCount(userId);
+        return Result.success(count);
+    }
+
+    /**
+     * 获取用户与每个对话者的未读消息数量
+     */
+    @Operation(
+        summary = "获取分组未读消息数量",
+        description = "获取用户与每个对话者的未读消息数量",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "获取成功",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Map.class))
+            )
+        }
+    )
+    @GetMapping("/unread-count-by-user/{userId}")
+    public Result<Map<Long, Long>> getUnreadCountByUser(
+        @Parameter(description = "用户ID", required = true)
+        @PathVariable Long userId
+    ) {
+        Map<Long, Long> countMap = messageService.getUnreadCountByUser(userId);
+        return Result.success(countMap);
+    }
+
+    /**
+     * 标记消息为已读
+     */
+    @Operation(
+        summary = "标记消息已读",
+        description = "将指定消息标记为已读状态",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "标记成功"
+            )
+        }
+    )
+    @PutMapping("/{messageId}/read")
+    public Result<String> markAsRead(
+        @Parameter(description = "消息ID", required = true)
+        @PathVariable Long messageId
+    ) {
+        messageService.markAsRead(messageId);
+        return Result.success("标记成功");
+    }
+
+    /**
+     * 标记对话为已读
+     */
+    @Operation(
+        summary = "标记对话已读",
+        description = "将用户与指定对话者的所有未读消息标记为已读",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "标记成功"
+            )
+        }
+    )
+    @PutMapping("/conversation/read")
+    public Result<String> markConversationAsRead(
+        @Parameter(description = "请求参数", required = true)
+        @RequestBody Map<String, Object> params
+    ) {
+        Long userId = Long.valueOf(params.get("userId").toString());
+        Long otherUserId = Long.valueOf(params.get("otherUserId").toString());
+        messageService.markConversationAsRead(userId, otherUserId);
+        return Result.success("标记成功");
+    }
+
+    /**
+     * 获取用户的未读消息列表
+     */
+    @Operation(
+        summary = "获取未读消息列表",
+        description = "获取指定用户的所有未读消息",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "获取成功",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))
+            )
+        }
+    )
+    @GetMapping("/unread/{userId}")
+    public Result<List<Message>> getUnreadMessages(
+        @Parameter(description = "用户ID", required = true)
+        @PathVariable Long userId
+    ) {
+        List<Message> list = messageService.getUnreadMessages(userId);
+        return Result.success(list);
+    }
 }

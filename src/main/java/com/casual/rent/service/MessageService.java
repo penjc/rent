@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 聊天消息服务
@@ -21,6 +23,7 @@ public class MessageService extends ServiceImpl<MessageMapper, Message> {
         message.setSenderId(senderId);
         message.setReceiverId(receiverId);
         message.setContent(content);
+        message.setIsRead(false);
         message.setCreatedAt(LocalDateTime.now());
         save(message);
         return message;
@@ -50,6 +53,66 @@ public class MessageService extends ServiceImpl<MessageMapper, Message> {
                         .eq(Message::getSenderId, userId)
                         .or()
                         .eq(Message::getReceiverId, userId))
+                .orderByDesc(Message::getCreatedAt)
+                .list();
+    }
+
+    /**
+     * 获取用户的未读消息数量
+     */
+    public long getUnreadCount(Long userId) {
+        return lambdaQuery()
+                .eq(Message::getReceiverId, userId)
+                .eq(Message::getIsRead, false)
+                .count();
+    }
+
+    /**
+     * 获取用户与每个对话者的未读消息数量
+     */
+    public Map<Long, Long> getUnreadCountByUser(Long userId) {
+        List<Message> unreadMessages = lambdaQuery()
+                .eq(Message::getReceiverId, userId)
+                .eq(Message::getIsRead, false)
+                .list();
+        
+        return unreadMessages.stream()
+                .collect(Collectors.groupingBy(
+                        Message::getSenderId,
+                        Collectors.counting()
+                ));
+    }
+
+    /**
+     * 标记消息为已读
+     */
+    public void markAsRead(Long messageId) {
+        Message message = getById(messageId);
+        if (message != null && !message.getIsRead()) {
+            message.setIsRead(true);
+            updateById(message);
+        }
+    }
+
+    /**
+     * 标记用户与指定对话者的所有消息为已读
+     */
+    public void markConversationAsRead(Long userId, Long otherUserId) {
+        lambdaUpdate()
+                .eq(Message::getReceiverId, userId)
+                .eq(Message::getSenderId, otherUserId)
+                .eq(Message::getIsRead, false)
+                .set(Message::getIsRead, true)
+                .update();
+    }
+
+    /**
+     * 获取用户的未读消息列表
+     */
+    public List<Message> getUnreadMessages(Long userId) {
+        return lambdaQuery()
+                .eq(Message::getReceiverId, userId)
+                .eq(Message::getIsRead, false)
                 .orderByDesc(Message::getCreatedAt)
                 .list();
     }

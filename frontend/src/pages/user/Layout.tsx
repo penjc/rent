@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Badge } from 'antd';
 import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import Home from './Home';
 import Products from './Products';
 import ProductDetail from './ProductDetail';
@@ -18,6 +19,7 @@ const { Header, Content, Footer } = Layout;
 
 const UserLayout: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { unreadCount, refreshUnreadCount } = useUnreadMessages();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -77,6 +79,8 @@ const UserLayout: React.FC = () => {
         break;
       case 'messages':
         navigate('/user/messages');
+        // 刷新未读消息数量
+        setTimeout(() => refreshUnreadCount(), 1000);
         break;
       default:
         break;
@@ -191,14 +195,18 @@ const UserLayout: React.FC = () => {
                 },
                 {
                   key: 'messages',
-                  label: '消息',
+                  label: (
+                    <Badge count={unreadCount} size="small" offset={[10, -5]}>
+                      <span>消息</span>
+                    </Badge>
+                  ),
                   icon: <MessageOutlined style={{ fontSize: '16px' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
                     transition: 'all 0.3s ease'
                   }
-                },
+                }
               ]}
             />
           </div>

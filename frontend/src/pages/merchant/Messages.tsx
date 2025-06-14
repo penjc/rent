@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { List, Avatar, Typography, Empty, Spin } from 'antd';
+import { List, Avatar, Typography, Empty, Spin, Badge } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { showMessage } from '@/hooks/useMessage';
-import { getUserMessages } from '@/services/chatService';
+import { getUserMessages, getUnreadCountByUser, markConversationAsRead } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
 import type { ChatMessage } from '@/types';
 
@@ -22,6 +23,7 @@ interface UserChat {
 const Messages: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { refreshUnreadCount } = useUnreadMessages();
   const [loading, setLoading] = useState(true);
   const [userChats, setUserChats] = useState<UserChat[]>([]);
 
@@ -31,12 +33,20 @@ const Messages: React.FC = () => {
     }
   }, [user]);
 
+  // 页面加载时刷新未读消息数量
+  useEffect(() => {
+    refreshUnreadCount();
+  }, [refreshUnreadCount]);
+
   const loadUserChats = async () => {
     if (!user) return;
     try {
       setLoading(true);
       // 获取所有消息
       const messages = await getUserMessages(user.id as unknown as number);
+      // 获取未读消息数量
+      const unreadCountMap = await getUnreadCountByUser(user.id as unknown as number);
+      
       // 收集所有对方ID（用户ID）
       const userIdSet = new Set<number>();
       messages.forEach((msg: ChatMessage) => {
@@ -60,6 +70,8 @@ const Messages: React.FC = () => {
       messages.forEach((msg: ChatMessage) => {
         const userId = msg.senderId === user.id ? msg.receiverId : msg.senderId;
         if (userId === user.id) return;
+        const unreadCount = unreadCountMap[userId] || 0;
+        
         if (!userMap.has(userId)) {
           userMap.set(userId, {
             userId,
@@ -67,7 +79,7 @@ const Messages: React.FC = () => {
             userAvatar: userAvatars[userId] || '',
             lastMessage: msg.content,
             lastMessageTime: msg.createdAt,
-            unreadCount: 0
+            unreadCount
           });
         } else {
           const chat = userMap.get(userId)!;
@@ -75,8 +87,10 @@ const Messages: React.FC = () => {
             chat.lastMessage = msg.content;
             chat.lastMessageTime = msg.createdAt;
           }
+          chat.unreadCount = unreadCount;
         }
       });
+      
       // 转换为数组并排序
       const chats = Array.from(userMap.values())
         .sort((a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime());
@@ -89,7 +103,24 @@ const Messages: React.FC = () => {
     }
   };
 
-  const handleChatClick = (userId: number) => {
+  const handleChatClick = async (userId: number) => {
+    // 标记与该用户的对话为已读
+    try {
+      await markConversationAsRead(user!.id as unknown as number, userId);
+      // 更新本地状态
+      setUserChats(prev => 
+        prev.map(chat => 
+          chat.userId === userId 
+            ? { ...chat, unreadCount: 0 }
+            : chat
+        )
+      );
+      // 刷新全局未读消息数量
+      refreshUnreadCount();
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
+    
     navigate(`/merchant/chat?userId=${userId}`);
   };
 
@@ -150,13 +181,15 @@ const Messages: React.FC = () => {
                 e.currentTarget.style.background = 'linear-gradient(90deg, #f6fbff 0%, #f0f4ff 100%)';
               }}
             >
-              <Avatar
-                src={chat.userAvatar}
-                icon={!chat.userAvatar && <UserOutlined />}
-                style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
-                size={48}
-              />
-              <div style={{ flex: 1 }}>
+              <Badge count={chat.unreadCount} offset={[-5, 5]}>
+                <Avatar
+                  src={chat.userAvatar}
+                  icon={!chat.userAvatar && <UserOutlined />}
+                  style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
+                  size={48}
+                />
+              </Badge>
+              <div style={{ flex: 1, marginLeft: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text strong style={{ fontSize: 18, color: '#222' }}>{chat.userName}</Text>
                   <Text type="secondary" style={{ fontSize: 13, color: '#888' }}>{new Date(chat.lastMessageTime).toLocaleString()}</Text>

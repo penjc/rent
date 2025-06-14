@@ -3,10 +3,11 @@ import { Input, Button, Typography, Spin, Avatar } from 'antd';
 import { UserOutlined, ShopOutlined, SendOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { getUserMessages, sendMessage } from '@/services/chatService';
+import { getUserMessages, sendMessage, markConversationAsRead } from '@/services/chatService';
 import { getMerchantInfo } from '@/services/merchantApi';
 import { getUserAvatars } from '@/services/userApi';
 import { showMessage } from '@/hooks/useMessage';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import type { ChatMessage } from '@/types';
 
 const { Title, Text } = Typography;
@@ -16,6 +17,7 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
+  const { refreshUnreadCount } = useUnreadMessages();
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -34,7 +36,22 @@ const Chat: React.FC = () => {
     loadMessages();
     loadMerchantInfo();
     loadUserAvatar();
-  }, [merchantId, user]);
+    markMessagesAsRead();
+  }, [merchantId, user, navigate]);
+
+  useEffect(() => {
+    refreshUnreadCount();
+  }, [refreshUnreadCount]);
+
+  const markMessagesAsRead = async () => {
+    if (!user || !merchantId) return;
+    try {
+      await markConversationAsRead(user.id as unknown as number, Number(merchantId));
+      refreshUnreadCount();
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
+  };
 
   const loadUserAvatar = async () => {
     if (!user) return;
