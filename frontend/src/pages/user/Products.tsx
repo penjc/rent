@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Layout, 
   Input, 
@@ -51,6 +51,7 @@ const Products: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('created_desc');
   const [total, setTotal] = useState(0);
   const [hasMoreData, setHasMoreData] = useState(true);
+  const [isComponentMounted, setIsComponentMounted] = useState(false);
   const pageSize = 20;
 
   // 立即租赁相关状态
@@ -77,19 +78,42 @@ const Products: React.FC = () => {
       try {
         const categoriesData = await getCategories();
         setCategories(categoriesData || []);
+        setIsComponentMounted(true); // 标记组件已完成初始化
       } catch (error) {
         console.error('获取分类失败:', error);
+        setIsComponentMounted(true); // 即使出错也标记为已初始化
       }
     };
     fetchCategories();
   }, []);
 
+  // 防止重复请求的标志
+  const fetchingRef = useRef(false);
+
+  // 商品去重工具函数
+  const deduplicateProducts = (products: Product[]) => {
+    const seen = new Set();
+    return products.filter(product => {
+      if (seen.has(product.id)) {
+        return false;
+      }
+      seen.add(product.id);
+      return true;
+    });
+  };
+
   // 首次加载商品
   const fetchProducts = async (page = 1, isLoadMore = false) => {
+    // 防止重复请求
+    if (!isLoadMore && fetchingRef.current) {
+      return;
+    }
+    
     if (isLoadMore) {
       setLoadingMore(true);
     } else {
       setLoading(true);
+      fetchingRef.current = true;
     }
     
     try {
@@ -106,23 +130,31 @@ const Products: React.FC = () => {
       
       if (isLoadMore) {
         // 加载更多时追加到现有商品列表
-        setProducts(prev => [...prev, ...newProducts]);
+        setProducts(prev => {
+          // 合并新旧商品并根据ID去重
+          const allProducts = [...prev, ...newProducts];
+          const uniqueProducts = deduplicateProducts(allProducts);
+          // 使用去重后的产品列表长度来检查是否还有更多数据
+          setHasMoreData(uniqueProducts.length < newTotal);
+          return uniqueProducts;
+        });
       } else {
-        // 首次加载或筛选时替换商品列表
-        setProducts(newProducts);
+        // 首次加载或筛选时替换商品列表，同时去重
+        const uniqueProducts = deduplicateProducts(newProducts);
+        setProducts(uniqueProducts);
+        setHasMoreData(uniqueProducts.length < newTotal);
       }
       
       setTotal(newTotal);
-      
-      // 检查是否还有更多数据
-      const totalLoaded = isLoadMore ? products.length + newProducts.length : newProducts.length;
-      setHasMoreData(totalLoaded < newTotal);
       
     } catch (error) {
       console.error('获取商品失败:', error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      if (!isLoadMore) {
+        fetchingRef.current = false;
+      }
     }
   };
 
@@ -132,7 +164,7 @@ const Products: React.FC = () => {
     
     const nextPage = Math.floor(products.length / pageSize) + 1;
     fetchProducts(nextPage, true);
-  }, [loadingMore, hasMoreData, products.length, selectedCategory, activeSearchText, sortBy]);
+  }, [loadingMore, hasMoreData, products.length, pageSize]);
 
   // 滚动监听
   useEffect(() => {
@@ -159,31 +191,45 @@ const Products: React.FC = () => {
 
   // 获取商品数据
   useEffect(() => {
-    setProducts([]); // 清空现有商品列表
-    setHasMoreData(true);
-    fetchProducts(1, false);
-  }, [selectedCategory, sortBy, activeSearchText]);
+    // 只有在组件完全初始化后才执行请求
+    if (!isComponentMounted) return;
+    
+    // 添加延迟以避免快速连续的状态更新
+    const timer = setTimeout(() => {
+      setProducts([]); // 清空现有商品列表
+      setHasMoreData(true);
+      fetchProducts(1, false);
+    }, 50); // 50ms延迟
+
+    return () => clearTimeout(timer);
+  }, [selectedCategory, sortBy, activeSearchText, isComponentMounted]);
 
   // 搜索处理
   const handleSearch = () => {
-    setActiveSearchText(searchText);
-    
-    // 更新URL参数
-    const params = new URLSearchParams();
-    if (searchText) params.set('search', searchText);
-    if (selectedCategory) params.set('category', selectedCategory.toString());
-    setSearchParams(params);
+    // 只有当搜索文本真正改变时才更新
+    if (searchText !== activeSearchText) {
+      setActiveSearchText(searchText);
+      
+      // 更新URL参数
+      const params = new URLSearchParams();
+      if (searchText) params.set('search', searchText);
+      if (selectedCategory) params.set('category', selectedCategory.toString());
+      setSearchParams(params);
+    }
   };
 
   // 分类选择
   const handleCategorySelect = (categoryId: number | null) => {
-    setSelectedCategory(categoryId);
-    
-    // 更新URL参数
-    const params = new URLSearchParams();
-    if (searchText) params.set('search', searchText);
-    if (categoryId) params.set('category', categoryId.toString());
-    setSearchParams(params);
+    // 只有当分类真正改变时才更新
+    if (categoryId !== selectedCategory) {
+      setSelectedCategory(categoryId);
+      
+      // 更新URL参数
+      const params = new URLSearchParams();
+      if (activeSearchText) params.set('search', activeSearchText);
+      if (categoryId) params.set('category', categoryId.toString());
+      setSearchParams(params);
+    }
   };
 
   // 排序处理
