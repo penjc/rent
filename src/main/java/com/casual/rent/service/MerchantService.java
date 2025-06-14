@@ -8,7 +8,7 @@ import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.mapper.MerchantMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -19,8 +19,8 @@ import java.util.Objects;
 @Service
 public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
     
-    // @Autowired
-    // private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     /**
      * 根据手机号查找商家
@@ -45,9 +45,8 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
                            String businessLicense) {
         Merchant merchant = new Merchant();
         merchant.setPhone(phone);
-        // 密码明文存储（已注释加密操作）
-        merchant.setPassword(password);
-        // merchant.setPassword(passwordEncoder.encode(password));
+        // 使用PasswordEncoder加密密码
+        merchant.setPassword(passwordEncoder.encode(password));
         merchant.setCompanyName(companyName);
         merchant.setContactName(contactName);
         merchant.setBusinessLicense(businessLicense);
@@ -62,13 +61,10 @@ public class MerchantService extends ServiceImpl<MerchantMapper, Merchant> {
     public Merchant login(String phone, String password) {
         Merchant merchant = findByPhone(phone);
         if (merchant != null) {
-            // 明文密码比较（已注释加密验证）
-            if (password.equals(merchant.getPassword())) {
+            // 使用PasswordEncoder验证密码
+            if (passwordEncoder.matches(password, merchant.getPassword())) {
                 return merchant;
             }
-            // if (passwordEncoder.matches(password, merchant.getPassword())) {
-            //     return merchant;
-            // }
         }
         return null;
     }
