@@ -250,7 +250,7 @@ const Products: React.FC = () => {
     
     if (!user || userType !== 'user') {
       showMessage.warning('请先登录用户账号');
-      navigate('/auth/login');
+      navigate('/auth/login?type=user');
       return;
     }
 

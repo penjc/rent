@@ -33,7 +33,7 @@ const AdminLayout: React.FC = () => {
     
     if (!isAuthenticated || storedUserType !== 'admin') {
       showMessage.warning('请先登录管理员账号');
-      navigate('/auth/login');
+      navigate('/auth/login?type=admin');
       return;
     }
   }, [isAuthenticated, navigate]);
@@ -41,7 +41,7 @@ const AdminLayout: React.FC = () => {
   const handleLogout = () => {
     logout();
     showMessage.success('已退出登录');
-    navigate('/auth/login');
+    navigate('/auth/login?type=admin');
   };
 
   const handleMenuClick = (key: string) => {

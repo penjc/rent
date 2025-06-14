@@ -43,7 +43,7 @@ const MerchantLayout: React.FC = () => {
     
     if (!isAuthenticated || storedUserType !== 'merchant') {
       // showMessage.warning('请先登录商家账号');
-      navigate('/auth/login');
+      navigate('/auth/login?type=merchant');
       return;
     }
     
@@ -56,7 +56,7 @@ const MerchantLayout: React.FC = () => {
   const handleLogout = () => {
     logout();
     showMessage.success('已退出登录');
-    navigate('/auth/login');
+    navigate('/auth/login?type=merchant');
   };
 
   const menuItems = [

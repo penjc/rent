@@ -281,7 +281,7 @@ const Orders: React.FC = () => {
         size="small"
         onClick={() => {
           if (!isAuthenticated) {
-            navigate('/auth/login');
+            navigate('/auth/login?type=user');
             return;
           }
           navigate(`/user/chat?merchantId=${order.merchantId}`);

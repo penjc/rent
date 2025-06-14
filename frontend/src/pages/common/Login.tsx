@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { userLogin, type UserLoginData } from '@/services/authApi';
 import { merchantLogin, type MerchantLoginData } from '@/services/merchantApi';
 import { adminLogin, type AdminLoginData } from '@/services/authApi';
@@ -13,8 +13,22 @@ const { TabPane } = Tabs;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('user');
   const { login } = useAuthStore();
+
+  // 根据URL参数设置默认标签页
+  useEffect(() => {
+    const type = searchParams.get('type');
+    if (type === 'merchant') {
+      setActiveTab('merchant');
+    } else if (type === 'admin') {
+      setActiveTab('admin');
+    } else {
+      setActiveTab('user');
+    }
+  }, [searchParams]);
 
   // 用户登录
   const handleUserLogin = async (values: UserLoginData) => {
@@ -92,7 +106,7 @@ const Login: React.FC = () => {
           </div>
         }
       >
-        <Tabs defaultActiveKey="user" centered className="login-tabs">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} centered className="login-tabs">
           <TabPane tab="用户登录" key="user">
             <Form
               name="user-login"
@@ -143,7 +157,7 @@ const Login: React.FC = () => {
 
               <div className="text-center">
                 <Text type="secondary">还没有账号？</Text>
-                <Link to="/auth/register" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
+                <Link to="/auth/register?type=user" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
                   立即注册
                 </Link>
               </div>
@@ -200,7 +214,7 @@ const Login: React.FC = () => {
 
               <div className="text-center">
                 <Text type="secondary">还没有账号？</Text>
-                <Link to="/auth/register" className="ml-1 text-green-600 hover:text-green-800 font-medium">
+                <Link to="/auth/register?type=merchant" className="ml-1 text-green-600 hover:text-green-800 font-medium">
                   商家入驻
                 </Link>
               </div>

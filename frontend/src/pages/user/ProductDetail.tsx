@@ -97,7 +97,7 @@ const ProductDetail: React.FC = () => {
     // 检查用户登录状态
     if (!user || userType !== 'user') {
       showMessage.warning('请先登录用户账号');
-      navigate('/auth/login');
+      navigate('/auth/login?type=user');
       return;
     }
 
@@ -449,7 +449,7 @@ const ProductDetail: React.FC = () => {
                     }}
                     onClick={() => {
                       if (!isAuthenticated) {
-                        navigate('/auth/login');
+                        navigate('/auth/login?type=user');
                         return;
                       }
                       navigate(`/user/chat?merchantId=${product.merchantId}`);

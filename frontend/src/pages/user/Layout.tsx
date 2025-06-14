@@ -28,7 +28,7 @@ const UserLayout: React.FC = () => {
     const currentPath = location.pathname;
     
     if (!isAuthenticated && protectedPaths.includes(currentPath)) {
-      navigate('/auth/login');
+      navigate('/auth/login?type=user');
     }
   }, [isAuthenticated, location.pathname, navigate]);
 
@@ -45,7 +45,7 @@ const UserLayout: React.FC = () => {
   const handleMenuClick = (key: string) => {
     if (key === 'logout') {
       logout();
-      navigate('/auth/login');
+      navigate('/auth/login?type=user');
     } else if (key === 'profile') {
       navigate('/user/profile');
     } else if (key === 'orders') {
@@ -58,7 +58,7 @@ const UserLayout: React.FC = () => {
     const requireLoginRoutes = ['orders', 'favorites', 'messages'];
     
     if (requireLoginRoutes.includes(key) && !isAuthenticated) {
-      navigate('/auth/login');
+      navigate('/auth/login?type=user');
       return;
     }
     
@@ -243,7 +243,7 @@ const UserLayout: React.FC = () => {
               <div style={{ display: 'flex', gap: window.innerWidth > 768 ? '12px' : '8px', flexShrink: 0 }}>
                 <Button 
                   type="text" 
-                  onClick={() => navigate('/auth/login')}
+                  onClick={() => navigate('/auth/login?type=user')}
                   style={{
                     color: 'white',
                     fontSize: window.innerWidth > 768 ? '16px' : '14px',
@@ -268,7 +268,7 @@ const UserLayout: React.FC = () => {
                 </Button>
                 <Button 
                   type="primary" 
-                  onClick={() => navigate('/auth/register')}
+                  onClick={() => navigate('/auth/register?type=user')}
                   style={{
                     height: '40px',
                     padding: window.innerWidth > 768 ? '0 20px' : '0 16px',

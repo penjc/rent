@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, Typography, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { userRegister, type UserRegisterData } from '@/services/authApi';
 import { merchantRegister, type MerchantRegisterData } from '@/services/merchantApi';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -12,8 +12,20 @@ const { TabPane } = Tabs;
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('user');
   const { login } = useAuthStore();
+
+  // 根据URL参数设置默认标签页
+  useEffect(() => {
+    const type = searchParams.get('type');
+    if (type === 'merchant') {
+      setActiveTab('merchant');
+    } else {
+      setActiveTab('user');
+    }
+  }, [searchParams]);
 
   // 用户注册
   const handleUserRegister = async (values: UserRegisterData & { confirmPassword: string }) => {
@@ -89,7 +101,7 @@ const Register: React.FC = () => {
           </div>
         }
       >
-        <Tabs defaultActiveKey="user" centered className="register-tabs">
+        <Tabs activeKey={activeTab} onChange={setActiveTab} centered className="register-tabs">
           <TabPane tab="用户注册" key="user">
             <Form
               name="user-register"
@@ -178,7 +190,7 @@ const Register: React.FC = () => {
 
               <div className="text-center">
                 <Text type="secondary">已有账号？</Text>
-                <Link to="/auth/login" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
+                <Link to="/auth/login?type=user" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
                   立即登录
                 </Link>
               </div>
@@ -291,7 +303,7 @@ const Register: React.FC = () => {
 
               <div className="text-center">
                 <Text type="secondary">已有账号？</Text>
-                <Link to="/auth/login" className="ml-1 text-green-600 hover:text-green-800 font-medium">
+                <Link to="/auth/login?type=merchant" className="ml-1 text-green-600 hover:text-green-800 font-medium">
                   立即登录
                 </Link>
               </div>
