@@ -60,10 +60,11 @@ const Register: React.FC = () => {
         login(token, response.data as any, 'merchant');
         localStorage.setItem('merchantInfo', JSON.stringify(response.data));
         localStorage.setItem('userType', 'merchant');
-        showMessage.success('商家入驻申请已提交，欢迎来到Casual Rent！');
+        showMessage.success('入驻成功，欢迎来到Casual Rent！');
+        showMessage.warning('请先通过商家认证方可上传商品');
         navigate('/merchant');
       } else {
-        showMessage.success('商家入驻申请已提交，请等待审核');
+        // showMessage.success('商家入驻申请已提交，请等待审核');
         navigate('/auth/login');
       }
     } catch (error) {

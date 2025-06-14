@@ -21,7 +21,6 @@ import {
   PlusOutlined, 
   EditOutlined, 
   DeleteOutlined, 
-
   ShopOutlined,
   StopOutlined
 } from '@ant-design/icons';
@@ -35,6 +34,21 @@ import type { Product, Category } from '@/types';
 const { TextArea } = Input;
 const { Option } = Select;
 
+// 商家信息接口
+interface MerchantInfo {
+  id: number;
+  phone: string;
+  companyName: string;
+  contactName: string;
+  idCardFront?: string;
+  idCardBack?: string;
+  businessLicense?: string;
+  status: number; // -1-未认证，0-待审核，1-已认证，2-认证拒绝
+  remark?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const Products: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,6 +57,7 @@ const Products: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [merchantInfo, setMerchantInfo] = useState<MerchantInfo | null>(null);
   const { user, userType } = useAuthStore();
 
   // 获取当前商家ID
@@ -57,10 +72,27 @@ const Products: React.FC = () => {
     return null;
   };
 
+  // 获取商家信息
+  const fetchMerchantInfo = async () => {
+    if (!user || userType !== 'merchant') return;
+
+    try {
+      const response = await api.get(`/merchant/info/${(user as any).phone}`);
+      if (response.data.code === 200) {
+        setMerchantInfo(response.data.data);
+      } else {
+        console.error('获取商家信息失败:', response.data.message);
+      }
+    } catch (error) {
+      console.error('获取商家信息失败:', error);
+    }
+  };
+
   useEffect(() => {
     loadProducts();
     loadCategories();
-  }, []);
+    fetchMerchantInfo();
+  }, [user, userType]);
 
   // 加载商品列表
   const loadProducts = async () => {
@@ -117,6 +149,17 @@ const Products: React.FC = () => {
 
   // 添加商品
   const handleAdd = () => {
+    // 检查商家认证状态
+    if (!merchantInfo) {
+      showMessage.error('无法获取商家信息，请刷新页面重试');
+      return;
+    }
+
+    if (merchantInfo.status !== 1) {
+      showMessage.error('商家认证状态未通过，无法发布商品。请先完成商家认证');
+      return;
+    }
+
     setEditingProduct(null);
     setFileList([]);
     form.resetFields();
@@ -125,6 +168,17 @@ const Products: React.FC = () => {
 
   // 编辑商品
   const handleEdit = (record: Product) => {
+    // 检查商家认证状态
+    if (!merchantInfo) {
+      showMessage.error('无法获取商家信息，请刷新页面重试');
+      return;
+    }
+
+    if (merchantInfo.status !== 1) {
+      showMessage.error('商家认证状态未通过，无法编辑商品。请先完成商家认证');
+      return;
+    }
+
     setEditingProduct(record);
     form.setFieldsValue({
       ...record,
@@ -468,8 +522,48 @@ const Products: React.FC = () => {
     },
   ];
 
+  // 获取商家认证状态标签
+  const getMerchantStatusTag = (status: number) => {
+    switch (status) {
+      case -1:
+        return <Tag color="default">未认证</Tag>;
+      case 0:
+        return <Tag color="orange">待审核</Tag>;
+      case 1:
+        return <Tag color="green">已认证</Tag>;
+      case 2:
+        return <Tag color="red">认证拒绝</Tag>;
+      default:
+        return <Tag>未知状态</Tag>;
+    }
+  };
+
   return (
     <div className="p-6">
+      {/* 认证状态提示 */}
+      {merchantInfo && merchantInfo.status !== 1 && (
+        <Card className="mb-4" style={{ borderColor: '#faad14' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+                             <div>
+                 <span className="text-orange-600 font-medium">认证状态：</span>
+                 {getMerchantStatusTag(merchantInfo.status)}
+               </div>
+              {merchantInfo.status === 2 && merchantInfo.remark && (
+                <div className="text-red-500 text-sm">
+                  审核意见：{merchantInfo.remark}
+                </div>
+              )}
+            </div>
+            <div className="text-orange-600 text-sm">
+              {merchantInfo.status === -1 && '请完成商家认证后再发布商品'}
+              {merchantInfo.status === 0 && '认证审核中，暂时无法发布商品'}
+              {merchantInfo.status === 2 && '认证被拒绝，请重新提交认证材料'}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">商品管理</h2>
@@ -477,6 +571,7 @@ const Products: React.FC = () => {
             type="primary" 
             icon={<PlusOutlined />}
             onClick={handleAdd}
+            disabled={!merchantInfo || merchantInfo.status !== 1}
           >
             发布商品
           </Button>

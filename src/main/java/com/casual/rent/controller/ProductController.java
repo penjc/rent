@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.casual.rent.common.Result;
 import com.casual.rent.common.ProductStatus;
 import com.casual.rent.common.AuditStatus;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Product;
+import com.casual.rent.entity.Merchant;
 import com.casual.rent.service.ProductService;
+import com.casual.rent.service.MerchantService;
 import com.casual.rent.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,9 @@ public class ProductController {
     
     @Autowired
     private ProductService productService;
+    
+    @Autowired
+    private MerchantService merchantService;
     
     @Autowired
     private FileUploadService fileUploadService;
@@ -92,6 +98,14 @@ public class ProductController {
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
         
         try {
+            // 检查商家认证状态
+            Merchant merchant = merchantService.getById(merchantId);
+            if (merchant == null) {
+                return Result.fail("商家不存在");
+            }
+            if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
+                return Result.fail("商家认证状态未通过，无法发布商品。请先完成商家认证");
+            }
             // 创建商品对象
             Product product = new Product();
             product.setName(name);
@@ -146,6 +160,19 @@ public class ProductController {
     @Operation(summary = "创建商品（兼容JSON）")
     @PostMapping
     public Result<Product> createProduct(@RequestBody Product product) {
+        // 检查商家认证状态
+        if (product.getMerchantId() == null) {
+            return Result.fail("商家ID不能为空");
+        }
+        
+        Merchant merchant = merchantService.getById(product.getMerchantId());
+        if (merchant == null) {
+            return Result.fail("商家不存在");
+        }
+        if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
+            return Result.fail("商家认证状态未通过，无法发布商品。请先完成商家认证");
+        }
+        
         // 设置默认值
         if (product.getStatus() == null) {
             product.setStatus(ProductStatus.OFF_SHELF.getCode());
@@ -168,7 +195,23 @@ public class ProductController {
     @Operation(summary = "更新商品")
     @PutMapping("/{id}")
     public Result<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+        // 获取原商品信息
+        Product existingProduct = productService.getById(id);
+        if (existingProduct == null) {
+            return Result.fail("商品不存在");
+        }
+        
+        // 检查商家认证状态
+        Merchant merchant = merchantService.getById(existingProduct.getMerchantId());
+        if (merchant == null) {
+            return Result.fail("商家不存在");
+        }
+        if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
+            return Result.fail("商家认证状态未通过，无法更新商品。请先完成商家认证");
+        }
+        
         product.setId(id);
+        product.setUpdatedAt(LocalDateTime.now());
         productService.updateById(product);
         return Result.success(product);
     }

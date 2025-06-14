@@ -746,10 +746,10 @@ const Products: React.FC = () => {
                 padding: '40px 0',
                 color: '#95a5a6',
                 fontSize: '16px',
-                background: 'white',
-                borderRadius: '16px',
+                // background: 'white',
+                // borderRadius: '16px',
                 marginTop: '24px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                // boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
               }}>
                 已展示全部商品！
               </div>

@@ -5,6 +5,7 @@ import com.casual.rent.common.Result;
 import com.casual.rent.common.ProductStatus;
 import com.casual.rent.common.AuditStatus;
 import com.casual.rent.common.OrderStatus;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.Product;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 商家控制器
@@ -198,6 +200,15 @@ public class MerchantController {
             return Result.fail("参数错误");
         }
         
+        // 检查商家认证状态
+        Merchant merchant = merchantService.getById(product.getMerchantId());
+        if (merchant == null) {
+            return Result.fail("商家不存在");
+        }
+        if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
+            return Result.fail("商家认证状态未通过，无法发布商品。请先完成商家认证");
+        }
+        
         Product savedProduct = productService.publishProduct(product);
         return Result.success(savedProduct);
     }
@@ -229,7 +240,7 @@ public class MerchantController {
         }
         
         Integer auditStatus = productService.updateProductStatus(productId, status, merchantId);
-        if(auditStatus != AuditStatus.APPROVED.getCode()) {
+        if(!Objects.equals(auditStatus, AuditStatus.APPROVED.getCode())) {
             return Result.fail("商品未通过审核，无法上架/下架");
         }
         return Result.success(status.equals(ProductStatus.ON_SHELF.getCode()) ? "商品已上架" : "商品已下架");
