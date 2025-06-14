@@ -81,7 +81,7 @@ rent/
 
 ### 环境要求
 - **Java**: JDK 8+
-- **Node.js**: 16+
+- **Node.js**: 22+
 - **MySQL**: 5.7+
 - **Maven**: 3.6+
 
