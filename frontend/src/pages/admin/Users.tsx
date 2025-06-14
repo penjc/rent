@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Button, Input, Space, Tag, Modal, Form, Switch, Popconfirm, Image, Row, Col } from 'antd';
+import { Table, Card, Button, Input, Space, Tag, Modal, Form, Switch, Popconfirm, Image, Row, Col, Select } from 'antd';
 import {SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined, EyeOutlined} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { showMessage } from '@/hooks/useMessage';
@@ -7,6 +7,7 @@ import api from '@/services/api';
 import type { User } from '@/types';
 
 const { Search } = Input;
+const { Option } = Select;
 
 interface UserData extends User {
   key: React.Key;
@@ -16,6 +17,8 @@ const Users: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [verifiedFilter, setVerifiedFilter] = useState<number | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -28,11 +31,13 @@ const Users: React.FC = () => {
   const [form] = Form.useForm();
 
   // 获取用户列表
-  const fetchUsers = async (page = 1, size = 10, phone = '') => {
+  const fetchUsers = async (page = 1, size = 10, phone = '', verified?: number, status?: number) => {
     setLoading(true);
     try {
       const params: any = { page, size };
       if (phone) params.phone = phone;
+      if (verified !== undefined) params.verified = verified;
+      if (status !== undefined) params.status = status;
       
       const response = await api.get('/admin/users', { params });
       
@@ -77,12 +82,24 @@ const Users: React.FC = () => {
   // 搜索用户
   const handleSearch = (value: string) => {
     setSearchText(value);
-    fetchUsers(1, pagination.pageSize, value);
+    fetchUsers(1, pagination.pageSize, value, verifiedFilter, statusFilter);
+  };
+
+  // 身份认证状态筛选
+  const handleVerifiedFilter = (value: number | undefined) => {
+    setVerifiedFilter(value);
+    fetchUsers(1, pagination.pageSize, searchText, value, statusFilter);
+  };
+
+  // 账户状态筛选
+  const handleStatusFilter = (value: number | undefined) => {
+    setStatusFilter(value);
+    fetchUsers(1, pagination.pageSize, searchText, verifiedFilter, value);
   };
 
   // 表格分页变化
   const handleTableChange = (paginationConfig: any) => {
-    fetchUsers(paginationConfig.current, paginationConfig.pageSize, searchText);
+    fetchUsers(paginationConfig.current, paginationConfig.pageSize, searchText, verifiedFilter, statusFilter);
   };
 
   // 编辑用户
@@ -108,7 +125,7 @@ const Users: React.FC = () => {
         setEditModalVisible(false);
         setEditingUser(null);
         form.resetFields();
-        fetchUsers(pagination.current, pagination.pageSize, searchText);
+        fetchUsers(pagination.current, pagination.pageSize, searchText, verifiedFilter, statusFilter);
       }
     } catch (error) {
       console.error('更新用户信息失败:', error);
@@ -123,7 +140,7 @@ const Users: React.FC = () => {
       
       if (response.data.code === 200) {
         showMessage.success('用户删除成功');
-        fetchUsers(pagination.current, pagination.pageSize, searchText);
+        fetchUsers(pagination.current, pagination.pageSize, searchText, verifiedFilter, statusFilter);
       }
     } catch (error) {
       console.error('删除用户失败:', error);
@@ -145,7 +162,7 @@ const Users: React.FC = () => {
       if (response.data.code === 200) {
         showMessage.success(verified === 1 ? '用户认证通过' : '用户认证拒绝');
         setCertModalVisible(false);
-        fetchUsers(pagination.current, pagination.pageSize, searchText);
+        fetchUsers(pagination.current, pagination.pageSize, searchText, verifiedFilter, statusFilter);
       }
     } catch (error) {
       console.error('用户认证审核失败:', error);
@@ -267,10 +284,30 @@ const Users: React.FC = () => {
               onSearch={handleSearch}
               style={{ width: 300 }}
             />
+            <Select
+              placeholder="筛选认证状态"
+              allowClear
+              style={{ width: 150 }}
+              onChange={handleVerifiedFilter}
+            >
+              <Option value={-1}>未认证</Option>
+              <Option value={0}>待审核</Option>
+              <Option value={1}>已认证</Option>
+              <Option value={2}>认证拒绝</Option>
+            </Select>
+            <Select
+              placeholder="筛选账户状态"
+              allowClear
+              style={{ width: 150 }}
+              onChange={handleStatusFilter}
+            >
+              <Option value={0}>封禁</Option>
+              <Option value={1}>正常</Option>
+            </Select>
             <Button
               type="primary"
               icon={<ReloadOutlined />}
-              onClick={() => fetchUsers(pagination.current, pagination.pageSize, searchText)}
+              onClick={() => fetchUsers(pagination.current, pagination.pageSize, searchText, verifiedFilter, statusFilter)}
             >
               刷新
             </Button>

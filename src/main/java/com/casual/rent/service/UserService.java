@@ -123,7 +123,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 管理员获取用户列表
      */
-    public IPage<User> getUsers(int page, int size, String phone) {
+    public IPage<User> getUsers(int page, int size, String phone, Integer verified, Integer status) {
         Page<User> pageParam = new Page<>(page, size);
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         
@@ -131,8 +131,23 @@ public class UserService extends ServiceImpl<UserMapper, User> {
             wrapper.like("phone", phone.trim());
         }
         
+        if (verified != null) {
+            wrapper.eq("verified", verified);
+        }
+        
+        if (status != null) {
+            wrapper.eq("status", status);
+        }
+        
         wrapper.orderByDesc("created_at");
         return page(pageParam, wrapper);
+    }
+    
+    /**
+     * 管理员获取用户列表（保持向后兼容）
+     */
+    public IPage<User> getUsers(int page, int size, String phone) {
+        return getUsers(page, size, phone, null, null);
     }
     
     /**

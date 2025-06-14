@@ -258,7 +258,7 @@ const Merchants: React.FC = () => {
         <div style={{ marginBottom: 16 }}>
           <Space>
             <Search
-              placeholder="搜索手机号或公司名称"
+              placeholder="搜索手机号"
               allowClear
               enterButton={<SearchOutlined />}
               size="middle"

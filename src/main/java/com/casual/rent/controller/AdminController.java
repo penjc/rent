@@ -81,8 +81,10 @@ public class AdminController {
     @GetMapping("/users")
     public Result<IPage<User>> getUsers(@RequestParam(defaultValue = "1") int page,
                                        @RequestParam(defaultValue = "10") int size,
-                                       @RequestParam(required = false) String phone) {
-        IPage<User> users = userService.getUsers(page, size, phone);
+                                       @RequestParam(required = false) String phone,
+                                       @RequestParam(required = false) Integer verified,
+                                       @RequestParam(required = false) Integer status) {
+        IPage<User> users = userService.getUsers(page, size, phone, verified, status);
         return Result.success(users);
     }
     
