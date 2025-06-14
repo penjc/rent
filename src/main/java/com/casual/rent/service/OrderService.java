@@ -3,9 +3,11 @@ package com.casual.rent.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.casual.rent.common.AddressOwnerType;
 import com.casual.rent.common.OrderStatus;
 import com.casual.rent.common.ProductStatus;
 import com.casual.rent.common.AuditStatus;
+import com.casual.rent.entity.Address;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.Product;
 import com.casual.rent.mapper.OrderMapper;
@@ -26,17 +28,28 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     @Autowired
     private ProductService productService;
     
+    @Autowired
+    private AddressService addressService;
+    
     /**
      * 创建订单（向后兼容）
      */
     public Order createOrder(Long userId, Long productId, Integer days, LocalDate startDate) {
-        return createOrder(userId, productId, days, startDate, 1);
+        return createOrder(userId, productId, days, startDate, 1, null, null);
     }
     
     /**
-     * 创建订单
+     * 创建订单（向后兼容）
      */
     public Order createOrder(Long userId, Long productId, Integer days, LocalDate startDate, Integer quantity) {
+        return createOrder(userId, productId, days, startDate, quantity, null, null);
+    }
+    
+    /**
+     * 创建订单（带地址）
+     */
+    public Order createOrder(Long userId, Long productId, Integer days, LocalDate startDate, 
+                           Integer quantity, Long userAddressId, Long merchantAddressId) {
         Product product = productService.getById(productId);
         if (product == null) {
             throw new RuntimeException("商品不存在");
@@ -49,6 +62,20 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         // 检查库存
         if (product.getStock() < quantity) {
             throw new RuntimeException("库存不足，当前库存：" + product.getStock());
+        }
+        
+        // 验证用户地址
+        if (userAddressId != null) {
+            if (!addressService.validateAddressOwnership(userAddressId, userId, AddressOwnerType.USER)) {
+                throw new RuntimeException("用户地址无效");
+            }
+        }
+        
+        // 验证商家地址
+        if (merchantAddressId != null) {
+            if (!addressService.validateAddressOwnership(merchantAddressId, product.getMerchantId(), AddressOwnerType.MERCHANT)) {
+                throw new RuntimeException("商家地址无效");
+            }
         }
         
         // 根据租赁天数选择最优价格策略
@@ -87,6 +114,8 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setStatus(OrderStatus.PENDING_PAYMENT.getCode()); // 待支付
         order.setStartDate(startDate);
         order.setEndDate(startDate.plusDays(days - 1));
+        order.setUserAddressId(userAddressId);
+        order.setMerchantAddressId(merchantAddressId);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         

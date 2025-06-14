@@ -116,6 +116,22 @@ export interface ProductCreateData {
   stock: number;
 }
 
+// 地址相关类型
+export interface Address {
+  id: number;
+  ownerId: number;
+  ownerType: number; // 1-用户，2-商家
+  contactName: string;
+  contactPhone: string;
+  province: string;
+  city: string;
+  district: string;
+  detailAddress: string;
+  isDefault: number; // 1-是，0-否
+  createdAt: string;
+  updatedAt: string;
+}
+
 // 订单相关类型
 export interface Order {
   id: number;
@@ -127,11 +143,14 @@ export interface Order {
   productImage?: string;
   rentType: number;
   rentDays: number;
+  quantity?: number;
   unitPrice: number;
   deposit: number;
   totalAmount: number;
   startDate: string;
   endDate: string;
+  userAddressId?: number;
+  merchantAddressId?: number;
   status: number;
   remark?: string;
   shippedAt?: string;

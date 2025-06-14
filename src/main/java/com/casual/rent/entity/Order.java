@@ -44,6 +44,10 @@ public class Order {
     
     private LocalDate endDate;
     
+    private Long userAddressId;
+    
+    private Long merchantAddressId;
+    
     private Integer status;
     
     private String remark;
@@ -174,6 +178,22 @@ public class Order {
     
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+    
+    public Long getUserAddressId() {
+        return userAddressId;
+    }
+    
+    public void setUserAddressId(Long userAddressId) {
+        this.userAddressId = userAddressId;
+    }
+    
+    public Long getMerchantAddressId() {
+        return merchantAddressId;
+    }
+    
+    public void setMerchantAddressId(Long merchantAddressId) {
+        this.merchantAddressId = merchantAddressId;
     }
     
     public Integer getStatus() {

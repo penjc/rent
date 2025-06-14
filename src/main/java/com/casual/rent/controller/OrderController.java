@@ -44,6 +44,8 @@ public class OrderController {
             Integer days = Integer.valueOf(params.get("days").toString());
             LocalDate startDate = LocalDate.parse(params.get("startDate").toString());
             Integer quantity = params.get("quantity") != null ? Integer.valueOf(params.get("quantity").toString()) : 1;
+            Long userAddressId = params.get("userAddressId") != null ? Long.valueOf(params.get("userAddressId").toString()) : null;
+            Long merchantAddressId = params.get("merchantAddressId") != null ? Long.valueOf(params.get("merchantAddressId").toString()) : null;
             
             // 检查用户是否存在
             User user = userService.getById(userId);
@@ -56,7 +58,7 @@ public class OrderController {
                 return Result.fail("请先完成用户认证");
             }
             
-            Order order = orderService.createOrder(userId, productId, days, startDate, quantity);
+            Order order = orderService.createOrder(userId, productId, days, startDate, quantity, userAddressId, merchantAddressId);
             return Result.success(order);
         } catch (Exception e) {
             return Result.error("创建订单失败：" + e.getMessage());

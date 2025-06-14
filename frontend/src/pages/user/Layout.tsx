@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown, Badge } from 'antd';
-import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined } from '@ant-design/icons';
+import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import Home from './Home';
@@ -13,6 +13,8 @@ import Profile from './Profile';
 import Favorites from './Favorites';
 import Chat from './Chat';
 import Messages from './Messages';
+import AddressManagement from './AddressManagement';
+
 import MessageDemo from '@/components/common/MessageDemo';
 
 const { Header, Content, Footer } = Layout;
@@ -39,6 +41,7 @@ const UserLayout: React.FC = () => {
     const path = location.pathname;
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
+    if (path.includes('/addresses')) return 'addresses';
     if (path.includes('/favorites')) return 'favorites';
     if (path.includes('/messages') || path.includes('/chat')) return 'messages';
     return 'home';
@@ -52,12 +55,14 @@ const UserLayout: React.FC = () => {
       navigate('/user/profile');
     } else if (key === 'orders') {
       navigate('/user/orders');
+    } else if (key === 'addresses') {
+      navigate('/user/addresses');
     }
   };
 
   const handleNavMenuClick = ({ key }: { key: string }) => {
     // 对于需要登录的功能，先检查登录状态
-    const requireLoginRoutes = ['orders', 'favorites', 'messages'];
+    const requireLoginRoutes = ['orders', 'addresses', 'favorites', 'messages'];
     
     if (requireLoginRoutes.includes(key) && !isAuthenticated) {
       navigate('/auth/login?type=user');
@@ -73,6 +78,9 @@ const UserLayout: React.FC = () => {
         break;
       case 'orders':
         navigate('/user/orders');
+        break;
+      case 'addresses':
+        navigate('/user/addresses');
         break;
       case 'favorites':
         navigate('/user/favorites');
@@ -98,6 +106,11 @@ const UserLayout: React.FC = () => {
         key: 'orders',
         label: '我的订单',
         icon: <HistoryOutlined />
+      },
+      {
+        key: 'addresses',
+        label: '地址管理',
+        icon: <HomeOutlined />
       },
       {
         type: 'divider' as const,
@@ -187,6 +200,16 @@ const UserLayout: React.FC = () => {
                   key: 'orders',
                   label: '订单',
                   icon: <HistoryOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
+                },
+                {
+                  key: 'addresses',
+                  label: '地址',
+                  icon: <HomeOutlined style={{ fontSize: '16px' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
@@ -326,6 +349,7 @@ const UserLayout: React.FC = () => {
           <Route path="products/:id" element={<ProductDetail />} />
           <Route path="orders" element={<Orders />} />
           <Route path="order-management" element={<OrderManagement />} />
+          <Route path="addresses" element={<AddressManagement />} />
           <Route path="profile" element={<Profile />} />
           <Route path="favorites" element={<Favorites />} />
           <Route path="chat" element={<Chat />} />

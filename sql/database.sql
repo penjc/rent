@@ -67,8 +67,26 @@ CREATE TABLE `categories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
 
+-- 5. 地址表
+CREATE TABLE `addresses` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '地址ID',
+  `owner_id` bigint(20) NOT NULL COMMENT '所有者ID（用户ID或商家ID）',
+  `owner_type` tinyint(4) NOT NULL COMMENT '所有者类型：1-用户，2-商家',
+  `contact_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '联系人姓名',
+  `contact_phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '联系电话',
+  `province` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '省份',
+  `city` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '城市',
+  `district` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '区县',
+  `detail_address` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '详细地址',
+  `is_default` tinyint(4) DEFAULT '0' COMMENT '是否默认地址：1-是，0-否',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_owner` (`owner_id`, `owner_type`),
+  KEY `idx_default` (`owner_id`, `owner_type`, `is_default`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='地址表';
 
--- 5. 订单表
+-- 6. 订单表
 CREATE TABLE `orders` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '订单ID',
   `order_no` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '订单号',
@@ -85,6 +103,8 @@ CREATE TABLE `orders` (
   `total_amount` decimal(10,2) NOT NULL COMMENT '总金额',
   `start_date` date NOT NULL COMMENT '租期开始日期',
   `end_date` date NOT NULL COMMENT '租期结束日期',
+  `user_address_id` bigint(20) DEFAULT NULL COMMENT '用户收货地址ID',
+  `merchant_address_id` bigint(20) DEFAULT NULL COMMENT '商家收货地址ID（归还地址）',
   `status` tinyint(4) DEFAULT '1' COMMENT '订单状态：1-待支付，2-待发货，3-租赁中，4-已归还，-1-已取消',
   `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
   `shipped_at` timestamp NULL DEFAULT NULL COMMENT '发货时间',
@@ -97,10 +117,12 @@ CREATE TABLE `orders` (
   KEY `idx_merchant_id` (`merchant_id`),
   KEY `idx_product_id` (`product_id`),
   KEY `idx_order_no` (`order_no`),
-  KEY `idx_status` (`status`)
+  KEY `idx_status` (`status`),
+  KEY `idx_user_address` (`user_address_id`),
+  KEY `idx_merchant_address` (`merchant_address_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
--- 6. 商品表
+-- 7. 商品表
 CREATE TABLE `products` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '商品ID',
   `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
@@ -124,7 +146,7 @@ CREATE TABLE `products` (
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 
--- 7. 聊天消息表
+-- 8. 聊天消息表
 CREATE TABLE `messages` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '消息ID',
   `sender_id` bigint(20) NOT NULL COMMENT '发送者ID',
@@ -153,4 +175,3 @@ INSERT INTO `categories` (`name`, `icon`, `sort_order`) VALUES
 ('乐器', 'music', 4),
 ('工具设备', 'tools', 5),
 ('其他', 'other', 99);
-

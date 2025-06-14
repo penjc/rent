@@ -7,12 +7,14 @@ import {
   OrderedListOutlined, 
   UserOutlined,
   LogoutOutlined,
-  MessageOutlined
+  MessageOutlined,
+  HomeOutlined
 } from '@ant-design/icons';
 import Dashboard from './Dashboard';
 import Products from './Products';
 import Orders from './Orders';
 import Certification from './Certification';
+import AddressManagement from './AddressManagement';
 import Chat from './Chat';
 import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -34,6 +36,7 @@ const MerchantLayout: React.FC = () => {
     const path = location.pathname;
     if (path.includes('/products')) return 'products';
     if (path.includes('/orders')) return 'orders';
+    if (path.includes('/addresses')) return 'addresses';
     if (path.includes('/certification')) return 'certification';
     if (path.includes('/messages')) return 'messages';
     return 'dashboard';
@@ -72,6 +75,9 @@ const MerchantLayout: React.FC = () => {
       case 'orders':
         navigate('/merchant/orders');
         break;
+      case 'addresses':
+        navigate('/merchant/addresses');
+        break;
       case 'messages':
         navigate('/merchant/messages');
         // 刷新未读消息数量
@@ -103,6 +109,12 @@ const MerchantLayout: React.FC = () => {
       icon: <OrderedListOutlined />,
       label: '订单管理',
       onClick: () => handleMenuClick('orders')
+    },
+    {
+      key: 'addresses',
+      icon: <HomeOutlined />,
+      label: '地址管理',
+      onClick: () => handleMenuClick('addresses')
     },
     {
       key: 'messages',
@@ -160,6 +172,7 @@ const MerchantLayout: React.FC = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="products" element={<Products />} />
             <Route path="orders" element={<Orders />} />
+            <Route path="addresses" element={<AddressManagement />} />
             <Route path="certification" element={<Certification />} />
             <Route path="chat" element={<Chat />} />
             <Route path="messages" element={<Messages />} />

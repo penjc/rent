@@ -60,14 +60,16 @@ rent/
 - 🔍 **商品搜索**: 关键字搜索、分类筛选、商品排序
 - 📱 **响应式设计**: 支持移动端和桌面端
 - 🛒 **订单管理**: 下单、支付、订单状态跟踪
-- 👤 **用户中心**: 个人信息、实名认证 
+- 👤 **用户中心**: 个人信息、实名认证
+- 📍 **地址管理**: 收货地址增删改查、默认地址设置
 - 💬 **即时通讯**: 用户与商家实时聊天
 
 ### 商家端功能
 - 📊 **商家仪表盘**: 经营数据概览
 - 📦 **商品管理**: 发布、编辑、下架商品
 - 📋 **订单处理**: 查看和处理租赁订单
-- 📈 **数据统计**: 收入统计、商品热度分析 
+- 📈 **数据统计**: 收入统计、商品热度分析
+- 📍 **地址管理**: 收货地址管理（用于商品归还）
 - 💬 **客户沟通**: 实时回复用户咨询、管理多渠道对话
 
 ### 管理端功能
@@ -149,6 +151,7 @@ rent/
 - **商品列表**: http://localhost:3000/user/products
 - **我的订单**: http://localhost:3000/user/orders
 - **个人中心**: http://localhost:3000/user/profile
+- **地址管理**: http://localhost:3000/user/addresses
 - **消息列表**: http://localhost:3000/user/messages
 
 ### 商家端
@@ -156,6 +159,7 @@ rent/
 - **商品管理**: http://localhost:3000/merchant/products
 - **订单管理**: http://localhost:3000/merchant/orders
 - **商家认证**: http://localhost:3000/merchant/certification
+- **地址管理**: http://localhost:3000/merchant/addresses
 - **消息列表**: http://localhost:3000/merchant/messages
 
 ### 管理端
