@@ -72,6 +72,10 @@ api.interceptors.response.use(
     if (data.code === 200) {
       return response;
     } else {
+      // 对于特定的错误信息，不显示通用错误提示，让业务代码处理
+      if (data.message && data.message.includes('请先完成用户认证')) {
+        return response; // 让业务代码处理认证错误
+      }
       showMessage.error(data.message || '请求失败');
       return Promise.reject(new Error(data.message || '请求失败'));
     }

@@ -131,23 +131,30 @@ const ProductDetail: React.FC = () => {
         navigate('/user/orders');
       } else {
         const errorMessage = response.data.message || '下单失败';
+        console.log('下单失败，错误信息:', errorMessage);
         showMessage.error(errorMessage);
         
         // 如果是认证状态错误，跳转到身份认证页面
         if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+          console.log('检测到认证错误，准备跳转到认证页面');
           setTimeout(() => {
+            console.log('正在跳转到认证页面');
             navigate('/user/profile', { state: { activeTab: 'certification' } });
-          }, 1500);
+          }, 1000);
         }
       }
     } catch (error: any) {
       console.error('创建订单失败:', error);
-      const errorMessage = error.response?.data?.message || '创建订单失败';
+      // 从多个可能的位置获取错误信息
+      const errorMessage = error.response?.data?.message || error.message || '创建订单失败';
+      console.log('catch块中的错误信息:', errorMessage);
       showMessage.error(errorMessage);
       
       // 如果是认证状态错误，跳转到身份认证页面
       if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+        console.log('catch块中检测到认证错误，准备跳转到认证页面');
         setTimeout(() => {
+          console.log('catch块中正在跳转到认证页面');
           navigate('/user/profile', { state: { activeTab: 'certification' } });
         }, 1500);
       }

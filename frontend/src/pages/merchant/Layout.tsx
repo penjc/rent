@@ -136,7 +136,7 @@ const MerchantLayout: React.FC = () => {
           </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          租赁平台商家中心 ©{new Date().getFullYear()} Created by Your Company
+          Casual Rent ©{new Date().getFullYear()} Created by Your Company
         </Footer>
       </Layout>
     </Layout>
