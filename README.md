@@ -147,15 +147,19 @@ rent/
 ### 用户端
 - **首页**: http://localhost:3000/user
 - **商品列表**: http://localhost:3000/user/products
+- **我的订单**: http://localhost:3000/user/orders
 - **个人中心**: http://localhost:3000/user/profile
+- **消息列表**: http://localhost:3000/user/messages
 
 ### 商家端
-- **仪表盘**: http://localhost:3000/merchant
+- **仪表盘**: http://localhost:3000/merchant/dashboard
 - **商品管理**: http://localhost:3000/merchant/products
 - **订单管理**: http://localhost:3000/merchant/orders
+- **商家认证**: http://localhost:3000/merchant/certification
+- **消息列表**: http://localhost:3000/merchant/messages
 
 ### 管理端
-- **管理后台**: http://localhost:3000/admin
+- **仪表盘**: http://localhost:3000/admin
 - **用户管理**: http://localhost:3000/admin/users
 - **商家管理**: http://localhost:3000/admin/merchants
 - **商品审核**: http://localhost:3000/admin/products
@@ -163,8 +167,11 @@ rent/
 - **分类管理**: http://localhost:3000/admin/categories
 
 ### 认证页面
-- **登录**: http://localhost:3000/auth/login
-- **注册**: http://localhost:3000/auth/register
+- **用户登录**: http://localhost:3000/auth/login?type=user
+- **商家登录**: http://localhost:3000/auth/login?type=merchant
+- **管理员登录**: http://localhost:3000/auth/login?type=admin
+- **用户注册**: http://localhost:3000/auth/register?type=user
+- **商家注册**: http://localhost:3000/auth/register?type=merchant
 
 ## 🔧 开发工具
 
