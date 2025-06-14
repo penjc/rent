@@ -294,11 +294,31 @@ const Products: React.FC = () => {
         // 跳转到订单页面
         navigate('/user/orders');
       } else {
-        showMessage.error(response.data.message || '下单失败');
+        const errorMessage = response.data.message || '下单失败';
+        showMessage.error(errorMessage);
+        
+        // 如果是认证状态错误，跳转到身份认证页面
+        if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+          setTimeout(() => {
+            setIsRentModalVisible(false);
+            rentForm.resetFields();
+            navigate('/user/profile', { state: { activeTab: 'certification' } });
+          }, 1500);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create order:', error);
-      showMessage.error('下单失败，请重试');
+      const errorMessage = error.response?.data?.message || '下单失败，请重试';
+      showMessage.error(errorMessage);
+      
+      // 如果是认证状态错误，跳转到身份认证页面
+      if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+        setTimeout(() => {
+          setIsRentModalVisible(false);
+          rentForm.resetFields();
+          navigate('/user/profile', { state: { activeTab: 'certification' } });
+        }, 1500);
+      }
     } finally {
       setRentLoading(false);
     }

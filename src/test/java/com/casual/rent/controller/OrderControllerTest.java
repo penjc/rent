@@ -67,6 +67,25 @@ public class OrderControllerTest {
     }
 
     @Test
+    void testCreateOrderWithUnverifiedUser() throws Exception {
+        // 测试未认证用户创建订单
+        Map<String, Object> orderData = new HashMap<>();
+        orderData.put("userId", 999L); // 假设这是一个未认证的用户ID
+        orderData.put("productId", 1L);
+        orderData.put("days", 7);
+        orderData.put("startDate", "2024-01-15");
+
+        mockMvc.perform(post("/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(orderData)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.message").value("请先完成用户认证"));
+
+        System.out.println("✅ 未认证用户创建订单测试通过");
+    }
+
+    @Test
     void testPayOrder() throws Exception {
         Map<String, Object> payData = new HashMap<>();
         payData.put("userId", 1L);

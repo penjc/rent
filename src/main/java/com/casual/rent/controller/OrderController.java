@@ -3,8 +3,11 @@ package com.casual.rent.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.casual.rent.common.Result;
 import com.casual.rent.common.OrderStatus;
+import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Order;
+import com.casual.rent.entity.User;
 import com.casual.rent.service.OrderService;
+import com.casual.rent.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,20 +29,38 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
     
+    @Autowired
+    private UserService userService;
+    
     /**
      * 创建订单
      */
     @Operation(summary = "创建订单")
     @PostMapping
     public Result<Order> createOrder(@RequestBody Map<String, Object> params) {
-        Long userId = Long.valueOf(params.get("userId").toString());
-        Long productId = Long.valueOf(params.get("productId").toString());
-        Integer days = Integer.valueOf(params.get("days").toString());
-        LocalDate startDate = LocalDate.parse(params.get("startDate").toString());
-        Integer quantity = params.get("quantity") != null ? Integer.valueOf(params.get("quantity").toString()) : 1;
-        
-        Order order = orderService.createOrder(userId, productId, days, startDate, quantity);
-        return Result.success(order);
+        try {
+            Long userId = Long.valueOf(params.get("userId").toString());
+            Long productId = Long.valueOf(params.get("productId").toString());
+            Integer days = Integer.valueOf(params.get("days").toString());
+            LocalDate startDate = LocalDate.parse(params.get("startDate").toString());
+            Integer quantity = params.get("quantity") != null ? Integer.valueOf(params.get("quantity").toString()) : 1;
+            
+            // 检查用户是否存在
+            User user = userService.getById(userId);
+            if (user == null) {
+                return Result.fail("用户不存在");
+            }
+            
+            // 检查用户认证状态
+            if (!user.getVerified().equals(VerificationStatus.VERIFIED.getCode())) {
+                return Result.fail("请先完成用户认证");
+            }
+            
+            Order order = orderService.createOrder(userId, productId, days, startDate, quantity);
+            return Result.success(order);
+        } catch (Exception e) {
+            return Result.error("创建订单失败：" + e.getMessage());
+        }
     }
     
     /**

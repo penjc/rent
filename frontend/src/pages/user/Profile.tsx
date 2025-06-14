@@ -30,6 +30,7 @@ import {
   IdcardOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useLocation } from 'react-router-dom';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import type { User } from '@/types';
@@ -39,12 +40,14 @@ const { Dragger } = Upload;
 
 const Profile: React.FC = () => {
   const { user: authUser } = useAuthStore();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [certificationModalVisible, setCertificationModalVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [activeTab, setActiveTab] = useState('basic');
   
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -90,6 +93,14 @@ const Profile: React.FC = () => {
     fetchUserInfo();
     fetchCertificationStatus();
   }, [authUser?.id]);
+
+  // 处理从其他页面跳转过来时的activeTab设置
+  useEffect(() => {
+    const state = location.state as { activeTab?: string } | null;
+    if (state?.activeTab) {
+      setActiveTab(state.activeTab);
+    }
+  }, [location.state]);
 
   // 处理头像上传
   const handleAvatarChange = async (info: any) => {
@@ -179,7 +190,7 @@ const Profile: React.FC = () => {
       });
       
       if (response.data.code === 200) {
-        showMessage.success('认证材料提交成功');
+        showMessage.success('认证材料提交成功，请等待审核');
         setCertificationModalVisible(false);
         certificationForm.resetFields();
         await fetchCertificationStatus();
@@ -516,7 +527,11 @@ const Profile: React.FC = () => {
     <div className="p-6 max-w-4xl mx-auto">
       <Title level={2}>个人中心</Title>
       
-      <Tabs items={tabItems} />
+      <Tabs 
+        activeKey={activeTab} 
+        onChange={setActiveTab} 
+        items={tabItems} 
+      />
 
       {/* 修改密码模态框 */}
       <Modal
