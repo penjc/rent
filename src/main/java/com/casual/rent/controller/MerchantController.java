@@ -239,9 +239,12 @@ public class MerchantController {
             return Result.fail("参数错误");
         }
         
-        Integer auditStatus = productService.updateProductStatus(productId, status, merchantId);
-        if(!Objects.equals(auditStatus, AuditStatus.APPROVED.getCode())) {
+        Product product = productService.updateProductStatus(productId, status, merchantId);
+        if(!Objects.equals(product.getAuditStatus(), AuditStatus.APPROVED.getCode())) {
             return Result.fail("商品未通过审核，无法上架/下架");
+        }
+        if(product.getStock() == null || product.getStock() <= 0) {
+            return Result.fail("商品库存不足，无法上架");
         }
         return Result.success(status.equals(ProductStatus.ON_SHELF.getCode()) ? "商品已上架" : "商品已下架");
     }

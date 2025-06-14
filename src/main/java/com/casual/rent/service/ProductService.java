@@ -103,7 +103,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     /**
      * 商家上架/下架商品
      */
-    public Integer updateProductStatus(Long productId, Integer status, Long merchantId) {
+    public Product updateProductStatus(Long productId, Integer status, Long merchantId) {
         Product product = getById(productId);
         if(product == null) {
             return null;
@@ -113,7 +113,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
             product.setStatus(status);
             updateById(product);
         }
-        return product.getAuditStatus();
+        return product;
     }
     
     /**
