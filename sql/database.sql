@@ -21,7 +21,7 @@ CREATE TABLE `users` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- 2. 商家表
 CREATE TABLE `merchants` (
@@ -53,7 +53,7 @@ CREATE TABLE `admins` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
 
 -- 4. 商品分类表
 CREATE TABLE `categories` (
@@ -68,7 +68,7 @@ CREATE TABLE `categories` (
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
 
 
--- 5. 商品表
+-- 5. 订单表
 CREATE TABLE `orders` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '订单ID',
   `order_no` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '订单号',
@@ -98,39 +98,31 @@ CREATE TABLE `orders` (
   KEY `idx_product_id` (`product_id`),
   KEY `idx_order_no` (`order_no`),
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
--- 6. 订单表
-CREATE TABLE `orders` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '订单ID',
-  `order_no` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '订单号',
-  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+-- 6. 商品表
+CREATE TABLE `products` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '商品ID',
   `merchant_id` bigint(20) NOT NULL COMMENT '商家ID',
-  `product_id` bigint(20) NOT NULL COMMENT '商品ID',
-  `product_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '商品名称',
-  `product_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '商品图片',
-  `rent_type` tinyint(4) NOT NULL COMMENT '租期类型：1-按天，2-按周，3-按月',
-  `rent_days` int(11) NOT NULL COMMENT '租期天数',
-  `quantity` int(11) DEFAULT '1' COMMENT '租赁个数',
-  `unit_price` decimal(10,2) NOT NULL COMMENT '单价',
+  `category_id` bigint(20) NOT NULL COMMENT '分类ID',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '商品名称',
+  `description` text COLLATE utf8mb4_unicode_ci COMMENT '商品描述',
+  `images` json DEFAULT NULL COMMENT '商品图片JSON数组',
+  `daily_price` decimal(10,2) NOT NULL COMMENT '日租金',
+  `weekly_price` decimal(10,2) DEFAULT NULL COMMENT '周租金',
+  `monthly_price` decimal(10,2) DEFAULT NULL COMMENT '月租金',
   `deposit` decimal(10,2) DEFAULT '0.00' COMMENT '押金',
-  `total_amount` decimal(10,2) NOT NULL COMMENT '总金额',
-  `start_date` date NOT NULL COMMENT '租期开始日期',
-  `end_date` date NOT NULL COMMENT '租期结束日期',
-  `status` tinyint(4) DEFAULT '1' COMMENT '订单状态：1-待支付，2-待发货，3-租赁中，4-已归还，-1-已取消',
-  `remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '备注',
-  `shipped_at` timestamp NULL DEFAULT NULL COMMENT '发货时间',
-  `returned_at` timestamp NULL DEFAULT NULL COMMENT '归还时间',
+  `stock` int(11) DEFAULT '1' COMMENT '库存数量',
+  `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-上架，0-下架',
+  `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，-1-拒绝',
+  `audit_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `order_no` (`order_no`),
-  KEY `idx_user_id` (`user_id`),
   KEY `idx_merchant_id` (`merchant_id`),
-  KEY `idx_product_id` (`product_id`),
-  KEY `idx_order_no` (`order_no`),
+  KEY `idx_category_id` (`category_id`),
   KEY `idx_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 
 -- 7. 聊天消息表
 CREATE TABLE `messages` (
@@ -144,7 +136,7 @@ CREATE TABLE `messages` (
   KEY `idx_sender_receiver` (`sender_id`,`receiver_id`),
   KEY `idx_messages_receiver_is_read` (`receiver_id`,`is_read`),
   KEY `idx_messages_sender_receiver_is_read` (`sender_id`,`receiver_id`,`is_read`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天消息表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天消息表';
 
 
 -- 插入默认数据

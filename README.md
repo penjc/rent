@@ -134,6 +134,14 @@ rent/
    - 前端应用: http://localhost:3000
    - 后端API: http://localhost:8080/api
 
+9. **更新项目**
+
+   请定期更新项目以获取最新功能和修复。
+
+   ```bash
+   git pull origin main
+   ```
+   
 ## 📱 应用访问
 
 ### 用户端

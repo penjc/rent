@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { showMessage } from '@/hooks/useMessage';
-import { getUserMessages, getUnreadCountByUser, markConversationAsRead } from '@/services/chatService';
+import { getMerchantMessages, getUnreadCountByUser, markConversationAsRead, isMerchantId } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
 import type { ChatMessage } from '@/types';
 
@@ -42,18 +42,23 @@ const Messages: React.FC = () => {
     if (!user) return;
     try {
       setLoading(true);
-      // 获取所有消息
-      const messages = await getUserMessages(user.id as unknown as number);
-      // 获取未读消息数量
-      const unreadCountMap = await getUnreadCountByUser(user.id as unknown as number);
+      // 确保商家ID是数字类型
+      const merchantId = Number(user.id);
       
-      // 收集所有对方ID（用户ID）
+      // 获取所有消息
+      const messages = await getMerchantMessages(merchantId);
+      // 获取未读消息数量
+      const unreadCountMap = await getUnreadCountByUser(merchantId);
+      
+      // 收集所有对方ID（用户ID）- 商家主要查看接收到的消息
       const userIdSet = new Set<number>();
       messages.forEach((msg: ChatMessage) => {
-        if (msg.senderId !== user.id) {
+        // 如果商家是接收者，发送者就是用户
+        if (msg.receiverId === merchantId && !isMerchantId(msg.senderId)) {
           userIdSet.add(msg.senderId);
         }
-        if (msg.receiverId !== user.id) {
+        // 如果商家是发送者，接收者就是用户（用于显示商家主动发起的对话）
+        if (msg.senderId === merchantId && !isMerchantId(msg.receiverId)) {
           userIdSet.add(msg.receiverId);
         }
       });
@@ -68,8 +73,21 @@ const Messages: React.FC = () => {
       // 按用户分组消息
       const userMap = new Map<number, UserChat>();
       messages.forEach((msg: ChatMessage) => {
-        const userId = msg.senderId === user.id ? msg.receiverId : msg.senderId;
-        if (userId === user.id) return;
+        // 确定对方用户ID
+        let userId: number;
+        if (msg.senderId === merchantId) {
+          // 如果是商家发送的消息，对方是接收者
+          userId = msg.receiverId;
+        } else {
+          // 如果是用户发送的消息，对方是发送者
+          userId = msg.senderId;
+        }
+        
+        // 只处理用户消息（排除商家间的消息）
+        if (userId === merchantId || isMerchantId(userId)) {
+          return;
+        }
+        
         const unreadCount = unreadCountMap[userId] || 0;
         
         if (!userMap.has(userId)) {
@@ -106,7 +124,8 @@ const Messages: React.FC = () => {
   const handleChatClick = async (userId: number) => {
     // 标记与该用户的对话为已读
     try {
-      await markConversationAsRead(user!.id as unknown as number, userId);
+      const merchantId = Number(user!.id);
+      await markConversationAsRead(merchantId, userId);
       // 更新本地状态
       setUserChats(prev => 
         prev.map(chat => 

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { showMessage } from '@/hooks/useMessage';
-import { getUserMessages, getUnreadCountByUser, markConversationAsRead } from '@/services/chatService';
+import { getUserMessages, getUnreadCountByUser, markConversationAsRead, isMerchantId } from '@/services/chatService';
 import { getMerchantCompanyNames } from '@/services/merchantApi';
 import type { ChatMessage } from '@/types';
 
@@ -46,13 +46,15 @@ const Messages: React.FC = () => {
       // 获取未读消息数量
       const unreadCountMap = await getUnreadCountByUser(user.id as unknown as number);
       
-      // 收集所有对方ID（商家ID）
+      // 收集所有对方ID（商家ID）- 用户主要查看接收到的消息
       const merchantIdSet = new Set<number>();
       messages.forEach((msg: ChatMessage) => {
-        if (msg.senderId !== user.id) {
+        // 如果用户是接收者，发送者就是商家
+        if (msg.receiverId === user.id && isMerchantId(msg.senderId)) {
           merchantIdSet.add(msg.senderId);
         }
-        if (msg.receiverId !== user.id) {
+        // 如果用户是发送者，接收者就是商家（用于显示用户主动发起的对话）
+        if (msg.senderId === user.id && isMerchantId(msg.receiverId)) {
           merchantIdSet.add(msg.receiverId);
         }
       });
@@ -67,8 +69,19 @@ const Messages: React.FC = () => {
       // 按商家分组消息
       const merchantMap = new Map<number, MerchantChat>();
       messages.forEach((msg: ChatMessage) => {
-        const merchantId = msg.senderId === user.id ? msg.receiverId : msg.senderId;
-        if (merchantId === user.id) return;
+        // 确定对方商家ID
+        let merchantId: number;
+        if (msg.senderId === user.id) {
+          // 如果是用户发送的消息，对方是接收者
+          merchantId = msg.receiverId;
+        } else {
+          // 如果是商家发送的消息，对方是发送者
+          merchantId = msg.senderId;
+        }
+        
+        // 只处理商家消息（排除用户间的消息）
+        if (merchantId === user.id || !isMerchantId(merchantId)) return;
+        
         const merchantName = merchantNameMap[merchantId] || '商家';
         const unreadCount = unreadCountMap[merchantId] || 0;
         

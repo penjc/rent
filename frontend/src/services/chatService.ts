@@ -17,13 +17,18 @@ export interface SendMessageData {
   content: string;
 }
 
+// 判断是否为商家ID（商家ID从1000000开始）
+export const isMerchantId = (id: number): boolean => {
+  return id >= 1000000;
+};
+
 // 获取用户消息列表
 export const getUserMessages = async (userId: number): Promise<ChatMessage[]> => {
   const response = await api.get<ApiResponse<ChatMessage[]>>(`/messages/user/${userId}`);
   return response.data.data || [];
 };
 
-// 获取商家消息列表
+// 获取商家消息列表（实际上使用同一个接口，但为了语义清晰保留）
 export const getMerchantMessages = async (merchantId: number): Promise<ChatMessage[]> => {
   const response = await api.get<ApiResponse<ChatMessage[]>>(`/messages/user/${merchantId}`);
   return response.data.data || [];
