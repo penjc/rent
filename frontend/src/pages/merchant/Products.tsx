@@ -277,6 +277,7 @@ const Products: React.FC = () => {
     
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('folder', 'products'); // 指定上传到products文件夹
 
     try {
       const response = await api.post('/files/upload', formData, {

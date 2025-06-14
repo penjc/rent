@@ -49,6 +49,58 @@ public class FileController {
     }
     
     /**
+     * 通用文件上传接口
+     */
+    @Operation(summary = "通用文件上传")
+    @PostMapping("/upload")
+    public Result<?> uploadFile(@RequestParam("file") MultipartFile file,
+                               @RequestParam(value = "folder", defaultValue = "general") String folder) {
+        try {
+            // 验证文件
+            if (file.isEmpty()) {
+                return Result.error("文件不能为空");
+            }
+            
+            // 根据文件夹类型选择验证规则
+            if ("products".equals(folder) || "avatars".equals(folder)) {
+                if (!fileUploadService.isValidFileType(file, IMAGE_TYPES)) {
+                    return Result.error("只支持图片文件");
+                }
+                if (!fileUploadService.isValidFileSize(file, IMAGE_MAX_SIZE)) {
+                    return Result.error("图片大小不能超过5MB");
+                }
+            } else if ("certificates".equals(folder)) {
+                if (!fileUploadService.isValidFileType(file, DOCUMENT_TYPES)) {
+                    return Result.error("只支持图片或PDF文件");
+                }
+                if (!fileUploadService.isValidFileSize(file, DOCUMENT_MAX_SIZE)) {
+                    return Result.error("文件大小不能超过10MB");
+                }
+            } else {
+                // 默认按图片处理
+                if (!fileUploadService.isValidFileType(file, IMAGE_TYPES)) {
+                    return Result.error("只支持图片文件");
+                }
+                if (!fileUploadService.isValidFileSize(file, IMAGE_MAX_SIZE)) {
+                    return Result.error("图片大小不能超过5MB");
+                }
+            }
+            
+            // 上传文件
+            String url = fileUploadService.uploadFile(file, folder);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("url", url);
+            result.put("filename", file.getOriginalFilename());
+            
+            return Result.success(result);
+            
+        } catch (Exception e) {
+            return Result.error("上传失败：" + e.getMessage());
+        }
+    }
+
+    /**
      * 上传商品图片
      */
     @Operation(summary = "上传商品图片")
