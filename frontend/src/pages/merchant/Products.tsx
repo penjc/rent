@@ -214,21 +214,27 @@ const Products: React.FC = () => {
       return;
     }
 
+    // 处理图片URLs - 确保只获取成功上传的图片
+    const imageUrls = fileList
+      .filter(file => file.status === 'done')
+      .map(file => {
+        // 优先使用服务器返回的URL
+        if (file.response && file.response.data && file.response.data.url) {
+          return file.response.data.url;
+        }
+        // 其次使用file.url（编辑时的现有图片）
+        return file.url || '';
+      })
+      .filter(url => url);
+
+    // 验证图片数量必须为3张
+    if (imageUrls.length !== 3) {
+      showMessage.error('商品图片必须为3张，请上传足够的图片');
+      return;
+    }
+
     try {
       setLoading(true);
-      
-      // 处理图片URLs - 确保只获取成功上传的图片
-      const imageUrls = fileList
-        .filter(file => file.status === 'done')
-        .map(file => {
-          // 优先使用服务器返回的URL
-          if (file.response && file.response.data && file.response.data.url) {
-            return file.response.data.url;
-          }
-          // 其次使用file.url（编辑时的现有图片）
-          return file.url || '';
-        })
-        .filter(url => url);
 
       console.log('处理后的图片URLs:', imageUrls);
 
@@ -309,6 +315,12 @@ const Products: React.FC = () => {
     listType: 'picture-card',
     fileList: fileList,
     beforeUpload: (file) => {
+      // 检查图片数量限制
+      if (fileList.length >= 3) {
+        showMessage.error('最多只能上传3张图片!');
+        return false;
+      }
+      
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         showMessage.error('只能上传图片文件!');
@@ -610,26 +622,50 @@ const Products: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="商品图片">
+          <Form.Item 
+            label="商品图片" 
+            required
+            help={
+              <div className="text-gray-500 text-sm mt-2">
+                <div className="mb-1">
+                  <span className="text-red-500">*</span> 必须上传3张图片，支持JPG、PNG格式，单张图片不超过5MB
+                </div>
+                <div className="text-xs">
+                  当前已上传: {fileList.filter(file => file.status === 'done').length}/3 张
+                  {fileList.filter(file => file.status === 'done').length < 3 && (
+                    <span className="text-red-500 ml-2">还需上传 {3 - fileList.filter(file => file.status === 'done').length} 张</span>
+                  )}
+                  {fileList.filter(file => file.status === 'done').length === 3 && (
+                    <span className="text-green-500 ml-2">✓ 图片数量满足要求</span>
+                  )}
+                </div>
+              </div>
+            }
+          >
             <Upload {...uploadProps}>
-              {fileList.length < 5 && (
+              {fileList.length < 3 && (
                 <div>
                   <PlusOutlined />
                   <div style={{ marginTop: 8 }}>上传图片</div>
                 </div>
               )}
             </Upload>
-            <div className="text-gray-500 text-sm mt-2">
-              最多上传5张图片，支持JPG、PNG格式，单张图片不超过5MB
-            </div>
           </Form.Item>
 
           <Divider />
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading}
+                disabled={fileList.filter(file => file.status === 'done').length !== 3}
+              >
                 {editingProduct ? '更新商品' : '发布商品'}
+                {fileList.filter(file => file.status === 'done').length !== 3 && 
+                  ` (需要3张图片)`
+                }
               </Button>
               <Button onClick={() => setIsModalVisible(false)}>
                 取消
