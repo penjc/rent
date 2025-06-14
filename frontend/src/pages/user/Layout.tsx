@@ -196,9 +196,21 @@ const UserLayout: React.FC = () => {
                 {
                   key: 'messages',
                   label: (
-                    <Badge count={unreadCount} size="small" offset={[10, -5]}>
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
                       <span>消息</span>
-                    </Badge>
+                      {unreadCount > 0 && (
+                        <Badge 
+                          count={unreadCount} 
+                          size="small" 
+                          style={{ 
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-16px',
+                            zIndex: 1
+                          }}
+                        />
+                      )}
+                    </div>
                   ),
                   icon: <MessageOutlined style={{ fontSize: '16px' }} />,
                   style: {

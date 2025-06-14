@@ -185,10 +185,12 @@ const Chat: React.FC = () => {
               }}
             >
               <Avatar
-                src={msg.senderId === user?.id ? userAvatar : undefined}
+                src={msg.senderId === user?.id ? (userAvatar || undefined) : undefined}
                 icon={msg.senderId === user?.id ? <UserOutlined /> : <ShopOutlined />}
                 style={{ 
-                  backgroundColor: msg.senderId === user?.id ? '#1890ff' : '#52c41a',
+                  backgroundColor: msg.senderId === user?.id 
+                    ? (userAvatar ? 'transparent' : '#1890ff') 
+                    : '#52c41a',
                   flexShrink: 0
                 }}
               />

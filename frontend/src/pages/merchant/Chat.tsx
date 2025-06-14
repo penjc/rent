@@ -152,9 +152,13 @@ const Chat: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
           <Avatar
-            src={userInfo?.avatar}
-            icon={!userInfo?.avatar && <UserOutlined />}
-            style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 12 }}
+            src={userInfo?.avatar || undefined}
+            icon={<UserOutlined />}
+            style={{ 
+              backgroundColor: userInfo?.avatar ? 'transparent' : '#1890ff', 
+              fontSize: 22, 
+              marginRight: 12 
+            }}
             size={40}
           />
           <Title level={3} style={{ margin: 0, color: '#3b5998' }}>{userInfo?.name || '用户'}</Title>
@@ -179,10 +183,12 @@ const Chat: React.FC = () => {
               }}
             >
               <Avatar
-                src={msg.senderId === user?.id ? undefined : userInfo?.avatar}
+                src={msg.senderId === user?.id ? undefined : (userInfo?.avatar || undefined)}
                 icon={msg.senderId === user?.id ? <ShopOutlined /> : <UserOutlined />}
                 style={{ 
-                  backgroundColor: msg.senderId === user?.id ? '#52c41a' : '#1890ff',
+                  backgroundColor: msg.senderId === user?.id 
+                    ? '#52c41a' 
+                    : (userInfo?.avatar ? 'transparent' : '#1890ff'),
                   flexShrink: 0
                 }}
               />

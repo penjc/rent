@@ -183,9 +183,15 @@ const Messages: React.FC = () => {
             >
               <Badge count={chat.unreadCount} offset={[-5, 5]}>
                 <Avatar
-                  src={chat.userAvatar}
-                  icon={!chat.userAvatar && <UserOutlined />}
-                  style={{ backgroundColor: '#1890ff', fontSize: 22, marginRight: 18, width: 48, height: 48 }}
+                  src={chat.userAvatar || undefined}
+                  icon={<UserOutlined />}
+                  style={{ 
+                    backgroundColor: chat.userAvatar ? 'transparent' : '#1890ff', 
+                    fontSize: 22, 
+                    marginRight: 18, 
+                    width: 48, 
+                    height: 48 
+                  }}
                   size={48}
                 />
               </Badge>
