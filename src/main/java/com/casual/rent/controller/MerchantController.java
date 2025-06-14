@@ -193,25 +193,25 @@ public class MerchantController {
     /**
      * 发布商品
      */
-    @Operation(summary = "发布商品")
-    @PostMapping("/product")
-    public Result<Product> publishProduct(@RequestBody Product product) {
-        if (product.getMerchantId() == null || product.getName() == null || product.getDailyPrice() == null) {
-            return Result.fail("参数错误");
-        }
-        
-        // 检查商家认证状态
-        Merchant merchant = merchantService.getById(product.getMerchantId());
-        if (merchant == null) {
-            return Result.fail("商家不存在");
-        }
-        if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
-            return Result.fail("商家认证状态未通过，无法发布商品。请先完成商家认证");
-        }
-        
-        Product savedProduct = productService.publishProduct(product);
-        return Result.success(savedProduct);
-    }
+//    @Operation(summary = "发布商品")
+//    @PostMapping("/product")
+//    public Result<Product> publishProduct(@RequestBody Product product) {
+//        if (product.getMerchantId() == null || product.getName() == null || product.getDailyPrice() == null) {
+//            return Result.fail("参数错误");
+//        }
+//
+//        // 检查商家认证状态
+//        Merchant merchant = merchantService.getById(product.getMerchantId());
+//        if (merchant == null) {
+//            return Result.fail("商家不存在");
+//        }
+//        if (!merchant.getStatus().equals(VerificationStatus.VERIFIED.getCode())) {
+//            return Result.fail("商家认证状态未通过，无法发布商品。请先完成商家认证");
+//        }
+//
+//        Product savedProduct = productService.publishProduct(product);
+//        return Result.success(savedProduct);
+//    }
     
     /**
      * 获取商家商品列表
