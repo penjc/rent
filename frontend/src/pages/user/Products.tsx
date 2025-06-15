@@ -14,20 +14,24 @@ import {
   Form,
   DatePicker,
   InputNumber,
-  Space
+  Space,
+  Tag,
+  Divider
 } from 'antd';
 import { 
   SearchOutlined, 
   FilterOutlined,
   ShoppingCartOutlined,
-
+  EnvironmentOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
-import type { Product, Category } from '../../types';
+import { userAddressApi } from '@/services/addressApi';
+import type { Product, Category, Address } from '../../types';
 import dayjs from 'dayjs';
 
 const { Content } = Layout;
@@ -59,6 +63,11 @@ const Products: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [rentForm] = Form.useForm();
   const [rentLoading, setRentLoading] = useState(false);
+  
+  // 地址相关状态
+  const [userAddresses, setUserAddresses] = useState<Address[]>([]);
+  const [selectedUserAddress, setSelectedUserAddress] = useState<number | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
 
   // 获取当前用户ID
   const getUserId = () => {
@@ -70,6 +79,31 @@ const Products: React.FC = () => {
       return JSON.parse(userInfo).id;
     }
     return null;
+  };
+
+  // 获取用户地址列表
+  const fetchUserAddresses = async () => {
+    const userId = getUserId();
+    if (!userId) return;
+
+    setAddressLoading(true);
+    try {
+      const response = await userAddressApi.getUserAddresses(userId);
+      const apiResponse = response.data as any;
+      const addressList = Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      setUserAddresses(addressList);
+      
+      // 自动选择默认地址
+      const defaultAddress = addressList.find((addr: Address) => addr.isDefault === 1);
+      if (defaultAddress) {
+        setSelectedUserAddress(defaultAddress.id);
+      }
+    } catch (error) {
+      console.error('获取用户地址失败:', error);
+      setUserAddresses([]);
+    } finally {
+      setAddressLoading(false);
+    }
   };
 
   // 获取分类数据
@@ -86,6 +120,13 @@ const Products: React.FC = () => {
     };
     fetchCategories();
   }, []);
+
+  // 获取用户地址
+  useEffect(() => {
+    if (user && userType === 'user') {
+      fetchUserAddresses();
+    }
+  }, [user, userType]);
 
   // 防止重复请求的标志
   const fetchingRef = useRef(false);
@@ -237,8 +278,6 @@ const Products: React.FC = () => {
     setSortBy(value);
   };
 
-
-
   // 商品点击
   const handleProductClick = (productId: number) => {
     navigate(`/user/products/${productId}`);
@@ -254,13 +293,36 @@ const Products: React.FC = () => {
       return;
     }
 
+    // 如果没有地址，提示用户添加地址
+    if (userAddresses.length === 0) {
+      Modal.confirm({
+        title: '提示',
+        content: '您还没有收货地址，是否前往添加？',
+        onOk: () => {
+          navigate('/user/addresses');
+        },
+        okText: '去添加',
+        cancelText: '取消'
+      });
+      return;
+    }
+
     setSelectedProduct(product);
     rentForm.resetFields();
+    
+    // 设置表单默认值
+    const defaultAddress = userAddresses.find(addr => addr.isDefault === 1);
+    const selectedAddressId = defaultAddress?.id || userAddresses[0]?.id || null;
+    
     rentForm.setFieldsValue({
       rentDays: 1,
       quantity: 1,
-      startDate: dayjs().add(1, 'day')
+      startDate: dayjs().add(1, 'day'),
+      userAddressId: selectedAddressId
     });
+    
+    // 同步设置状态
+    setSelectedUserAddress(selectedAddressId);
     setIsRentModalVisible(true);
   };
 
@@ -274,6 +336,11 @@ const Products: React.FC = () => {
       return;
     }
 
+    if (!selectedUserAddress) {
+      showMessage.error('请选择收货地址');
+      return;
+    }
+
     try {
       setRentLoading(true);
       
@@ -282,7 +349,9 @@ const Products: React.FC = () => {
         productId: selectedProduct.id,
         days: values.rentDays,
         startDate: values.startDate.format('YYYY-MM-DD'),
-        quantity: values.quantity || 1
+        quantity: values.quantity || 1,
+        userAddressId: selectedUserAddress,
+        merchantAddressId: selectedProduct.merchantAddressId // 使用商品的商家地址
       };
 
       const response = await api.post('/orders', orderData);
@@ -878,6 +947,124 @@ const Products: React.FC = () => {
                   </Form.Item>
                 </Col>
               </Row>
+
+              {/* 收货地址选择 */}
+              <Form.Item 
+                label={
+                  <span>
+                    <EnvironmentOutlined style={{ marginRight: 4, color: '#1890ff' }} />
+                    收货地址
+                  </span>
+                }
+                name="userAddressId"
+                rules={[{ required: true, message: '请选择收货地址' }]}
+                // help="商品将配送到此地址"
+              >
+                {userAddresses.length > 0 ? (
+                  <Select
+                    value={selectedUserAddress}
+                    onChange={setSelectedUserAddress}
+                    placeholder="请选择收货地址"
+                    style={{ width: '100%' }}
+                    loading={addressLoading}
+                    optionLabelProp="label"
+                    notFoundContent={addressLoading ? "加载中..." : "暂无地址"}
+                    dropdownRender={(menu) => (
+                      <div>
+                        {menu}
+                        <Divider style={{ margin: '8px 0' }} />
+                        <div style={{ padding: '8px', textAlign: 'center' }}>
+                          <Button 
+                            type="link" 
+                            onClick={() => {
+                              setIsRentModalVisible(false);
+                              navigate('/user/addresses');
+                            }}
+                            icon={<EnvironmentOutlined />}
+                            style={{ color: '#1890ff' }}
+                          >
+                            管理收货地址
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  >
+                    {userAddresses.map((address) => (
+                      <Option 
+                        key={address.id} 
+                        value={address.id}
+                        label={`${address.contactName} ${address.contactPhone}${address.isDefault === 1 ? ' (默认)' : ''}`}
+                      >
+                        <div style={{ padding: '8px 0' }}>
+                          <div style={{ 
+                            fontWeight: address.isDefault === 1 ? 'bold' : 'normal',
+                            marginBottom: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <span style={{ color: '#262626' }}>
+                              {address.contactName} {address.contactPhone}
+                            </span>
+                            {address.isDefault === 1 && (
+                              <Tag color="blue" style={{ fontSize: '12px', margin: 0 }}>
+                                默认
+                              </Tag>
+                            )}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            color: '#8c8c8c',
+                            lineHeight: '1.4'
+                          }}>
+                            {address.province}{address.city}{address.district}{address.detailAddress}
+                          </div>
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                ) : (
+                  <div style={{ 
+                    padding: '16px 20px', 
+                    border: '1px dashed #d9d9d9', 
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    background: '#fafafa',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <div style={{ 
+                      color: '#8c8c8c', 
+                      marginBottom: 12,
+                      fontSize: '14px'
+                    }}>
+                      <EnvironmentOutlined style={{ fontSize: '16px', marginRight: 8 }} />
+                      暂无收货地址，请先添加地址
+                    </div>
+                    <Button 
+                      type="primary" 
+                      size="small"
+                      onClick={() => {
+                        setIsRentModalVisible(false);
+                        navigate('/user/addresses');
+                      }}
+                      icon={<PlusOutlined />}
+                      style={{
+                        borderRadius: '6px',
+                        boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                      }}
+                    >
+                      添加收货地址
+                    </Button>
+                    <div style={{ 
+                      marginTop: 8, 
+                      fontSize: '12px', 
+                      color: '#bfbfbf' 
+                    }}>
+                      添加后可直接选择配送地址
+                    </div>
+                  </div>
+                )}
+              </Form.Item>
 
               <Form.Item dependencies={['rentDays', 'quantity']}>
                 {({ getFieldValue }) => {
