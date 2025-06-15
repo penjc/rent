@@ -1,6 +1,18 @@
+![Casual Rent](assets/rent.png)
+
 # Casual Rent - 二手租赁平台
 
-现代化的C2C短期租赁平台，采用前后端分离架构，支持用户端、商家端、管理端三端应用。
+[English Version](README.en.md)
+
+## 目录
+- [技术栈](#技术栈)
+- [项目结构](#项目结构)
+- [功能特性](#功能特性)
+- [快速开始](#快速开始)
+- [应用访问](#应用访问)
+- [开发工具](#开发工具)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
 
 ## 🚀 技术栈
 
@@ -19,8 +31,7 @@
 - **HTTP客户端**: Axios
 
 ## 📁 项目结构
-
-```
+```text
 rent/
 ├── src/                     # 后端代码
 │   ├── main/java/com/casual/rent/
@@ -87,17 +98,14 @@ rent/
 - **Maven**: 3.6+
 
 ### 安装步骤
-
 1. **克隆项目**
    ```bash
    git clone https://github.com/penjc/rent
    cd rent
    ```
-
 2. **配置数据库**
 
    使用[sql脚本](sql/database.sql)创建数据库和表结构。
-
 
 3. **修改配置**
    ```yaml
@@ -108,7 +116,6 @@ rent/
        username: your_username
        password: your_password
    ```
-
 4. **配置腾讯云COS**
 
    修改`.env.example`为 `.env` 并填写相关配置。
@@ -120,29 +127,22 @@ rent/
    npm install
    cd ..
    ```
-
 6. **构建后端**
    ```bash
    mvn clean compile
    ```
-
 7. **一键启动**
    ```bash
    ./start-all.sh
    ```
-
 8. **访问应用**
    - 前端应用: http://localhost:3000
    - 后端API: http://localhost:8080/api
-
 9. **更新项目**
-
-   请定期更新项目以获取最新功能和修复。
-
    ```bash
    git pull origin main
    ```
-   
+
 ## 📱 应用访问
 
 ### 用户端
@@ -194,3 +194,10 @@ java -jar target/rent-*.jar
 # 仅启动前端
 cd frontend && npm run dev
 ```
+
+## 贡献指南
+欢迎通过提交 issue 或 PR 参与贡献，请查阅 [CONTRIBUTING.md](CONTRIBUTING.md) 获取详细流程。English version is available [here](CONTRIBUTING.en.md)。
+
+## 许可证
+
+本项目基于 MIT 许可证发布，详情见 [LICENSE](LICENSE)。English version is available [here](LICENSE.en)。
