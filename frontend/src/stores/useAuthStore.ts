@@ -28,6 +28,8 @@ const getUserTypeFromPath = (): UserType | null => {
   if (path.startsWith('/user')) return 'user';
   if (path.startsWith('/merchant')) return 'merchant';
   if (path.startsWith('/admin')) return 'admin';
+  // 根路径默认为用户类型，因为会重定向到 /user
+  if (path === '/') return 'user';
   return null;
 };
 
@@ -109,9 +111,47 @@ export const useAuthStore = create<AuthState>()(
       // 初始化认证状态（应用启动时调用）
       initialize: (expectedUserType?: UserType) => {
         const pathUserType = expectedUserType || getUserTypeFromPath();
-        const isValid = pathUserType ? get().checkAuthStatus(pathUserType) : false;
+        
+        // 如果是根路径或没有明确的用户类型，尝试恢复任何可用的登录状态
+        if (!pathUserType || pathUserType === 'user') {
+          // 按优先级检查用户类型：user -> merchant -> admin
+          const userTypes: UserType[] = ['user', 'merchant', 'admin'];
+          
+          for (const userType of userTypes) {
+            const keys = getStorageKeys(userType);
+            const token = localStorage.getItem(keys.token);
+            const userInfo = localStorage.getItem(keys.userInfo);
+            const storedUserType = localStorage.getItem(keys.userType);
+            
+            if (token && userInfo && storedUserType === userType) {
+              try {
+                const userData = JSON.parse(userInfo);
+                set({
+                  isAuthenticated: true,
+                  user: userData,
+                  userType: userType,
+                  token,
+                  isInitialized: true,
+                });
+                return true;
+              } catch (error) {
+                console.error(`Failed to parse user info for ${userType}:`, error);
+                // 清理损坏的数据
+                localStorage.removeItem(keys.token);
+                localStorage.removeItem(keys.userInfo);
+                localStorage.removeItem(keys.userType);
+              }
+            }
+          }
+        } else {
+          // 如果有明确的用户类型路径，检查对应的认证状态
+          const isValid = get().checkAuthStatus(pathUserType);
+          set({ isInitialized: true });
+          return isValid;
+        }
+        
         set({ isInitialized: true });
-        return isValid;
+        return false;
       },
 
       // 检查认证状态是否有效
@@ -119,8 +159,8 @@ export const useAuthStore = create<AuthState>()(
         const state = get();
         const pathUserType = expectedUserType || getUserTypeFromPath();
         
-        // 如果没有明确的用户类型上下文，认为未登录
-        if (!pathUserType) {
+        // 如果没有明确的用户类型上下文且不是根路径，认为未登录
+        if (!pathUserType && window.location.pathname !== '/') {
           if (state.isAuthenticated) {
             set({
               isAuthenticated: false,
@@ -131,13 +171,24 @@ export const useAuthStore = create<AuthState>()(
           }
           return false;
         }
+        
+        // 如果是根路径且已经有认证状态，保持现有状态
+        if (!pathUserType && window.location.pathname === '/' && state.isAuthenticated) {
+          return true;
+        }
+        
+        // 如果没有路径用户类型但有状态中的用户类型，使用状态中的类型
+        const targetUserType = pathUserType || state.userType;
+        if (!targetUserType) {
+          return false;
+        }
 
-        const keys = getStorageKeys(pathUserType);
+        const keys = getStorageKeys(targetUserType);
         const token = localStorage.getItem(keys.token);
         const userType = localStorage.getItem(keys.userType);
         
         // 检查是否有对应用户类型的认证信息
-        if (!token || !userType || userType !== pathUserType) {
+        if (!token || !userType || userType !== targetUserType) {
           if (state.isAuthenticated) {
             set({
               isAuthenticated: false,
@@ -172,12 +223,12 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // 如果store中没有用户信息但localStorage有，恢复状态
-          if (!state.user || !state.isAuthenticated || state.userType !== pathUserType) {
+          if (!state.user || !state.isAuthenticated || state.userType !== targetUserType) {
             const userData = JSON.parse(userInfo);
             set({
               isAuthenticated: true,
               user: userData,
-              userType: pathUserType,
+              userType: targetUserType,
               token,
             });
           }
