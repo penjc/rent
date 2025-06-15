@@ -5,7 +5,8 @@ import {
   OrderedListOutlined, 
   DollarOutlined, 
   EyeOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  MessageOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -24,6 +25,9 @@ interface DashboardStats {
   completedOrders: number;
   totalRevenue: number;
   monthRevenue: number;
+  unreadMessages: number;
+  totalMessages: number;
+  readMessages: number;
 }
 
 interface RecentOrder extends Order {
@@ -46,6 +50,9 @@ const Dashboard: React.FC = () => {
     completedOrders: 0,
     totalRevenue: 0,
     monthRevenue: 0,
+    unreadMessages: 0,
+    totalMessages: 0,
+    readMessages: 0,
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([]);
@@ -238,8 +245,8 @@ const Dashboard: React.FC = () => {
       </Card>
 
       {/* 统计卡片 */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6} xl={5}>
           <Card>
             <Statistic
               title="商品总数"
@@ -252,7 +259,7 @@ const Dashboard: React.FC = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={24} sm={12} lg={6} xl={5}>
           <Card>
             <Statistic
               title="订单总数"
@@ -265,7 +272,7 @@ const Dashboard: React.FC = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={24} sm={12} lg={6} xl={5}>
           <Card>
             <Statistic
               title="总收入"
@@ -280,7 +287,7 @@ const Dashboard: React.FC = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={12} sm={6}>
+        <Col xs={24} sm={12} lg={6} xl={5}>
           <Card>
             <Statistic
               title="待处理订单"
@@ -293,6 +300,27 @@ const Dashboard: React.FC = () => {
                 percent={stats.totalOrders > 0 ? Math.round((stats.completedOrders / stats.totalOrders) * 100) : 0}
                 size="small"
                 format={(percent) => `完成率 ${percent}%`}
+              />
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6} xl={4}>
+          <Card 
+            hoverable
+            onClick={() => navigate('/merchant/messages')}
+            style={{ cursor: 'pointer' }}
+          >
+            <Statistic
+              title="未处理消息"
+              value={stats.unreadMessages}
+              prefix={<MessageOutlined />}
+              valueStyle={{ color: '#722ed1' }}
+            />
+            <div style={{ marginTop: 8 }}>
+              <Progress 
+                percent={stats.totalMessages > 0 ? Math.round((stats.readMessages / stats.totalMessages) * 100) : 0}
+                size="small"
+                format={(percent) => `已读率 ${percent}%`}
               />
             </div>
           </Card>

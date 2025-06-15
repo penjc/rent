@@ -9,10 +9,12 @@ import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Merchant;
 import com.casual.rent.entity.Order;
 import com.casual.rent.entity.Product;
+import com.casual.rent.entity.Message;
 import com.casual.rent.service.MerchantService;
 import com.casual.rent.service.OrderService;
 import com.casual.rent.service.ProductService;
 import com.casual.rent.service.FileUploadService;
+import com.casual.rent.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +46,9 @@ public class MerchantController {
     
     @Autowired
     private FileUploadService fileUploadService;
+
+    @Autowired
+    private MessageService messageService;
     
     /**
      * 商家注册（支持文件上传）
@@ -353,6 +358,14 @@ public class MerchantController {
                 }
             }
             
+            // 消息统计
+            long unreadMessages = messageService.getUnreadCount(merchantId);
+            // 获取总消息数（作为接收者的消息）
+            long totalMessages = messageService.lambdaQuery()
+                .eq(Message::getReceiverId, merchantId)
+                .count();
+            long readMessages = totalMessages - unreadMessages;
+            
             stats.put("totalProducts", totalProducts);
             stats.put("onShelfProducts", onShelfProducts);
             stats.put("pendingAuditProducts", pendingAuditProducts);
@@ -362,6 +375,9 @@ public class MerchantController {
             stats.put("completedOrders", completedOrders);
             stats.put("totalRevenue", totalRevenue);
             stats.put("monthRevenue", monthRevenue);
+            stats.put("unreadMessages", unreadMessages);
+            stats.put("totalMessages", totalMessages);
+            stats.put("readMessages", readMessages);
             
             return Result.success(stats);
             

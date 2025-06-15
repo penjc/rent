@@ -95,7 +95,7 @@ const MerchantLayout: React.FC = () => {
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
-      label: '控制台',
+      label: '仪表盘',
       onClick: () => handleMenuClick('dashboard')
     },
     {

@@ -284,7 +284,7 @@ const Register: React.FC = () => {
 
               <div className="bg-blue-50 p-4 rounded-lg mb-4">
                 <Text type="secondary" className="text-sm">
-                  💡 提示：商家入驻需要提供相关证件，注册后可在商家中心上传证件完成实名认证
+                  提示：商家入驻需要提供相关证件，注册后可在商家中心上传证件完成实名认证
                 </Text>
               </div>
 
