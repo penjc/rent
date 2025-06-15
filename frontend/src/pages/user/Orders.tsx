@@ -13,7 +13,8 @@ import dayjs from 'dayjs';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
-import type { Order } from '../../types';
+import { addressApi } from '@/services/addressApi';
+import type { Order, Address } from '../../types';
 
 const { Title, Text } = Typography;
 
@@ -45,6 +46,12 @@ const Orders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailVisible, setOrderDetailVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
+  
+  // 地址相关状态
+  const [userAddress, setUserAddress] = useState<Address | null>(null);
+  const [merchantAddress, setMerchantAddress] = useState<Address | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
+  
   const pageSize = 10;
 
   // 获取当前用户ID
@@ -177,14 +184,67 @@ const Orders: React.FC = () => {
   };
 
   // 查看订单详情
-  const handleViewOrderDetail = (order: Order) => {
+  const handleViewOrderDetail = async (order: Order) => {
     setSelectedOrder(order);
     setOrderDetailVisible(true);
+    
+    // 获取地址详情
+    await fetchAddressDetails(order);
+  };
+
+  // 获取地址详情
+  const fetchAddressDetails = async (order: Order) => {
+    setAddressLoading(true);
+    setUserAddress(null);
+    setMerchantAddress(null);
+    
+    try {
+      // 并行获取用户地址和商家地址
+      const promises = [];
+      
+      if (order.userAddressId) {
+        promises.push(
+          addressApi.getAddressById(order.userAddressId)
+            .then(response => {
+              const apiResponse = response.data as any;
+              if (apiResponse && apiResponse.code === 200) {
+                setUserAddress(apiResponse.data);
+              }
+            })
+            .catch(error => console.error('获取用户地址失败:', error))
+        );
+      }
+      
+      if (order.merchantAddressId) {
+        promises.push(
+          addressApi.getAddressById(order.merchantAddressId)
+            .then(response => {
+              const apiResponse = response.data as any;
+              if (apiResponse && apiResponse.code === 200) {
+                setMerchantAddress(apiResponse.data);
+              }
+            })
+            .catch(error => console.error('获取商家地址失败:', error))
+        );
+      }
+      
+      await Promise.all(promises);
+    } catch (error) {
+      console.error('获取地址详情失败:', error);
+    } finally {
+      setAddressLoading(false);
+    }
   };
 
   // 格式化价格
   const formatPrice = (price: number) => {
     return `¥${price.toFixed(2)}`;
+  };
+
+  // 格式化地址
+  const formatAddress = (address: Address | null) => {
+    if (!address) return '暂无地址信息';
+    return `${address.province}${address.city}${address.district}${address.detailAddress}`;
   };
 
   // 处理图片
@@ -206,17 +266,23 @@ const Orders: React.FC = () => {
   // 获取订单操作按钮
   const getOrderActions = (order: Order) => {
     const actions = [];
-    const isLoading = actionLoading[order.id];
 
     switch (order.status) {
       case 1: // 待支付
         actions.push(
-          <Button 
-            key="pay" 
-            type="primary" 
+          <Button
+            key="pay"
+            type="primary"
             size="small"
-            loading={isLoading}
+            loading={actionLoading[order.id]}
             onClick={() => handlePayOrder(order.id)}
+            style={{
+              borderRadius: '6px',
+              background: 'linear-gradient(135deg, #52c41a, #73d13d)',
+              border: 'none',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 6px rgba(82, 196, 26, 0.3)'
+            }}
           >
             立即支付
           </Button>
@@ -224,41 +290,61 @@ const Orders: React.FC = () => {
         actions.push(
           <Popconfirm
             key="cancel"
-            title="确定要取消这个订单吗？"
+            title="确认取消订单？"
+            description="取消后无法恢复，确定要取消吗？"
             onConfirm={() => handleCancelOrder(order.id)}
             okText="确定"
             cancelText="取消"
           >
-            <Button 
-              size="small" 
-              loading={isLoading}
+            <Button
+              size="small"
+              loading={actionLoading[order.id]}
+              style={{
+                borderRadius: '6px',
+                color: '#ff4d4f',
+                borderColor: '#ff4d4f'
+              }}
             >
               取消订单
             </Button>
           </Popconfirm>
         );
         break;
-      case 3: // 商家发货中 - 可以确认收货
+      case 3: // 商家发货中
         actions.push(
-          <Button 
-            key="receive" 
-            type="primary" 
+          <Button
+            key="receive"
+            type="primary"
             size="small"
-            loading={isLoading}
+            loading={actionLoading[order.id]}
             onClick={() => handleConfirmReceive(order.id)}
+            style={{
+              borderRadius: '6px',
+              background: 'linear-gradient(135deg, #1890ff, #40a9ff)',
+              border: 'none',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 6px rgba(24, 144, 255, 0.3)'
+            }}
           >
             确认收货
           </Button>
         );
         break;
-      case 4: // 使用中 - 可以申请返还
+      case 4: // 使用中
         actions.push(
-          <Button 
-            key="return" 
-            type="primary" 
+          <Button
+            key="return"
+            type="primary"
             size="small"
-            loading={isLoading}
+            loading={actionLoading[order.id]}
             onClick={() => handleReturnOrder(order.id)}
+            style={{
+              borderRadius: '6px',
+              background: 'linear-gradient(135deg, #722ed1, #9254de)',
+              border: 'none',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 6px rgba(114, 46, 209, 0.3)'
+            }}
           >
             申请返还
           </Button>
@@ -271,6 +357,12 @@ const Orders: React.FC = () => {
         key="detail"
         size="small"
         onClick={() => handleViewOrderDetail(order)}
+        style={{
+          borderRadius: '6px',
+          color: '#1890ff',
+          borderColor: '#1890ff',
+          fontWeight: 'bold'
+        }}
       >
         查看详情
       </Button>
@@ -285,6 +377,12 @@ const Orders: React.FC = () => {
             return;
           }
           navigate(`/user/chat?merchantId=${order.merchantId}`);
+        }}
+        style={{
+          borderRadius: '6px',
+          color: '#52c41a',
+          borderColor: '#52c41a',
+          fontWeight: 'bold'
         }}
       >
         联系商家
@@ -303,66 +401,174 @@ const Orders: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <Title level={2} className="mb-6">我的订单</Title>
+    <div className="p-6" style={{ background: '#f0f2f5', minHeight: '100vh' }}>
+      <div style={{ 
+        padding: '24px',
+        marginBottom: '24px'
+      }}>
+        <Title 
+          level={2} 
+          style={{ 
+            color: 'black',
+            margin: 0,
+            fontSize: '28px'
+          }}
+        >
+          我的订单
+        </Title>
+      </div>
       
       {orders.length === 0 ? (
-        <Card>
+        <Card style={{ 
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
           <Empty 
-            description="暂无订单"
+            description={
+              <span style={{ fontSize: '16px', color: '#666' }}>
+                暂无订单，快去租赁商品吧！
+              </span>
+            }
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </Card>
       ) : (
         <>
-          <Row gutter={[16, 16]}>
+          <Row gutter={[24, 24]}>
             {orders.map((order) => (
               <Col xs={24} lg={12} xl={8} key={order.id}>
                 <Card
                   className="order-card h-full"
-                  bodyStyle={{ padding: '16px' }}
-                  actions={getOrderActions(order)}
+                  style={{
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    border: 'none',
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease',
+                    background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)'
+                  }}
+                  bodyStyle={{ padding: '20px' }}
+                  actions={getOrderActions(order).map((action, index) => (
+                    <div key={index} style={{ padding: '8px 0' }}>
+                      {action}
+                    </div>
+                  ))}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                  }}
                 >
-                  <div className="flex mb-3">
+                  {/* 订单头部 */}
+                  <div className="flex mb-4" style={{ 
+                    borderBottom: '1px solid #f0f0f0',
+                    paddingBottom: '12px'
+                  }}>
                     <div className="flex-1">
-                      <Text strong className="text-base">{order.productName}</Text>
-                      <div className="mt-1">
-                        <Text className="text-gray-500 font-mono text-sm">
-                          订单号: {order.orderNo}
+                      <Text strong className="text-base" style={{ 
+                        fontSize: '16px',
+                        color: '#262626'
+                      }}>
+                        {order.productName}
+                      </Text>
+                      <div className="mt-2">
+                        <Text className="text-gray-500 font-mono text-sm" style={{
+                          background: '#f5f5f5',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px'
+                        }}>
+                          {order.orderNo}
                         </Text>
                       </div>
                     </div>
                     <Tag 
                       color={ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.color}
                       icon={ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.icon}
+                      style={{
+                        fontSize: '13px',
+                        padding: '4px 12px',
+                        borderRadius: '16px',
+                        fontWeight: 'bold',
+                        border: 'none'
+                      }}
                     >
                       {ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.text}
                     </Tag>
                   </div>
 
-                  <div className="flex items-center mb-3">
-                    <Image
-                      src={getProductImage(order.productImage)}
-                      alt={order.productName}
-                      width={60}
-                      height={60}
-                      className="rounded mr-3"
-                      fallback="/images/default-product.jpg"
-                    />
+                  {/* 商品信息 */}
+                  <div className="flex items-center mb-4">
+                    <div style={{
+                      position: 'relative',
+                      marginRight: '16px'
+                    }}>
+                      <Image
+                        src={getProductImage(order.productImage)}
+                        alt={order.productName}
+                        width={70}
+                        height={70}
+                        className="rounded"
+                        style={{
+                          borderRadius: '8px',
+                          border: '2px solid #f0f0f0'
+                        }}
+                        fallback="/images/default-product.jpg"
+                      />
+                    </div>
                     <div className="flex-1">
-                      <div className="text-sm text-gray-600 mb-1">
-                        租期: {order.rentDays}天 ({RENT_TYPE_MAP[order.rentType as keyof typeof RENT_TYPE_MAP]})
+                      <div className="text-sm mb-2" style={{ 
+                        color: '#666',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{
+                          background: '#f0f0f0',
+                          color: '#666',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          marginRight: '8px'
+                        }}>
+                          {order.rentDays}天
+                        </span>
+                        <span style={{ fontSize: '12px' }}>
+                          ({RENT_TYPE_MAP[order.rentType as keyof typeof RENT_TYPE_MAP]})
+                        </span>
                       </div>
-                      <div className="text-sm text-gray-600 mb-1">
-                        {dayjs(order.startDate).format('YYYY-MM-DD')} 至 {dayjs(order.endDate).format('YYYY-MM-DD')}
+                      <div className="text-sm text-gray-600 mb-2" style={{
+                        fontSize: '13px',
+                        color: '#8c8c8c'
+                      }}>
+                        {dayjs(order.startDate).format('MM-DD')} 至 {dayjs(order.endDate).format('MM-DD')}
                       </div>
-                      <div className="text-lg font-semibold text-red-600">
+                      <div style={{
+                        background: '#f5f5f5',
+                        color: '#d4380d',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        border: '1px solid #ffccc7'
+                      }}>
                         {formatPrice(order.totalAmount)}
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-xs text-gray-500">
+                  {/* 订单时间 */}
+                  <div style={{
+                    background: '#fafafa',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: '#8c8c8c',
+                    textAlign: 'center'
+                  }}>
                     下单时间: {dayjs(order.createdAt).format('YYYY-MM-DD HH:mm')}
                   </div>
                 </Card>
@@ -371,16 +577,27 @@ const Orders: React.FC = () => {
           </Row>
 
           {total > pageSize && (
-            <div className="flex justify-center mt-6">
-              <Pagination
-                current={currentPage}
-                total={total}
-                pageSize={pageSize}
-                onChange={setCurrentPage}
-                showSizeChanger={false}
-                showQuickJumper
-                showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
-              />
+            <div className="flex justify-center mt-8">
+              <div style={{
+                background: 'white',
+                padding: '16px 24px',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <Pagination
+                  current={currentPage}
+                  total={total}
+                  pageSize={pageSize}
+                  onChange={setCurrentPage}
+                  showSizeChanger={false}
+                  showQuickJumper
+                  showTotal={(total, range) => (
+                    <span style={{ color: '#666', fontSize: '14px' }}>
+                      第 {range[0]}-{range[1]} 条，共 {total} 条
+                    </span>
+                  )}
+                />
+              </div>
             </div>
           )}
         </>
@@ -388,74 +605,251 @@ const Orders: React.FC = () => {
 
       {/* 订单详情弹窗 */}
       <Modal
-        title="订单详情"
+        title={
+          <div style={{ 
+            fontSize: '18px', 
+            fontWeight: 'bold',
+            color: '#262626',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <InboxOutlined style={{ marginRight: 8 }} />
+            订单详情
+          </div>
+        }
         open={orderDetailVisible}
         onCancel={() => setOrderDetailVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setOrderDetailVisible(false)}>
+          <Button 
+            key="close" 
+            onClick={() => setOrderDetailVisible(false)}
+            size="large"
+            style={{
+              borderRadius: '6px',
+              height: '40px',
+              minWidth: '100px'
+            }}
+          >
             关闭
           </Button>
         ]}
-        width={700}
+        width={900}
+        style={{ top: 20 }}
       >
         {selectedOrder && (
-          <Descriptions column={2} bordered>
-            <Descriptions.Item label="订单编号" span={2}>
-              <Text className="font-mono">{selectedOrder.orderNo}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="商品名称">
-              {selectedOrder.productName}
-            </Descriptions.Item>
-            <Descriptions.Item label="订单状态">
-              <Tag 
-                color={ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.color}
-                icon={ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.icon}
+          <Spin spinning={addressLoading}>
+            <div style={{ 
+              background: '#fafafa',
+              padding: '20px',
+              borderRadius: '8px',
+              marginBottom: '20px'
+            }}>
+              <Descriptions 
+                column={2} 
+                bordered
+                size="middle"
+                labelStyle={{
+                  background: '#f5f5f5',
+                  fontWeight: 'bold',
+                  color: '#595959',
+                  width: '120px'
+                }}
+                contentStyle={{
+                  background: '#fff',
+                  padding: '12px 16px'
+                }}
               >
-                {ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.text}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="租赁天数">
-              {selectedOrder.rentDays}天
-            </Descriptions.Item>
-            <Descriptions.Item label="租赁方式">
-              {RENT_TYPE_MAP[selectedOrder.rentType as keyof typeof RENT_TYPE_MAP]}
-            </Descriptions.Item>
-            <Descriptions.Item label="单价">
-              {formatPrice(selectedOrder.unitPrice)}
-            </Descriptions.Item>
-            <Descriptions.Item label="押金">
-              {formatPrice(selectedOrder.deposit)}
-            </Descriptions.Item>
-            <Descriptions.Item label="总金额">
-              <Text className="text-red-600 font-semibold text-lg">
-                {formatPrice(selectedOrder.totalAmount)}
-              </Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="租赁开始">
-              {dayjs(selectedOrder.startDate).format('YYYY-MM-DD')}
-            </Descriptions.Item>
-            <Descriptions.Item label="租赁结束">
-              {dayjs(selectedOrder.endDate).format('YYYY-MM-DD')}
-            </Descriptions.Item>
-            <Descriptions.Item label="下单时间">
-              {dayjs(selectedOrder.createdAt).format('YYYY-MM-DD HH:mm:ss')}
-            </Descriptions.Item>
-            {selectedOrder.shippedAt && (
-              <Descriptions.Item label="发货时间">
-                {dayjs(selectedOrder.shippedAt).format('YYYY-MM-DD HH:mm:ss')}
-              </Descriptions.Item>
-            )}
-            {selectedOrder.returnedAt && (
-              <Descriptions.Item label="归还时间">
-                {dayjs(selectedOrder.returnedAt).format('YYYY-MM-DD HH:mm:ss')}
-              </Descriptions.Item>
-            )}
-            {selectedOrder.remark && (
-              <Descriptions.Item label="备注" span={2}>
-                {selectedOrder.remark}
-              </Descriptions.Item>
-            )}
-          </Descriptions>
+                <Descriptions.Item label="订单编号" span={2}>
+                  <Text 
+                    className="font-mono" 
+                    style={{ 
+                      fontSize: '16px', 
+                      color: '#262626',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {selectedOrder.orderNo}
+                  </Text>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="商品名称">
+                  <Text strong style={{ fontSize: '15px', color: '#262626' }}>
+                    {selectedOrder.productName}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="订单状态">
+                  <Tag 
+                    color={ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.color}
+                    icon={ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.icon}
+                    style={{ 
+                      fontSize: '14px', 
+                      padding: '4px 12px',
+                      borderRadius: '16px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {ORDER_STATUS_MAP[selectedOrder.status as keyof typeof ORDER_STATUS_MAP]?.text}
+                  </Tag>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="租赁天数">
+                  <Text style={{ fontSize: '15px', color: '#262626' }}>
+                    <strong>{selectedOrder.rentDays}</strong> 天
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="租赁方式">
+                  <Tag color="default" style={{ fontSize: '13px', color: '#595959' }}>
+                    {RENT_TYPE_MAP[selectedOrder.rentType as keyof typeof RENT_TYPE_MAP]}
+                  </Tag>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="单价">
+                  <Text style={{ fontSize: '15px', color: '#262626', fontWeight: 'bold' }}>
+                    {formatPrice(selectedOrder.unitPrice)}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="押金">
+                  <Text style={{ fontSize: '15px', color: '#262626', fontWeight: 'bold' }}>
+                    {formatPrice(selectedOrder.deposit)}
+                  </Text>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="总金额" span={2}>
+                  <div style={{ 
+                    textAlign: 'center',
+                    background: '#f5f5f5',
+                    color: '#d4380d',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    border: '1px solid #ffccc7'
+                  }}>
+                    {formatPrice(selectedOrder.totalAmount)}
+                  </div>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="租赁开始">
+                  <Text style={{ fontSize: '15px', color: '#262626' }}>
+                    {dayjs(selectedOrder.startDate).format('YYYY-MM-DD')}
+                  </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="租赁结束">
+                  <Text style={{ fontSize: '15px', color: '#262626' }}>
+                    {dayjs(selectedOrder.endDate).format('YYYY-MM-DD')}
+                  </Text>
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="下单时间" span={2}>
+                  <Text style={{ fontSize: '15px', color: '#8c8c8c' }}>
+                    {dayjs(selectedOrder.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                  </Text>
+                </Descriptions.Item>
+                
+                {/* 收货地址信息 */}
+                <Descriptions.Item 
+                  label={
+                    <span style={{ color: '#595959' }}>
+                      {/*<EnvironmentOutlined style={{ marginRight: 4 }} />*/}
+                      收货地址
+                    </span>
+                  } 
+                  span={2}
+                >
+                  {userAddress ? (
+                    <div style={{
+                      background: '#f9f9f9',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e8e8e8'
+                    }}>
+                      <div style={{ marginBottom: 6 }}>
+                        <Text strong style={{ fontSize: '15px', color: '#262626' }}>
+                          {userAddress.contactName}
+                        </Text>
+                        <Text style={{ marginLeft: 12, color: '#8c8c8c', fontSize: '14px' }}>
+                          {userAddress.contactPhone}
+                        </Text>
+                      </div>
+                      <div style={{ color: '#595959', fontSize: '14px', lineHeight: '1.5' }}>
+                        {formatAddress(userAddress)}
+                      </div>
+                    </div>
+                  ) : (
+                    <Text type="secondary" style={{ fontStyle: 'italic' }}>
+                      暂无收货地址信息
+                    </Text>
+                  )}
+                </Descriptions.Item>
+                
+                {/* 商家地址信息 */}
+                <Descriptions.Item 
+                  label={
+                    <span style={{ color: '#595959' }}>
+                      {/*<EnvironmentOutlined style={{ marginRight: 4 }} />*/}
+                      商家地址
+                    </span>
+                  } 
+                  span={2}
+                >
+                  {merchantAddress ? (
+                    <div style={{
+                      background: '#f9f9f9',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e8e8e8'
+                    }}>
+                      <div style={{ marginBottom: 6 }}>
+                        <Text strong style={{ fontSize: '15px', color: '#262626' }}>
+                          {merchantAddress.contactName}
+                        </Text>
+                        <Text style={{ marginLeft: 12, color: '#8c8c8c', fontSize: '14px' }}>
+                          {merchantAddress.contactPhone}
+                        </Text>
+                      </div>
+                      <div style={{ color: '#595959', fontSize: '14px', lineHeight: '1.5' }}>
+                        {formatAddress(merchantAddress)}
+                      </div>
+                    </div>
+                  ) : (
+                    <Text type="secondary" style={{ fontStyle: 'italic' }}>
+                      暂无商家地址信息
+                    </Text>
+                  )}
+                </Descriptions.Item>
+                
+                {selectedOrder.shippedAt && (
+                  <Descriptions.Item label="发货时间">
+                    <Text style={{ fontSize: '15px', color: '#262626' }}>
+                      {dayjs(selectedOrder.shippedAt).format('YYYY-MM-DD HH:mm:ss')}
+                    </Text>
+                  </Descriptions.Item>
+                )}
+                {selectedOrder.returnedAt && (
+                  <Descriptions.Item label="归还时间">
+                    <Text style={{ fontSize: '15px', color: '#262626' }}>
+                      {dayjs(selectedOrder.returnedAt).format('YYYY-MM-DD HH:mm:ss')}
+                    </Text>
+                  </Descriptions.Item>
+                )}
+                {selectedOrder.remark && (
+                  <Descriptions.Item label="备注" span={2}>
+                    <div style={{
+                      background: '#f9f9f9',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      color: '#595959',
+                      fontStyle: 'italic',
+                      border: '1px solid #e8e8e8'
+                    }}>
+                      {selectedOrder.remark}
+                    </div>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </div>
+          </Spin>
         )}
       </Modal>
     </div>
