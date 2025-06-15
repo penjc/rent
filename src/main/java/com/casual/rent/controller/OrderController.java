@@ -86,9 +86,10 @@ public class OrderController {
     public Result<IPage<Order>> getOrdersByUser(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer status) {
         
-        IPage<Order> orderPage = orderService.getUserOrders(page, size, userId, null);
+        IPage<Order> orderPage = orderService.getUserOrders(page, size, userId, status);
         return Result.success(orderPage);
     }
     
@@ -100,9 +101,10 @@ public class OrderController {
     public Result<IPage<Order>> getOrdersByMerchant(
             @PathVariable Long merchantId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer status) {
         
-        IPage<Order> orderPage = orderService.getMerchantOrders(page, size, merchantId, null);
+        IPage<Order> orderPage = orderService.getMerchantOrders(page, size, merchantId, status);
         return Result.success(orderPage);
     }
     
