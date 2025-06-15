@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Typography, Button, List, Tag, Space, Spin } from 'antd';
-import { ShopOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Typography, Button, List, Tag, Space, Spin, Popconfirm } from 'antd';
+import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { merchantAddressApi } from '@/services/addressApi';
+import { showMessage } from '@/hooks/useMessage';
+import AddressForm from '@/components/common/AddressForm';
 import type { Address } from '@/types';
 
 const { Title, Text } = Typography;
@@ -10,6 +12,8 @@ const { Title, Text } = Typography;
 const MerchantAddressManagement: React.FC = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const { user, isAuthenticated } = useAuthStore();
 
   console.log('MerchantAddressManagement 渲染开始', { isAuthenticated, userId: user?.id });
@@ -26,23 +30,80 @@ const MerchantAddressManagement: React.FC = () => {
     try {
       const response = await merchantAddressApi.getMerchantAddresses(user.id);
       console.log('fetchAddresses: API响应:', response);
-      console.log('fetchAddresses: response.data:', response.data);
       
       // API拦截器返回完整response，实际数据在response.data.data中
-      // 使用类型断言处理响应结构
       const apiResponse = response.data as any;
-      console.log('fetchAddresses: apiResponse.data:', apiResponse.data);
-      console.log('fetchAddresses: apiResponse.data类型:', typeof apiResponse.data, 'Array.isArray:', Array.isArray(apiResponse.data));
-      
       const addressList = Array.isArray(apiResponse.data) ? apiResponse.data : [];
       setAddresses(addressList);
       console.log('fetchAddresses: 设置地址列表完成, 数量:', addressList.length);
     } catch (error) {
       console.error('获取地址列表失败:', error);
-      setAddresses([]); // 出错时设置为空数组
+      setAddresses([]);
     } finally {
       setLoading(false);
-      console.log('fetchAddresses: 完成');
+    }
+  };
+
+  // 添加地址
+  const handleAddAddress = async (addressData: Partial<Address>) => {
+    if (!user?.id) return;
+    
+    await merchantAddressApi.addMerchantAddress(user.id, {
+      contactName: addressData.contactName!,
+      contactPhone: addressData.contactPhone!,
+      province: addressData.province!,
+      city: addressData.city!,
+      district: addressData.district!,
+      detailAddress: addressData.detailAddress!,
+      isDefault: addressData.isDefault === 1
+    });
+    
+    setFormVisible(false);
+    fetchAddresses();
+  };
+
+  // 编辑地址
+  const handleEditAddress = async (addressData: Partial<Address>) => {
+    if (!editingAddress?.id || !user?.id) return;
+    
+    await merchantAddressApi.updateMerchantAddress(user.id, editingAddress.id, {
+      contactName: addressData.contactName!,
+      contactPhone: addressData.contactPhone!,
+      province: addressData.province!,
+      city: addressData.city!,
+      district: addressData.district!,
+      detailAddress: addressData.detailAddress!,
+      isDefault: addressData.isDefault === 1
+    });
+    
+    setFormVisible(false);
+    setEditingAddress(null);
+    fetchAddresses();
+  };
+
+  // 删除地址
+  const handleDeleteAddress = async (addressId: number) => {
+    if (!user?.id) return;
+    
+    try {
+      await merchantAddressApi.deleteMerchantAddress(user.id, addressId);
+      showMessage.success('地址删除成功');
+      fetchAddresses();
+    } catch (error) {
+      console.error('删除地址失败:', error);
+    }
+  };
+
+  // 设置默认地址
+  const handleSetDefault = async (addressId: number) => {
+    if (!user?.id) return;
+    
+    try {
+      await merchantAddressApi.setMerchantDefaultAddress(user.id, addressId);
+      showMessage.success('默认地址设置成功');
+      fetchAddresses();
+    } catch (error) {
+      console.error('设置默认地址失败:', error);
     }
   };
 
@@ -54,6 +115,24 @@ const MerchantAddressManagement: React.FC = () => {
     const district = address.district || '';
     const detailAddress = address.detailAddress || '';
     return `${province}${city}${district}${detailAddress}` || '地址信息不完整';
+  };
+
+  // 打开添加地址表单
+  const openAddForm = () => {
+    setEditingAddress(null);
+    setFormVisible(true);
+  };
+
+  // 打开编辑地址表单
+  const openEditForm = (address: Address) => {
+    setEditingAddress(address);
+    setFormVisible(true);
+  };
+
+  // 关闭表单
+  const closeForm = () => {
+    setFormVisible(false);
+    setEditingAddress(null);
   };
 
   useEffect(() => {
@@ -92,8 +171,6 @@ const MerchantAddressManagement: React.FC = () => {
     );
   }
 
-  console.log('商家端地址管理页面即将渲染主界面');
-
   return (
     <div style={{ padding: '24px', backgroundColor: '#f0f0f0', minHeight: '500px' }}>
       <Card style={{ backgroundColor: '#ffffff' }}>
@@ -102,7 +179,7 @@ const MerchantAddressManagement: React.FC = () => {
             <ShopOutlined style={{ marginRight: '8px' }} />
             收货地址管理
           </Title>
-          <Button type="primary" icon={<PlusOutlined />}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openAddForm}>
             添加地址
           </Button>
         </div>
@@ -113,7 +190,6 @@ const MerchantAddressManagement: React.FC = () => {
               dataSource={addresses}
               locale={{ emptyText: '暂无收货地址，请添加' }}
               renderItem={(address) => {
-                // 确保address对象存在且有必要的属性
                 if (!address || typeof address !== 'object') {
                   return null;
                 }
@@ -127,6 +203,41 @@ const MerchantAddressManagement: React.FC = () => {
                       marginBottom: '12px',
                       backgroundColor: '#fafafa'
                     }}
+                    actions={[
+                      <Button
+                        key="default"
+                        type="text"
+                        icon={address.isDefault === 1 ? <StarFilled style={{ color: '#faad14' }} /> : <StarOutlined />}
+                        onClick={() => handleSetDefault(address.id)}
+                        disabled={address.isDefault === 1}
+                      >
+                        {address.isDefault === 1 ? '默认地址' : '设为默认'}
+                      </Button>,
+                      <Button
+                        key="edit"
+                        type="text"
+                        icon={<EditOutlined />}
+                        onClick={() => openEditForm(address)}
+                      >
+                        编辑
+                      </Button>,
+                      <Popconfirm
+                        key="delete"
+                        title="确认删除"
+                        description="确定要删除这个地址吗？"
+                        onConfirm={() => handleDeleteAddress(address.id)}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                        >
+                          删除
+                        </Button>
+                      </Popconfirm>
+                    ]}
                   >
                     <List.Item.Meta
                       title={
@@ -154,20 +265,17 @@ const MerchantAddressManagement: React.FC = () => {
             </div>
           )}
         </Spin>
-
-        {/* 调试信息 */}
-        <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-          <Text type="secondary">调试信息：</Text>
-          <br />
-          <Text type="secondary">商家ID: {user?.id}</Text>
-          <br />
-          <Text type="secondary">认证状态: {isAuthenticated ? '已登录' : '未登录'}</Text>
-          <br />
-          <Text type="secondary">地址数量: {addresses.length}</Text>
-          <br />
-          <Text type="secondary">加载状态: {loading ? '加载中' : '已完成'}</Text>
-        </div>
       </Card>
+
+      {/* 地址表单弹窗 */}
+      <AddressForm
+        visible={formVisible}
+        onCancel={closeForm}
+        onSuccess={closeForm}
+        address={editingAddress}
+        onSubmit={editingAddress ? handleEditAddress : handleAddAddress}
+        title={editingAddress ? '编辑地址' : '添加地址'}
+      />
     </div>
   );
 };
