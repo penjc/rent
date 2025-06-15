@@ -54,6 +54,12 @@ const Profile: React.FC = () => {
   const [certificationForm] = Form.useForm();
   
   const [userInfo, setUserInfo] = useState<User | null>(null);
+  
+  // 图片预览状态
+  const [previewImages, setPreviewImages] = useState<{
+    idCardFront?: string;
+    idCardBack?: string;
+  }>({});
 
   // 获取用户信息
   const fetchUserInfo = async () => {
@@ -175,8 +181,8 @@ const Profile: React.FC = () => {
     
     if (values.realName) formData.append('realName', values.realName);
     if (values.idCard) formData.append('idCard', values.idCard);
-    if (values.idCardFront) formData.append('idCardFront', values.idCardFront.file);
-    if (values.idCardBack) formData.append('idCardBack', values.idCardBack.file);
+    if (selectedFiles.idCardFront) formData.append('idCardFront', selectedFiles.idCardFront);
+    if (selectedFiles.idCardBack) formData.append('idCardBack', selectedFiles.idCardBack);
     
     try {
       const response = await api.post(`/user/certification/${authUser.id}`, formData, {
@@ -193,9 +199,16 @@ const Profile: React.FC = () => {
         showMessage.success('认证材料提交成功，请等待审核');
         setCertificationModalVisible(false);
         certificationForm.resetFields();
+        // 清理预览图片URL
+        Object.values(previewImages).forEach(url => {
+          if (url) URL.revokeObjectURL(url);
+        });
+        setPreviewImages({});
+        setSelectedFiles({});
         await fetchCertificationStatus();
       }
     } catch (error) {
+      console.error('认证材料提交失败:', error);
       showMessage.error('认证材料提交失败');
     } finally {
       setUploading(false);
@@ -232,12 +245,58 @@ const Profile: React.FC = () => {
     return progress;
   };
 
+  // 存储实际的文件对象
+  const [selectedFiles, setSelectedFiles] = useState<{
+    idCardFront?: File;
+    idCardBack?: File;
+  }>({});
+
+  // 处理文件选择
+  const handleFileSelect = (file: File, type: 'idCardFront' | 'idCardBack') => {
+    // 创建预览URL
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewImages(prev => ({
+      ...prev,
+      [type]: previewUrl
+    }));
+    
+    // 存储文件对象
+    setSelectedFiles(prev => ({
+      ...prev,
+      [type]: file
+    }));
+    
+    // 设置表单字段值（用于验证）
+    certificationForm.setFieldsValue({
+      [type]: file
+    });
+  };
+
   // 文件上传属性
-  const getUploadProps = (type: string) => ({
+  const getUploadProps = (type: 'idCardFront' | 'idCardBack') => ({
     name: type,
     multiple: false,
     accept: 'image/*,.pdf',
-    beforeUpload: () => false, // 阻止自动上传
+    beforeUpload: (file: File) => {
+      // 验证文件类型和大小
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf';
+      
+      if (!isImage && !isPdf) {
+        showMessage.error('只能上传图片或PDF文件！');
+        return false;
+      }
+      
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        showMessage.error('文件大小必须小于 10MB！');
+        return false;
+      }
+      
+      // 处理文件选择
+      handleFileSelect(file, type);
+      return false; // 阻止自动上传
+    },
     showUploadList: false,
   });
 
@@ -593,6 +652,12 @@ const Profile: React.FC = () => {
         onCancel={() => {
           setCertificationModalVisible(false);
           certificationForm.resetFields();
+          // 清理预览图片URL
+          Object.values(previewImages).forEach(url => {
+            if (url) URL.revokeObjectURL(url);
+          });
+          setPreviewImages({});
+          setSelectedFiles({});
         }}
         confirmLoading={uploading}
         width={800}
@@ -633,20 +698,54 @@ const Profile: React.FC = () => {
                 label="身份证正面"
                 rules={[{ required: true, message: '请上传身份证正面' }]}
               >
-                <Dragger {...getUploadProps('idCardFront')}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">
-                    {uploading && uploadProgress.certification > 0 ? 
-                      `上传中... ${uploadProgress.certification}%` : 
-                      '点击或拖拽上传身份证正面'
-                    }
-                  </p>
-                  <p className="ant-upload-hint">
-                    支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
-                  </p>
-                </Dragger>
+                <div>
+                  {/* 图片预览 */}
+                  {previewImages.idCardFront && (
+                    <div style={{ marginBottom: 16, textAlign: 'center' }}>
+                      <Image
+                        src={previewImages.idCardFront}
+                        alt="身份证正面预览"
+                        width="100%"
+                        height={200}
+                        style={{ objectFit: 'cover', borderRadius: 8 }}
+                      />
+                      <div style={{ marginTop: 8 }}>
+                        <Button 
+                          size="small" 
+                          onClick={() => {
+                            // 清理预览URL
+                            if (previewImages.idCardFront) {
+                              URL.revokeObjectURL(previewImages.idCardFront);
+                            }
+                            setPreviewImages(prev => ({ ...prev, idCardFront: undefined }));
+                            setSelectedFiles(prev => ({ ...prev, idCardFront: undefined }));
+                            certificationForm.setFieldsValue({ idCardFront: undefined });
+                          }}
+                        >
+                          重新选择
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 上传区域 */}
+                  {!previewImages.idCardFront && (
+                    <Dragger {...getUploadProps('idCardFront')}>
+                      <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                      </p>
+                      <p className="ant-upload-text">
+                        {uploading && uploadProgress.certification > 0 ? 
+                          `上传中... ${uploadProgress.certification}%` : 
+                          '点击或拖拽上传身份证正面'
+                        }
+                      </p>
+                      <p className="ant-upload-hint">
+                        支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
+                      </p>
+                    </Dragger>
+                  )}
+                </div>
               </Form.Item>
             </Col>
             
@@ -656,20 +755,54 @@ const Profile: React.FC = () => {
                 label="身份证反面"
                 rules={[{ required: true, message: '请上传身份证反面' }]}
               >
-                <Dragger {...getUploadProps('idCardBack')}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">
-                    {uploading && uploadProgress.certification > 0 ? 
-                      `上传中... ${uploadProgress.certification}%` : 
-                      '点击或拖拽上传身份证反面'
-                    }
-                  </p>
-                  <p className="ant-upload-hint">
-                    支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
-                  </p>
-                </Dragger>
+                <div>
+                  {/* 图片预览 */}
+                  {previewImages.idCardBack && (
+                    <div style={{ marginBottom: 16, textAlign: 'center' }}>
+                      <Image
+                        src={previewImages.idCardBack}
+                        alt="身份证反面预览"
+                        width="100%"
+                        height={200}
+                        style={{ objectFit: 'cover', borderRadius: 8 }}
+                      />
+                      <div style={{ marginTop: 8 }}>
+                        <Button 
+                          size="small" 
+                          onClick={() => {
+                            // 清理预览URL
+                            if (previewImages.idCardBack) {
+                              URL.revokeObjectURL(previewImages.idCardBack);
+                            }
+                            setPreviewImages(prev => ({ ...prev, idCardBack: undefined }));
+                            setSelectedFiles(prev => ({ ...prev, idCardBack: undefined }));
+                            certificationForm.setFieldsValue({ idCardBack: undefined });
+                          }}
+                        >
+                          重新选择
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 上传区域 */}
+                  {!previewImages.idCardBack && (
+                    <Dragger {...getUploadProps('idCardBack')}>
+                      <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                      </p>
+                      <p className="ant-upload-text">
+                        {uploading && uploadProgress.certification > 0 ? 
+                          `上传中... ${uploadProgress.certification}%` : 
+                          '点击或拖拽上传身份证反面'
+                        }
+                      </p>
+                      <p className="ant-upload-hint">
+                        支持 JPG、PNG、PDF 格式，文件大小不超过 10MB
+                      </p>
+                    </Dragger>
+                  )}
+                </div>
               </Form.Item>
             </Col>
           </Row>
