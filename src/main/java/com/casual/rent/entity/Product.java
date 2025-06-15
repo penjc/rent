@@ -3,6 +3,8 @@ package com.casual.rent.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -34,6 +36,9 @@ public class Product {
     private BigDecimal deposit;
     
     private Integer stock;
+    
+//    @TableField(value = "merchant_address_id", insertStrategy = FieldStrategy.NOT_NULL)
+    private Long merchantAddressId;
     
     private Integer status;
     
@@ -131,6 +136,14 @@ public class Product {
     
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+    
+    public Long getMerchantAddressId() {
+        return merchantAddressId;
+    }
+    
+    public void setMerchantAddressId(Long merchantAddressId) {
+        this.merchantAddressId = merchantAddressId;
     }
     
     public Integer getStatus() {

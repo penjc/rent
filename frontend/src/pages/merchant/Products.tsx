@@ -29,7 +29,8 @@ import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
-import type { Product, Category } from '@/types';
+import { merchantAddressApi } from '@/services/addressApi';
+import type { Product, Category, Address } from '@/types';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -53,6 +54,8 @@ const Products: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<Address | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form] = Form.useForm();
@@ -88,10 +91,34 @@ const Products: React.FC = () => {
     }
   };
 
+  // 获取商家地址列表
+  const fetchMerchantAddresses = async () => {
+    const merchantId = getMerchantId();
+    if (!merchantId) return;
+
+    try {
+      const response = await merchantAddressApi.getMerchantAddresses(merchantId);
+      const apiResponse = response.data as any;
+      const addressList = Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      setAddresses(addressList);
+      
+      // 设置默认地址
+      const defaultAddr = addressList.find((addr: Address) => addr.isDefault === 1);
+      setDefaultAddress(defaultAddr || null);
+      
+      console.log('获取商家地址成功:', { addressList, defaultAddr });
+    } catch (error) {
+      console.error('获取商家地址失败:', error);
+      setAddresses([]);
+      setDefaultAddress(null);
+    }
+  };
+
   useEffect(() => {
     loadProducts();
     loadCategories();
     fetchMerchantInfo();
+    fetchMerchantAddresses();
   }, [user, userType]);
 
   // 加载商品列表
@@ -163,6 +190,14 @@ const Products: React.FC = () => {
     setEditingProduct(null);
     setFileList([]);
     form.resetFields();
+    
+    // 设置默认地址
+    if (defaultAddress) {
+      form.setFieldsValue({
+        merchantAddressId: defaultAddress.id
+      });
+    }
+    
     setIsModalVisible(true);
   };
 
@@ -185,7 +220,8 @@ const Products: React.FC = () => {
       dailyPrice: Number(record.dailyPrice),
       weeklyPrice: Number(record.weeklyPrice),
       monthlyPrice: Number(record.monthlyPrice),
-      deposit: Number(record.deposit)
+      deposit: Number(record.deposit),
+      merchantAddressId: record.merchantAddressId || (defaultAddress ? defaultAddress.id : undefined)
     });
     
     // 设置文件列表（如果有图片）
@@ -301,6 +337,7 @@ const Products: React.FC = () => {
         monthlyPrice: values.monthlyPrice,
         deposit: values.deposit || 0,
         stock: values.stock,
+        merchantAddressId: values.merchantAddressId,
         images: JSON.stringify(imageUrls),
         merchantId: merchantId
       };
@@ -713,6 +750,62 @@ const Products: React.FC = () => {
                   style={{ width: '100%' }}
                   addonAfter="件"
                 />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="收货地址"
+                name="merchantAddressId"
+                rules={[{ required: true, message: '请选择收货地址' }]}
+                help="用于商品归还的收货地址"
+              >
+                <Select 
+                  placeholder="请选择收货地址"
+                  notFoundContent={addresses.length === 0 ? "暂无地址，请先添加地址" : "未找到地址"}
+                  optionLabelProp="label"
+                  style={{ width: '100%' }}
+                >
+                  {addresses.map(address => (
+                    <Option 
+                      key={address.id} 
+                      value={address.id}
+                      label={`${address.contactName} ${address.contactPhone}${address.isDefault === 1 ? ' (默认)' : ''}`}
+                    >
+                      <div style={{ padding: '8px 0' }}>
+                        <div style={{ 
+                          fontWeight: 'bold', 
+                          marginBottom: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}>
+                          <span>{address.contactName} {address.contactPhone}</span>
+                          {address.isDefault === 1 && (
+                            <Tag color="blue" style={{ fontSize: '12px', margin: 0 }}>
+                              默认
+                            </Tag>
+                          )}
+                        </div>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#666',
+                          lineHeight: '1.4'
+                        }}>
+                          {address.province}{address.city}{address.district}{address.detailAddress}
+                        </div>
+                      </div>
+                    </Option>
+                  ))}
+                </Select>
+                {addresses.length === 0 && (
+                  <div style={{ marginTop: 8, fontSize: '12px', color: '#ff4d4f' }}>
+                    暂无收货地址，请先到 
+                    <a href="/merchant/addresses" target="_blank" rel="noopener noreferrer">
+                      地址管理
+                    </a> 
+                    页面添加地址
+                  </div>
+                )}
               </Form.Item>
             </Col>
           </Row>

@@ -97,6 +97,7 @@ export interface Product {
   monthlyPrice: number;
   deposit: number;
   stock: number;
+  merchantAddressId?: number;
   status: number;
   auditStatus: number;
   auditRemark?: string;

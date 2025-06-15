@@ -7,9 +7,12 @@ import com.casual.rent.common.AuditStatus;
 import com.casual.rent.common.VerificationStatus;
 import com.casual.rent.entity.Product;
 import com.casual.rent.entity.Merchant;
+import com.casual.rent.entity.Address;
 import com.casual.rent.service.ProductService;
 import com.casual.rent.service.MerchantService;
 import com.casual.rent.service.FileUploadService;
+import com.casual.rent.service.AddressService;
+import com.casual.rent.common.AddressOwnerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +40,9 @@ public class ProductController {
     
     @Autowired
     private FileUploadService fileUploadService;
+    
+    @Autowired
+    private AddressService addressService;
     
     /**
      * 分页查询商品列表
@@ -82,6 +88,16 @@ public class ProductController {
     }
     
     /**
+     * 获取商家默认地址
+     */
+    @Operation(summary = "获取商家默认地址")
+    @GetMapping("/default-address/{merchantId}")
+    public Result<Address> getMerchantDefaultAddress(@PathVariable Long merchantId) {
+        Address defaultAddress = addressService.getDefaultAddress(merchantId, AddressOwnerType.MERCHANT);
+        return Result.success(defaultAddress);
+    }
+    
+    /**
      * 创建商品（支持文件上传）
      */
     @Operation(summary = "创建商品（上传图片）")
@@ -95,9 +111,24 @@ public class ProductController {
             @RequestParam("categoryId") Long categoryId,
             @RequestParam("merchantId") Long merchantId,
             @RequestParam("stock") Integer stock,
+            @RequestParam(value = "merchantAddressId", required = false) String merchantAddressIdStr,
             @RequestParam(value = "images", required = false) MultipartFile[] images) {
         
         try {
+            // 处理地址ID参数
+            Long merchantAddressId = null;
+            if (merchantAddressIdStr != null && !merchantAddressIdStr.trim().isEmpty()) {
+                try {
+                    merchantAddressId = Long.parseLong(merchantAddressIdStr.trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("地址ID格式错误: " + merchantAddressIdStr);
+                }
+            }
+            
+            // 调试日志
+            System.out.println("接收到的地址ID字符串: " + merchantAddressIdStr);
+            System.out.println("解析后的地址ID: " + merchantAddressId);
+            
             // 检查商家认证状态
             Merchant merchant = merchantService.getById(merchantId);
             if (merchant == null) {
@@ -116,6 +147,11 @@ public class ProductController {
             product.setCategoryId(categoryId);
             product.setMerchantId(merchantId);
             product.setStock(stock);
+            product.setMerchantAddressId(merchantAddressId);
+            
+            // 调试日志
+            System.out.println("设置商品地址ID: " + product.getMerchantAddressId());
+            
             product.setStatus(ProductStatus.OFF_SHELF.getCode()); // 发布时下架状态
             product.setAuditStatus(AuditStatus.PENDING.getCode()); // 待审核
             product.setCreatedAt(LocalDateTime.now());

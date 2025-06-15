@@ -135,6 +135,7 @@ CREATE TABLE `products` (
   `monthly_price` decimal(10,2) DEFAULT NULL COMMENT '月租金',
   `deposit` decimal(10,2) DEFAULT '0.00' COMMENT '押金',
   `stock` int(11) DEFAULT '1' COMMENT '库存数量',
+  `merchant_address_id` bigint(20) DEFAULT NULL COMMENT '商家地址ID（商品归还地址）',
   `status` tinyint(4) DEFAULT '0' COMMENT '状态：1-上架，0-下架',
   `audit_status` tinyint(4) DEFAULT '0' COMMENT '审核状态：1-通过，0-待审核，-1-拒绝',
   `audit_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '审核备注',
@@ -143,7 +144,8 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `idx_merchant_id` (`merchant_id`),
   KEY `idx_category_id` (`category_id`),
-  KEY `idx_status` (`status`)
+  KEY `idx_status` (`status`),
+  KEY `idx_merchant_address` (`merchant_address_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 
 -- 8. 聊天消息表
