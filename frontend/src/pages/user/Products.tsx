@@ -32,7 +32,7 @@ import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import { userAddressApi } from '@/services/addressApi';
 import FavoriteButton from '../../components/common/FavoriteButton';
-import type { Product, Category, Address } from '../../types';
+import type { Product, Category, Address, User } from '../../types';
 import dayjs from 'dayjs';
 
 const { Content } = Layout;
@@ -292,6 +292,11 @@ const Products: React.FC = () => {
       showMessage.warning('请先登录用户账号');
       navigate('/auth/login?type=user');
       return;
+    }
+
+    // 检查用户认证状态
+    if ((user as User).verified !== 1) {
+      showMessage.warning('请先完成用户认证才能完成租赁');
     }
 
     // 如果没有地址，显示提示但仍然打开租赁弹窗

@@ -15,7 +15,7 @@ import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import { userAddressApi } from '@/services/addressApi';
 import FavoriteButton from '../../components/common/FavoriteButton';
-import type { Product, Address } from '../../types';
+import type { Product, Address, User } from '../../types';
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -89,6 +89,11 @@ const ProductDetail: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && user && userType === 'user') {
       fetchUserAddresses();
+      
+      // 检查用户认证状态
+      if ((user as User).verified !== 1) {
+        showMessage.warning('请先完成用户认证才能完成租赁');
+      }
     }
   }, [isAuthenticated, user, userType]);
 
@@ -142,6 +147,12 @@ const ProductDetail: React.FC = () => {
     if (!user || userType !== 'user') {
       showMessage.warning('请先登录用户账号');
       navigate('/auth/login?type=user');
+      return;
+    }
+
+    // 检查用户认证状态
+    if ((user as User).verified !== 1) {
+      showMessage.warning('请先完成用户认证才能完成租赁');
       return;
     }
 
