@@ -294,18 +294,9 @@ const Products: React.FC = () => {
       return;
     }
 
-    // 如果没有地址，提示用户添加地址
+    // 如果没有地址，显示提示但仍然打开租赁弹窗
     if (userAddresses.length === 0) {
-      Modal.confirm({
-        title: '提示',
-        content: '您还没有收货地址，是否前往添加？',
-        onOk: () => {
-          navigate('/user/addresses');
-        },
-        okText: '去添加',
-        cancelText: '取消'
-      });
-      return;
+      showMessage.warning('请先添加收货地址才能完成租赁');
     }
 
     setSelectedProduct(product);

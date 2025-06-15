@@ -153,10 +153,9 @@ const ProductDetail: React.FC = () => {
       return;
     }
 
-    // 如果没有地址，提示用户添加地址
+    // 如果没有地址，提示用户添加地址但不阻止操作
     if (userAddresses.length === 0) {
-      showMessage.error('请先添加收货地址');
-      navigate('/user/addresses');
+      showMessage.warning('请先添加收货地址才能完成租赁');
       return;
     }
 
