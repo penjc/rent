@@ -99,7 +99,7 @@ const UserLayout: React.FC = () => {
     items: [
       {
         key: 'profile',
-        label: '个人信息',
+        label: '个人中心',
         icon: <UserOutlined />
       },
       {
