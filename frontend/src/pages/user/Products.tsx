@@ -362,12 +362,14 @@ const Products: React.FC = () => {
       } else {
         const errorMessage = response.data.message || '下单失败';
         console.log('Products页面下单失败，错误信息:', errorMessage);
-        showMessage.error(errorMessage);
+        // showMessage.error(errorMessage);
         
         // 如果是认证状态错误，跳转到身份认证页面
         if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+          showMessage.warning('请先完成用户认证，正在为您跳转到认证页面');
           console.log('Products页面检测到认证错误，准备跳转到认证页面');
           setTimeout(() => {
+
             console.log('Products页面正在跳转到认证页面');
             setIsRentModalVisible(false);
             rentForm.resetFields();
@@ -379,15 +381,16 @@ const Products: React.FC = () => {
       console.error('Failed to create order:', error);
       // 从多个可能的位置获取错误信息
       const errorMessage = error.response?.data?.message || error.message || '下单失败，请重试';
-      showMessage.error(errorMessage);
+      // showMessage.error(errorMessage);
       
       // 如果是认证状态错误，跳转到身份认证页面
       if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+        showMessage.warning('请先完成用户认证，正在为您跳转到认证页面');
         setTimeout(() => {
           setIsRentModalVisible(false);
           rentForm.resetFields();
           navigate('/user/profile', { state: { activeTab: 'certification' } });
-        }, 1500);
+        }, 1000);
       }
     } finally {
       setRentLoading(false);

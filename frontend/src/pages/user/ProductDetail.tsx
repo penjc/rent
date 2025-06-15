@@ -151,10 +151,9 @@ const ProductDetail: React.FC = () => {
     }
 
     // 检查用户认证状态
-    if ((user as User).verified !== 1) {
-      showMessage.warning('请先完成用户认证才能完成租赁');
-      return;
-    }
+    // if ((user as User).verified !== 1) {
+    //   showMessage.warning('请先完成用户认证才能完成租赁');
+    // }
 
     if (!product) return;
 
@@ -210,10 +209,11 @@ const ProductDetail: React.FC = () => {
       } else {
         const errorMessage = response.data.message || '下单失败';
         console.log('下单失败，错误信息:', errorMessage);
-        showMessage.error(errorMessage);
+        // showMessage.error(errorMessage);
         
         // 如果是认证状态错误，跳转到身份认证页面
         if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+          showMessage.warning('请先完成用户认证，正在为您跳转到认证页面');
           console.log('检测到认证错误，准备跳转到认证页面');
           setTimeout(() => {
             console.log('正在跳转到认证页面');
@@ -226,15 +226,16 @@ const ProductDetail: React.FC = () => {
       // 从多个可能的位置获取错误信息
       const errorMessage = error.response?.data?.message || error.message || '创建订单失败';
       console.log('catch块中的错误信息:', errorMessage);
-      showMessage.error(errorMessage);
+      // showMessage.error(errorMessage);
       
       // 如果是认证状态错误，跳转到身份认证页面
       if (errorMessage.includes('请先完成用户认证') || errorMessage.includes('用户认证') || errorMessage.includes('认证')) {
+        showMessage.warning('请先完成用户认证，正在为您跳转到认证页面');
         console.log('catch块中检测到认证错误，准备跳转到认证页面');
         setTimeout(() => {
           console.log('catch块中正在跳转到认证页面');
           navigate('/user/profile', { state: { activeTab: 'certification' } });
-        }, 1500);
+        }, 1000);
       }
     } finally {
       setCreateOrderLoading(false);
