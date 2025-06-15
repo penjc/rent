@@ -8,7 +8,6 @@
 - **框架**: Spring Boot 2.7.x
 - **ORM**: MyBatis Plus
 - **数据库**: MySQL 5.7+
-- **安全**: Spring Security
 - **构建**: Maven
 
 ### 前端技术
@@ -113,7 +112,7 @@ rent/
 4. **配置腾讯云COS**
 
    修改`.env.example`为 `.env` 并填写相关配置。
-
+   设置权限为公有读私有写
 
 5. **安装前端依赖**
    ```bash
@@ -150,17 +149,18 @@ rent/
 - **首页**: http://localhost:3000/user
 - **商品列表**: http://localhost:3000/user/products
 - **我的订单**: http://localhost:3000/user/orders
-- **个人中心**: http://localhost:3000/user/profile
 - **地址管理**: http://localhost:3000/user/addresses
+- **收藏夹**: http://localhost:3000/user/favorites
 - **消息列表**: http://localhost:3000/user/messages
+- **个人中心**: http://localhost:3000/user/profile/
 
 ### 商家端
 - **仪表盘**: http://localhost:3000/merchant/dashboard
 - **商品管理**: http://localhost:3000/merchant/products
 - **订单管理**: http://localhost:3000/merchant/orders
-- **商家认证**: http://localhost:3000/merchant/certification
 - **地址管理**: http://localhost:3000/merchant/addresses
 - **消息列表**: http://localhost:3000/merchant/messages
+- **商家认证**: http://localhost:3000/merchant/certification
 
 ### 管理端
 - **仪表盘**: http://localhost:3000/admin
@@ -187,9 +187,10 @@ rent/
 # 停止所有服务
 ./stop-all.sh
 
+# 仅启动后端
+mvn clean package -DskipTests
+java -jar target/rent-*.jar
+
 # 仅启动前端
 cd frontend && npm run dev
-
-# 仅启动后端
-java -jar target/rent-*.jar
 ```

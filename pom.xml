@@ -24,6 +24,14 @@
         <mybatis-plus.version>3.5.3</mybatis-plus.version>
     </properties>
 
+    <developers>
+        <developer>
+            <name>Jiancheng PENG</name>
+            <email>penjc204@gmail.com</email>
+            <url>https://pengjiancheng.com</url>
+        </developer>
+    </developers>
+
     <dependencies>
         <!-- Spring Boot Starter Web -->
         <dependency>
