@@ -348,20 +348,10 @@ const ProductDetail: React.FC = () => {
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 {/* 商品基本信息 */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <Title level={2} style={{ margin: 0, flex: 1 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    <Title level={2} style={{ margin: 0 }}>
                       {product.name}
                     </Title>
-                    {/* 收藏按钮 */}
-                    {getUserId() && (
-                      <FavoriteButton
-                        userId={getUserId()}
-                        productId={product.id}
-                        size="large"
-                        showText={true}
-                        className="ml-4"
-                      />
-                    )}
                   </div>
                   <div style={{ marginBottom: 16 }}>
                     <Tag color="blue">库存: {product.stock}件</Tag>
@@ -634,50 +624,109 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 租赁按钮 */}
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                  <Button
-                    type="primary"
-                    size="large"
-                    icon={<ShoppingCartOutlined />}
-                    loading={createOrderLoading}
-                    onClick={handleDirectOrder}
-                    disabled={product.status !== 1 || product.stock < quantity}
-                    style={{
-                      height: 50,
-                      fontSize: 16,
-                      background: 'linear-gradient(to right, #1890ff, #36cfc9)',
-                      border: 'none',
-                      width: '100%'
-                    }}
-                    block
-                  >
-                    立即租赁
-                  </Button>
-                  <Button
-                    type="default"
-                    size="large"
-                    icon={<CustomerServiceOutlined />}
-                    style={{
-                      height: 50,
-                      fontSize: 16,
-                      border: '1.5px solid #36cfc9',
-                      color: '#1890ff',
-                      background: '#f6fbff',
-                      width: '100%'
-                    }}
-                    onClick={() => {
-                      if (!isAuthenticated) {
-                        navigate('/auth/login?type=user');
-                        return;
-                      }
-                      navigate(`/user/chat?merchantId=${product.merchantId}`);
-                    }}
-                    block
-                  >
-                    联系商家
-                  </Button>
-                </Space>
+                {/* 操作按钮 */}
+                <Row gutter={12}>
+                  {/* 收藏按钮 */}
+                  <Col span={6}>
+                    {getUserId() ? (
+                      <div
+                        style={{
+                          height: 50,
+                          border: '1.5px solid #ff4d4f',
+                          borderRadius: '6px',
+                          background: 'transparent',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#fff2f0';
+                          e.currentTarget.style.borderColor = '#f5222d';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.borderColor = '#ff4d4f';
+                        }}
+                      >
+                        <FavoriteButton
+                          userId={getUserId()}
+                          productId={product.id}
+                          size="large"
+                          showText={true}
+                          className="text-red-500"
+                        />
+                      </div>
+                    ) : (
+                      <Button
+                        size="large"
+                        onClick={() => navigate('/auth/login?type=user')}
+                        style={{
+                          height: 50,
+                          fontSize: 16,
+                          border: '1.5px solid #ff4d4f',
+                          color: '#ff4d4f',
+                          background: 'transparent',
+                          width: '100%'
+                        }}
+                        block
+                      >
+                        收藏
+                      </Button>
+                    )}
+                  </Col>
+                  
+                  {/* 立即租赁按钮 */}
+                  <Col span={12}>
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      loading={createOrderLoading}
+                      onClick={handleDirectOrder}
+                      disabled={product.status !== 1 || product.stock < quantity}
+                      style={{
+                        height: 50,
+                        fontSize: 16,
+                        background: 'linear-gradient(to right, #1890ff, #36cfc9)',
+                        border: 'none',
+                        width: '100%'
+                      }}
+                      block
+                    >
+                      立即租赁
+                    </Button>
+                  </Col>
+                  
+                  {/* 联系商家按钮 */}
+                  <Col span={6}>
+                    <Button
+                      type="default"
+                      size="large"
+                      icon={<CustomerServiceOutlined />}
+                      style={{
+                        height: 50,
+                        fontSize: 16,
+                        border: '1.5px solid #36cfc9',
+                        color: '#1890ff',
+                        background: '#f6fbff',
+                        width: '100%'
+                      }}
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/auth/login?type=user');
+                          return;
+                        }
+                        navigate(`/user/chat?merchantId=${product.merchantId}`);
+                      }}
+                      block
+                    >
+                      联系商家
+                    </Button>
+                  </Col>
+                </Row>
 
                 {product.stock < quantity && (
                   <Alert

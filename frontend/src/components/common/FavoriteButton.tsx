@@ -27,8 +27,8 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   const getIconStyle = () => {
     switch (size) {
       case 'small': return { fontSize: '16px' };
-      case 'large': return { fontSize: '24px' };
-      default: return { fontSize: '20px' };
+      case 'large': return { fontSize: '16px' }; // 与按钮文字图标保持一致
+      default: return { fontSize: '16px' };
     }
   };
 
@@ -87,23 +87,31 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       onClick={handleToggleFavorite}
       disabled={loading}
       className={`
-        flex items-center justify-center gap-1 transition-all duration-200
+        flex items-center justify-center transition-all duration-300 ease-in-out
         ${isFavorited 
           ? 'text-red-500 hover:text-red-600' 
           : 'text-gray-400 hover:text-red-500'
         }
         ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
+        border-none bg-transparent
       `}
+      style={{ outline: 'none', boxShadow: 'none' }}
       title={isFavorited ? '取消收藏' : '添加收藏'}
     >
       {isFavorited ? (
-        <HeartFilled style={getIconStyle()} className="transition-all duration-200" />
+        <HeartFilled 
+          style={getIconStyle()} 
+          className="transition-all duration-300 drop-shadow-sm" 
+        />
       ) : (
-        <HeartOutlined style={getIconStyle()} className="transition-all duration-200" />
+        <HeartOutlined 
+          style={getIconStyle()} 
+          className="transition-all duration-300" 
+        />
       )}
       {showText && (
-        <span className="text-sm">
+        <span className="ml-1" style={{ fontSize: '16px', fontWeight: 'bold' }}>
           {isFavorited ? '已收藏' : '收藏'}
         </span>
       )}
