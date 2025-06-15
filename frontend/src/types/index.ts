@@ -175,6 +175,14 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+// 收藏相关类型
+export interface Favorite {
+  id: number;
+  userId: number;
+  productId: number;
+  createdAt: string;
+}
+
 // 管理员相关类型
 export interface Admin {
   id: number;

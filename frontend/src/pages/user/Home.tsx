@@ -4,6 +4,7 @@ import { ShoppingOutlined, RocketOutlined, SafetyCertificateOutlined, CustomerSe
 import { useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../../services/productService';
 import LoginModal from '../../components/common/LoginModal';
+import FavoriteButton from '../../components/common/FavoriteButton';
 import { showMessage } from '@/hooks/useMessage';
 import type { Product, Category } from '../../types';
 
@@ -182,6 +183,16 @@ const Home: React.FC = () => {
   // 登录成功处理
   const handleLoginSuccess = () => {
     showMessage.success('登录成功');
+  };
+
+  // 获取当前用户ID
+  const getCurrentUserId = (): number => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      return user.id;
+    }
+    return 0;
   };
 
   // 格式化价格
@@ -477,6 +488,25 @@ const Home: React.FC = () => {
                                 e.currentTarget.src = '/images/default-product.jpg';
                               }}
                             />
+                            {/* 收藏按钮 */}
+                            {getCurrentUserId() > 0 && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                borderRadius: '50%',
+                                padding: '8px',
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                              }}>
+                                <FavoriteButton
+                                  userId={getCurrentUserId()}
+                                  productId={product.id}
+                                  size="small"
+                                />
+                              </div>
+                            )}
                           </div>
                         }
                         onClick={() => handleProductClick(product.id)}

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Avatar, Dropdown, Badge } from 'antd';
-import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined, HeartOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import Home from './Home';
@@ -210,6 +210,16 @@ const UserLayout: React.FC = () => {
                   key: 'addresses',
                   label: '地址',
                   icon: <HomeOutlined style={{ fontSize: '16px' }} />,
+                  style: {
+                    borderRadius: '8px',
+                    margin: '0 4px',
+                    transition: 'all 0.3s ease'
+                  }
+                },
+                {
+                  key: 'favorites',
+                  label: '收藏',
+                  icon: <HeartOutlined style={{ fontSize: '16px' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',

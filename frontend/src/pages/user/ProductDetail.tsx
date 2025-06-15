@@ -14,6 +14,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import { userAddressApi } from '@/services/addressApi';
+import FavoriteButton from '../../components/common/FavoriteButton';
 import type { Product, Address } from '../../types';
 
 const { Content } = Layout;
@@ -347,9 +348,21 @@ const ProductDetail: React.FC = () => {
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 {/* 商品基本信息 */}
                 <div>
-                  <Title level={2} style={{ marginBottom: 8 }}>
-                    {product.name}
-                  </Title>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <Title level={2} style={{ margin: 0, flex: 1 }}>
+                      {product.name}
+                    </Title>
+                    {/* 收藏按钮 */}
+                    {getUserId() && (
+                      <FavoriteButton
+                        userId={getUserId()}
+                        productId={product.id}
+                        size="large"
+                        showText={true}
+                        className="ml-4"
+                      />
+                    )}
+                  </div>
                   <div style={{ marginBottom: 16 }}>
                     <Tag color="blue">库存: {product.stock}件</Tag>
                     <Tag color={product.status === 1 ? 'green' : 'red'}>

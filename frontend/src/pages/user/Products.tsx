@@ -31,6 +31,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { showMessage } from '@/hooks/useMessage';
 import api from '@/services/api';
 import { userAddressApi } from '@/services/addressApi';
+import FavoriteButton from '../../components/common/FavoriteButton';
 import type { Product, Category, Address } from '../../types';
 import dayjs from 'dayjs';
 
@@ -703,6 +704,25 @@ const Products: React.FC = () => {
                           background: 'linear-gradient(transparent, rgba(0,0,0,0.3))',
                           height: '40px'
                         }} />
+                        {/* 收藏按钮 */}
+                        {getUserId() && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            borderRadius: '50%',
+                            padding: '8px',
+                            backdropFilter: 'blur(10px)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                          }}>
+                            <FavoriteButton
+                              userId={getUserId()}
+                              productId={product.id}
+                              size="small"
+                            />
+                          </div>
+                        )}
                       </div>
                     }
                     onClick={() => handleProductClick(product.id)}

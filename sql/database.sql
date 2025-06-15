@@ -162,6 +162,19 @@ CREATE TABLE `messages` (
   KEY `idx_messages_sender_receiver_is_read` (`sender_id`,`receiver_id`,`is_read`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天消息表';
 
+-- 9. 收藏表
+CREATE TABLE `favorites` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '收藏ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `product_id` bigint(20) NOT NULL COMMENT '商品ID',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_product` (`user_id`, `product_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_product_id` (`product_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏表';
+
 
 -- 插入默认数据
 
