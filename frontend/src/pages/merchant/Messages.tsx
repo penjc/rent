@@ -3,7 +3,7 @@ import { List, Avatar, Typography, Empty, Spin, Badge } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useMessageContext } from '@/contexts/MessageContext';
 import { showMessage } from '@/hooks/useMessage';
 import { getMerchantMessages, getUnreadCountByUser, markConversationAsRead, isMerchantId } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
@@ -23,7 +23,7 @@ interface UserChat {
 const Messages: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { refreshUnreadCount } = useUnreadMessages();
+  const { refreshUnreadCount, decreaseUnreadCount } = useMessageContext();
   const [loading, setLoading] = useState(true);
   const [userChats, setUserChats] = useState<UserChat[]>([]);
 
@@ -122,22 +122,45 @@ const Messages: React.FC = () => {
   };
 
   const handleChatClick = async (userId: number) => {
+    // 获取当前对话的未读消息数量
+    const currentChat = userChats.find(chat => chat.userId === userId);
+    const currentUnreadCount = currentChat?.unreadCount || 0;
+    
+    // 立即更新本地状态
+    setUserChats(prev => 
+      prev.map(chat => 
+        chat.userId === userId 
+          ? { ...chat, unreadCount: 0 }
+          : chat
+      )
+    );
+    
+    // 立即减少全局未读消息数量
+    if (currentUnreadCount > 0) {
+      console.log(`[Messages] 准备减少未读消息数量: ${currentUnreadCount}`);
+      decreaseUnreadCount(currentUnreadCount);
+    }
+    
     // 标记与该用户的对话为已读
     try {
       const merchantId = Number(user!.id);
       await markConversationAsRead(merchantId, userId);
-      // 更新本地状态
+      // 异步刷新全局未读消息数量以确保数据一致性
+      setTimeout(() => refreshUnreadCount(), 500);
+    } catch (error) {
+      console.error('标记已读失败:', error);
+      // 如果标记失败，恢复本地状态
       setUserChats(prev => 
         prev.map(chat => 
           chat.userId === userId 
-            ? { ...chat, unreadCount: 0 }
+            ? { ...chat, unreadCount: currentUnreadCount }
             : chat
         )
       );
-      // 刷新全局未读消息数量
-      refreshUnreadCount();
-    } catch (error) {
-      console.error('标记已读失败:', error);
+      // 恢复全局未读消息数量
+      if (currentUnreadCount > 0) {
+        refreshUnreadCount();
+      }
     }
     
     navigate(`/merchant/chat?userId=${userId}`);

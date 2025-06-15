@@ -3,10 +3,10 @@ import { Input, Button, Typography, Spin, Avatar } from 'antd';
 import { UserOutlined, ShopOutlined, SendOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { getMerchantMessages, sendMessage, markConversationAsRead } from '@/services/chatService';
+import { getMerchantMessages, sendMessage, markConversationAsRead, getUnreadCountByUser } from '@/services/chatService';
 import { getUserNicknames, getUserAvatars } from '@/services/userApi';
 import { showMessage } from '@/hooks/useMessage';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useMessageContext } from '@/contexts/MessageContext';
 import type { ChatMessage } from '@/types';
 
 const { Title, Text } = Typography;
@@ -16,7 +16,7 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuthStore();
-  const { refreshUnreadCount } = useUnreadMessages();
+  const { refreshUnreadCount, decreaseUnreadCount } = useMessageContext();
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -44,11 +44,26 @@ const Chat: React.FC = () => {
     if (!user || !userId) return;
     
     try {
-      await markConversationAsRead(user.id as unknown as number, Number(userId));
-      // 刷新全局未读消息数量
-      refreshUnreadCount();
+      const merchantId = Number(user.id);
+      
+      // 先获取当前与该用户的未读消息数量
+      const unreadCountMap = await getUnreadCountByUser(merchantId);
+      const currentUnreadCount = unreadCountMap[Number(userId)] || 0;
+      
+      // 立即减少全局未读消息数量
+      if (currentUnreadCount > 0) {
+        decreaseUnreadCount(currentUnreadCount);
+      }
+      
+      // 标记消息为已读
+      await markConversationAsRead(merchantId, Number(userId));
+      
+      // 异步刷新全局未读消息数量以确保数据一致性
+      setTimeout(() => refreshUnreadCount(), 500);
     } catch (error) {
       console.error('标记消息已读失败:', error);
+      // 如果失败，刷新未读消息数量
+      refreshUnreadCount();
     }
   };
 

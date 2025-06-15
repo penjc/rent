@@ -18,7 +18,7 @@ import AddressManagement from './AddressManagement';
 import Chat from './Chat';
 import Messages from './Messages';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useMessageContext } from '@/contexts/MessageContext';
 import { showMessage } from '@/hooks/useMessage';
 import type { MerchantData } from '@/services/merchantApi';
 
@@ -28,7 +28,7 @@ const MerchantLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user, userType, logout } = useAuthStore();
-  const { unreadCount, refreshUnreadCount } = useUnreadMessages();
+  const { unreadCount, refreshUnreadCount } = useMessageContext();
   const [merchant, setMerchant] = useState<MerchantData | null>(null);
 
   // 根据当前路径确定选中的菜单项
@@ -80,8 +80,8 @@ const MerchantLayout: React.FC = () => {
         break;
       case 'messages':
         navigate('/merchant/messages');
-        // 刷新未读消息数量
-        setTimeout(() => refreshUnreadCount(), 1000);
+        // 立即刷新未读消息数量，减少延迟
+        refreshUnreadCount();
         break;
       case 'certification':
         navigate('/merchant/certification');
