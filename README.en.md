@@ -21,20 +21,24 @@
 
 </div>
 
-## 📖 Table of Contents
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Quick Start](#quick-start)
-- [Deployment](#deployment)
-- [API Documentation](#api-documentation)
-- [Application Pages](#application-pages)
-- [Development Tools](#development-tools)
-- [Contributing](#contributing)
-- [FAQ](#faq)
-- [Changelog](#changelog)
-- [License](#license)
+<details >
+<summary><strong>📖 Table of Contents</strong></summary>
+
+- [About](#-about)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Deployment](#-deployment)
+- [API Documentation](#-api-documentation)
+- [Application Pages](#-application-pages)
+- [Development Tools](#-development-tools)
+- [Contributing](#-contributing)
+- [FAQ](#-faq)
+- [Changelog](#-changelog)
+- [License](#-license)
+
+</details>
 
 ## 🎯 About
 
