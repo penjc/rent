@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Switch, Row, Col, Button } from 'antd';
 import { showMessage } from '@/hooks/useMessage';
-import type { Address } from '@/types';
+import type { Address, User, Merchant, UserType } from '@/types';
 import { getProvinces, getCitiesByProvinceName, getDistrictsByCityName, type Province, type City, type District } from '@/utils/addressData';
 
 const { Option } = Select;
@@ -13,6 +13,8 @@ interface AddressFormProps {
   address?: Address | null;
   onSubmit: (addressData: Partial<Address>) => Promise<void>;
   title?: string;
+  user?: User | Merchant | null;
+  userType?: UserType | null;
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
@@ -21,7 +23,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onSuccess,
   address,
   onSubmit,
-  title = '添加地址'
+  title = '添加地址',
+  user,
+  userType
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -39,6 +43,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   useEffect(() => {
     if (visible) {
       if (address) {
+        // 编辑现有地址
         form.setFieldsValue({
           contactName: address.contactName,
           contactPhone: address.contactPhone,
@@ -59,12 +64,32 @@ const AddressForm: React.FC<AddressFormProps> = ({
           setDistricts(districtList);
         }
       } else {
+        // 添加新地址，自动填入联系人和手机号
         form.resetFields();
         setCities([]);
         setDistricts([]);
+        
+        // 根据用户类型自动填入联系人和手机号
+        if (user && userType) {
+          const autoFillData: any = {
+            contactPhone: user.phone, // 用户和商家都有phone字段
+            isDefault: false
+          };
+          
+          // 根据用户类型设置联系人姓名
+          if (userType === 'user') {
+            const userData = user as User;
+            autoFillData.contactName = userData.nickname;
+          } else if (userType === 'merchant') {
+            const merchantData = user as Merchant;
+            autoFillData.contactName = merchantData.contactName;
+          }
+          
+          form.setFieldsValue(autoFillData);
+        }
       }
     }
-  }, [visible, address, form]);
+  }, [visible, address, form, user, userType]);
 
   // 省份变化时更新城市选项
   const handleProvinceChange = (province: string) => {

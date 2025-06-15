@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { merchantAddressApi } from '@/services/addressApi';
 import { showMessage } from '@/hooks/useMessage';
 import AddressForm from '@/components/common/AddressForm';
-import type { Address } from '@/types';
+import type { Address, Merchant } from '@/types';
 
 const { Title, Text } = Typography;
 
@@ -275,6 +275,8 @@ const MerchantAddressManagement: React.FC = () => {
         address={editingAddress}
         onSubmit={editingAddress ? handleEditAddress : handleAddAddress}
         title={editingAddress ? '编辑地址' : '添加地址'}
+        user={user as Merchant}
+        userType="merchant"
       />
     </div>
   );

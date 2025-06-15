@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { userAddressApi } from '@/services/addressApi';
 import { showMessage } from '@/hooks/useMessage';
 import AddressForm from '@/components/common/AddressForm';
-import type { Address } from '@/types';
+import type { Address, User } from '@/types';
 
 const { Title, Text } = Typography;
 
@@ -288,6 +288,8 @@ const AddressManagement: React.FC = () => {
         address={editingAddress}
         onSubmit={editingAddress ? handleEditAddress : handleAddAddress}
         title={editingAddress ? '编辑地址' : '添加地址'}
+        user={user as User}
+        userType="user"
       />
     </div>
   );
