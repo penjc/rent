@@ -179,7 +179,7 @@ const MerchantLayout: React.FC = () => {
           </Routes>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          Casual Rent ©{new Date().getFullYear()} Created by Your Company
+          Casual Rent ©{new Date().getFullYear()} Created by Genius of CityU
         </Footer>
       </Layout>
     </Layout>

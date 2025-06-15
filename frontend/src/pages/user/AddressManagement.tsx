@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, List, Tag, Space, Spin, Popconfirm } from 'antd';
-import { PlusOutlined, HomeOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { Card, Button, Typography, List, Tag, Space, Spin, Popconfirm, Breadcrumb } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { userAddressApi } from '@/services/addressApi';
 import { showMessage } from '@/hooks/useMessage';
@@ -171,12 +171,20 @@ const AddressManagement: React.FC = () => {
 
   return (
     <div style={{ padding: '24px', backgroundColor: '#f0f0f0', minHeight: '500px' }}>
+      {/* 面包屑导航 */}
+      <Breadcrumb style={{ marginBottom: 24 }}>
+        <Breadcrumb.Item>
+          <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>收货地址</Breadcrumb.Item>
+      </Breadcrumb>
+      
       <Card style={{ backgroundColor: '#ffffff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <Title level={3} style={{ margin: 0 }}>
-            <HomeOutlined style={{ marginRight: '8px' }} />
-            收货地址管理
-          </Title>
+          {/*<Title level={3} style={{ margin: 0 }}>*/}
+          {/*  <HomeOutlined style={{ marginRight: '8px' }} />*/}
+          {/*  收货地址管理*/}
+          {/*</Title>*/}
           <Button type="primary" icon={<PlusOutlined />} onClick={openAddForm}>
             添加地址
           </Button>

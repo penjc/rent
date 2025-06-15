@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Empty, Typography, Row, Col, Button, Spin, Pagination } from 'antd';
+import { Card, Empty, Typography, Row, Col, Button, Spin, Pagination, Breadcrumb } from 'antd';
 import { HeartOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -125,10 +125,13 @@ const Favorites: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <Title level={2} className="mb-6">
-        <HeartOutlined className="mr-2" />
-        我的收藏
-      </Title>
+      {/* 面包屑导航 */}
+      <Breadcrumb style={{ marginBottom: 24 }}>
+        <Breadcrumb.Item>
+          <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>我的收藏</Breadcrumb.Item>
+      </Breadcrumb>
       
       <Spin spinning={loading}>
         {products.length === 0 ? (

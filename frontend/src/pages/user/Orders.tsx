@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Card, Row, Col, Button, Tag, Typography, 
-  Spin, Empty, Modal, Descriptions, Image, Pagination, Popconfirm
+  Spin, Empty, Modal, Descriptions, Image, Pagination, Popconfirm, Breadcrumb
 } from 'antd';
 import { 
   PayCircleOutlined, TruckOutlined, 
@@ -16,7 +16,7 @@ import api from '@/services/api';
 import { addressApi } from '@/services/addressApi';
 import type { Order, Address } from '../../types';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // 订单状态映射
 const ORDER_STATUS_MAP = {
@@ -402,21 +402,13 @@ const Orders: React.FC = () => {
 
   return (
     <div className="p-6" style={{ background: '#f0f2f5', minHeight: '100vh' }}>
-      <div style={{ 
-        padding: '24px',
-        marginBottom: '24px'
-      }}>
-        <Title 
-          level={2} 
-          style={{ 
-            color: 'black',
-            margin: 0,
-            fontSize: '28px'
-          }}
-        >
-          我的订单
-        </Title>
-      </div>
+      {/* 面包屑导航 */}
+      <Breadcrumb style={{ marginBottom: 24 }}>
+        <Breadcrumb.Item>
+          <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>我的订单</Breadcrumb.Item>
+      </Breadcrumb>
       
       {orders.length === 0 ? (
         <Card style={{ 
