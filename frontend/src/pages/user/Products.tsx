@@ -456,7 +456,12 @@ const Products: React.FC = () => {
         {/* 面包屑导航 */}
         <Breadcrumb style={{ marginBottom: 24 }}>
           <Breadcrumb.Item>
-            <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
+            <span 
+              onClick={() => navigate('/')} 
+              style={{ color: '#667eea', textDecoration: 'none', cursor: 'pointer' }}
+            >
+              首页
+            </span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>商品</Breadcrumb.Item>
           {selectedCategory && (

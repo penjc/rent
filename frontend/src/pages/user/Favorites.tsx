@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Empty, Typography, Row, Col, Button, Spin, Pagination, Breadcrumb } from 'antd';
-import { HeartOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { favoriteService } from '../../services/favoriteService';
@@ -8,7 +8,7 @@ import FavoriteButton from '../../components/common/FavoriteButton';
 import { showMessage } from '@/hooks/useMessage';
 import type { Product } from '../../types';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Favorites: React.FC = () => {
   const navigate = useNavigate();
@@ -128,7 +128,12 @@ const Favorites: React.FC = () => {
       {/* 面包屑导航 */}
       <Breadcrumb style={{ marginBottom: 24 }}>
         <Breadcrumb.Item>
-          <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>首页</a>
+          <span 
+            onClick={() => navigate('/')} 
+            style={{ color: '#667eea', textDecoration: 'none', cursor: 'pointer' }}
+          >
+            首页
+          </span>
         </Breadcrumb.Item>
         <Breadcrumb.Item>我的收藏</Breadcrumb.Item>
       </Breadcrumb>
@@ -137,7 +142,7 @@ const Favorites: React.FC = () => {
         {products.length === 0 ? (
           <Card>
             <Empty
-              description="暂无收藏商品"
+              description="暂无收藏商品，快去浏览吧"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           </Card>
