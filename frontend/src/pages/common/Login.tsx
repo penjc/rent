@@ -92,15 +92,20 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-page min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="login-page min-h-screen flex items-center justify-center p-4" style={{ background: '#fafafa' }}>
       <Card 
-        className="w-full max-w-md shadow-2xl border-0 rounded-2xl overflow-hidden"
+        className="w-full max-w-md border-0 rounded-2xl overflow-hidden"
+        style={{
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
+          border: '1px solid #f0f0f0',
+          background: 'white'
+        }}
         title={
           <div className="text-center py-4">
-            <Title level={2} className="!mb-2 !text-gray-800">
+            <Title level={2} className="!mb-2" style={{ color: '#1f2937' }}>
               登录 Casual Rent
             </Title>
-            <Text type="secondary" className="text-base">
+            <Text type="secondary" className="text-base" style={{ color: '#6b7280' }}>
               欢迎回到租赁平台
             </Text>
           </div>
@@ -149,15 +154,26 @@ const Login: React.FC = () => {
                   size="large" 
                   block 
                   loading={loading}
-                  className="h-12 rounded-lg font-medium text-base bg-gradient-to-r from-blue-500 to-indigo-600 border-0 hover:from-blue-600 hover:to-indigo-700"
+                  className="h-12 rounded-lg font-medium text-base border-0"
+                  style={{
+                    background: '#2c3e50',
+                    borderColor: '#2c3e50',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#34495e';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#2c3e50';
+                  }}
                 >
                   登录
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                <Text type="secondary">还没有账号？</Text>
-                <Link to="/auth/register?type=user" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
+                <Text type="secondary" style={{ color: '#6b7280' }}>还没有账号？</Text>
+                <Link to="/auth/register?type=user" className="ml-1 font-medium" style={{ color: '#2c3e50' }}>
                   立即注册
                 </Link>
               </div>
@@ -206,15 +222,26 @@ const Login: React.FC = () => {
                   size="large" 
                   block 
                   loading={loading}
-                  className="h-12 rounded-lg font-medium text-base bg-gradient-to-r from-green-500 to-emerald-600 border-0 hover:from-green-600 hover:to-emerald-700"
+                  className="h-12 rounded-lg font-medium text-base border-0"
+                  style={{
+                    background: '#5a6c7d',
+                    borderColor: '#5a6c7d',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#4a5c6d';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#5a6c7d';
+                  }}
                 >
                   登录
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                <Text type="secondary">还没有账号？</Text>
-                <Link to="/auth/register?type=merchant" className="ml-1 text-green-600 hover:text-green-800 font-medium">
+                <Text type="secondary" style={{ color: '#6b7280' }}>还没有账号？</Text>
+                <Link to="/auth/register?type=merchant" className="ml-1 font-medium" style={{ color: '#5a6c7d' }}>
                   商家入驻
                 </Link>
               </div>
@@ -262,14 +289,25 @@ const Login: React.FC = () => {
                   size="large" 
                   block 
                   loading={loading}
-                  className="h-12 rounded-lg font-medium text-base bg-gradient-to-r from-purple-500 to-violet-600 border-0 hover:from-purple-600 hover:to-violet-700"
+                  className="h-12 rounded-lg font-medium text-base border-0"
+                  style={{
+                    background: '#6c7b7f',
+                    borderColor: '#6c7b7f',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#5c6b6f';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#6c7b7f';
+                  }}
                 >
                   登录
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                <Text type="secondary" className="text-sm">
+                <Text type="secondary" className="text-sm" style={{ color: '#6b7280' }}>
                   管理员账号请联系系统管理员获取
                 </Text>
               </div>

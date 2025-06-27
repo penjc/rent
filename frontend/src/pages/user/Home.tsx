@@ -166,12 +166,12 @@ const Home: React.FC = () => {
       setSearchText(''); // 选择分类时清除搜索关键词
       
       // 添加用户反馈
-      if (categoryId === null) {
-        showMessage.info('已切换到全部商品');
-      } else {
-        const categoryName = categories.find(c => c.id === categoryId)?.name;
-        showMessage.info(`已切换到${categoryName}分类`);
-      }
+      // if (categoryId === null) {
+      //   showMessage.info('已切换到全部商品');
+      // } else {
+      //   const categoryName = categories.find(c => c.id === categoryId)?.name;
+      //   showMessage.info(`已切换到${categoryName}分类`);
+      // }
     }
   };
 
@@ -223,18 +223,19 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', minHeight: '100vh' }}>
+    <div style={{ background: '#f8fafc', minHeight: '100vh' }}>
       {/* Hero 区域 */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%)',
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%)',
         padding: '80px 50px',
         textAlign: 'center',
-        color: 'white'
+        color: '#1f2937',
+        borderBottom: '1px solid rgba(229, 231, 235, 0.5)'
       }}>
-        <Title level={1} style={{ color: 'white', fontSize: '3.5rem', marginBottom: '1rem', fontWeight: 'bold' }}>
+        <Title level={1} style={{ color: '#1f2937', fontSize: '3.5rem', marginBottom: '1rem', fontWeight: 'bold' }}>
           Casual Rent
         </Title>
-        <Text style={{ fontSize: '1.2rem', color: 'rgba(255,255,255,0.9)', marginBottom: '2rem', display: 'block' }}>
+        <Text style={{ fontSize: '1.2rem', color: '#6b7280', marginBottom: '2rem', display: 'block' }}>
           让闲置物品重新焕发价值，让生活更加便捷美好
         </Text>
         <Space size="large" style={{ marginTop: '2rem' }}>
@@ -247,9 +248,9 @@ const Home: React.FC = () => {
               padding: '0 30px', 
               fontSize: '16px',
               borderRadius: '25px',
-              background: 'rgba(255,255,255,0.2)',
-              border: '2px solid rgba(255,255,255,0.3)',
-              backdropFilter: 'blur(10px)'
+              background: '#3b82f6',
+              border: 'none',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
             }}
             onClick={() => navigate('/user/products')}
           >
@@ -262,9 +263,9 @@ const Home: React.FC = () => {
               padding: '0 30px', 
               fontSize: '16px',
               borderRadius: '25px',
-              background: 'transparent',
-              border: '2px solid rgba(255,255,255,0.5)',
-              color: 'white'
+              background: 'white',
+              border: '2px solid #e5e7eb',
+              color: '#374151'
             }}
             onClick={() => window.scrollTo({ top: 400, behavior: 'smooth' })}
           >
@@ -291,7 +292,7 @@ const Home: React.FC = () => {
       {/* 特色功能区域 */}
       <div style={{ background: 'white', padding: '60px 50px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <Title level={2} style={{ textAlign: 'center', marginBottom: '3rem', color: '#2c3e50' }}>
+          <Title level={2} style={{ textAlign: 'center', marginBottom: '3rem', color: '#1f2937' }}>
             为什么选择我们？
           </Title>
           <Row gutter={[32, 32]}>
@@ -307,9 +308,9 @@ const Home: React.FC = () => {
                 }}
                 bodyStyle={{ padding: '40px 20px' }}
               >
-                <RocketOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
-                <Title level={4} style={{ color: '#2c3e50' }}>快速便捷</Title>
-                <Text style={{ color: '#7f8c8d' }}>
+                <RocketOutlined style={{ fontSize: '3rem', color: '#3b82f6', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#1f2937' }}>快速便捷</Title>
+                <Text style={{ color: '#6b7280' }}>
                   一键下单，快速租赁，让您的生活更加便捷高效
                 </Text>
               </Card>
@@ -326,9 +327,9 @@ const Home: React.FC = () => {
                 }}
                 bodyStyle={{ padding: '40px 20px' }}
               >
-                <SafetyCertificateOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
-                <Title level={4} style={{ color: '#2c3e50' }}>安全保障</Title>
-                <Text style={{ color: '#7f8c8d' }}>
+                <SafetyCertificateOutlined style={{ fontSize: '3rem', color: '#3b82f6', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#1f2937' }}>安全保障</Title>
+                <Text style={{ color: '#6b7280' }}>
                   专业的审核机制，确保每件商品的品质和安全
                 </Text>
               </Card>
@@ -345,9 +346,9 @@ const Home: React.FC = () => {
                 }}
                 bodyStyle={{ padding: '40px 20px' }}
               >
-                <CustomerServiceOutlined style={{ fontSize: '3rem', color: '#667eea', marginBottom: '1rem' }} />
-                <Title level={4} style={{ color: '#2c3e50' }}>贴心服务</Title>
-                <Text style={{ color: '#7f8c8d' }}>
+                <CustomerServiceOutlined style={{ fontSize: '3rem', color: '#3b82f6', marginBottom: '1rem' }} />
+                <Title level={4} style={{ color: '#1f2937' }}>贴心服务</Title>
+                <Text style={{ color: '#6b7280' }}>
                   用户和商家之间的直接沟通，提供更好的服务体验
                 </Text>
               </Card>
@@ -357,11 +358,11 @@ const Home: React.FC = () => {
       </div>
 
       {/* 商品分类和列表区域 */}
-      <div style={{ background: '#f8f9fa', padding: '60px 50px' }}>
+      <div style={{ background: '#f8fafc', padding: '60px 50px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {/* 分类导航 */}
           <div style={{ marginBottom: 40 }}>
-            <Title level={2} style={{ textAlign: 'center', marginBottom: '2rem', color: '#2c3e50' }}>
+            <Title level={2} style={{ textAlign: 'center', marginBottom: '2rem', color: '#1f2937' }}>
               商品分类
             </Title>
             <div style={{
@@ -372,7 +373,8 @@ const Home: React.FC = () => {
               padding: '20px',
               background: 'white',
               borderRadius: '20px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+              border: '1px solid #f3f4f6'
             }}>
               <Button
                 type={selectedCategory === null ? 'primary' : 'default'}
@@ -382,11 +384,11 @@ const Home: React.FC = () => {
                   borderRadius: '25px',
                   padding: '0 30px',
                   height: '45px',
-                  fontWeight: selectedCategory === null ? 'bold' : 'normal',
-                  background: selectedCategory === null ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
-                  border: selectedCategory === null ? 'none' : '2px solid #e1e5e9',
-                  color: selectedCategory === null ? 'white' : '#2c3e50',
-                  boxShadow: selectedCategory === null ? '0 5px 15px rgba(102, 126, 234, 0.4)' : 'none'
+                  fontWeight: selectedCategory === null ? '500' : 'normal',
+                  background: selectedCategory === null ? '#3b82f6' : 'white',
+                  border: selectedCategory === null ? 'none' : '1px solid #e5e7eb',
+                  color: selectedCategory === null ? 'white' : '#374151',
+                  boxShadow: selectedCategory === null ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none'
                 }}
               >
                 全部商品
@@ -401,11 +403,11 @@ const Home: React.FC = () => {
                     borderRadius: '25px',
                     padding: '0 30px',
                     height: '45px',
-                    fontWeight: selectedCategory === category.id ? 'bold' : 'normal',
-                    background: selectedCategory === category.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
-                    border: selectedCategory === category.id ? 'none' : '2px solid #e1e5e9',
-                    color: selectedCategory === category.id ? 'white' : '#2c3e50',
-                    boxShadow: selectedCategory === category.id ? '0 5px 15px rgba(102, 126, 234, 0.4)' : 'none'
+                    fontWeight: selectedCategory === category.id ? '500' : 'normal',
+                    background: selectedCategory === category.id ? '#3b82f6' : 'white',
+                    border: selectedCategory === category.id ? 'none' : '1px solid #e5e7eb',
+                    color: selectedCategory === category.id ? 'white' : '#374151',
+                    boxShadow: selectedCategory === category.id ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none'
                   }}
                 >
                   {category.name}
@@ -422,7 +424,7 @@ const Home: React.FC = () => {
               alignItems: 'center',
               marginBottom: 30
             }}>
-              <Title level={3} style={{ margin: 0, color: '#2c3e50' }}>
+              <Title level={3} style={{ margin: 0, color: '#1f2937' }}>
                 {selectedCategory 
                   ? `${categories.find(c => c.id === selectedCategory)?.name || ''}分类商品` 
                   : '精选商品'
@@ -430,12 +432,13 @@ const Home: React.FC = () => {
               </Title>
               <div style={{ 
                 fontSize: 14, 
-                color: '#667eea',
+                color: '#3b82f6',
                 background: 'white',
                 padding: '8px 20px',
                 borderRadius: '20px',
-                fontWeight: 'bold',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
+                fontWeight: '500',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                border: '1px solid #f3f4f6'
               }}>
                 共 {total} 件商品
               </div>
@@ -513,8 +516,8 @@ const Home: React.FC = () => {
                         style={{
                           borderRadius: '15px',
                           overflow: 'hidden',
-                          border: 'none',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                          border: '1px solid #f3f4f6',
+                          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
                           transition: 'all 0.3s ease'
                         }}
                         bodyStyle={{ padding: '20px' }}
@@ -523,8 +526,8 @@ const Home: React.FC = () => {
                           title={
                             <div style={{ 
                               fontSize: 16, 
-                              fontWeight: 'bold',
-                              color: '#2c3e50',
+                              fontWeight: '600',
+                              color: '#1f2937',
                               marginBottom: '8px',
                               lineHeight: '1.4',
                               overflow: 'hidden',
@@ -537,7 +540,7 @@ const Home: React.FC = () => {
                           description={
                             <div>
                               <div style={{ 
-                                color: '#7f8c8d', 
+                                color: '#6b7280', 
                                 fontSize: 13, 
                                 minHeight: 42,
                                 maxHeight: 42,
@@ -552,15 +555,16 @@ const Home: React.FC = () => {
                                 display: 'flex', 
                                 justifyContent: 'space-between', 
                                 alignItems: 'center',
-                                background: '#f8f9fa',
+                                background: '#f8fafc',
                                 padding: '12px',
-                                borderRadius: '10px'
+                                borderRadius: '10px',
+                                border: '1px solid #f1f5f9'
                               }}>
                                 <div style={{ flex: 1, marginRight: '12px' }}>
                                   <div style={{ 
-                                    color: '#e74c3c', 
+                                    color: '#dc2626', 
                                     fontSize: 18, 
-                                    fontWeight: 'bold',
+                                    fontWeight: '600',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap'
@@ -568,7 +572,7 @@ const Home: React.FC = () => {
                                     {formatPrice(product.dailyPrice)}/天
                                   </div>
                                   <div style={{ 
-                                    color: '#95a5a6', 
+                                    color: '#9ca3af', 
                                     fontSize: 11,
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -582,11 +586,12 @@ const Home: React.FC = () => {
                                   size="small"
                                   style={{
                                     borderRadius: '15px',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    background: '#3b82f6',
                                     border: 'none',
                                     padding: '4px 16px',
                                     flexShrink: 0,
-                                    minWidth: '80px'
+                                    minWidth: '80px',
+                                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
                                   }}
                                 >
                                   查看详情
@@ -612,7 +617,7 @@ const Home: React.FC = () => {
                   <div style={{ 
                     textAlign: 'center', 
                     padding: '30px 0',
-                    color: '#95a5a6',
+                    color: '#9ca3af',
                     fontSize: '14px'
                   }}>
                     已加载全部商品

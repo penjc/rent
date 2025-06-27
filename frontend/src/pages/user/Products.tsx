@@ -457,7 +457,7 @@ const Products: React.FC = () => {
           <Breadcrumb.Item>
             <span 
               onClick={() => navigate('/')} 
-              style={{ color: '#667eea', textDecoration: 'none', cursor: 'pointer' }}
+              style={{ color: '#2c3e50', textDecoration: 'none', cursor: 'pointer' }}
             >
               首页
             </span>
@@ -474,8 +474,8 @@ const Products: React.FC = () => {
           padding: '32px', 
           borderRadius: '16px', 
           marginBottom: '32px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          border: '1px solid rgba(102, 126, 234, 0.1)'
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
+          border: '1px solid #f0f0f0'
         }}>
           <Row gutter={[24, 24]} align="middle">
             <Col xs={24} sm={12} md={10}>
@@ -490,9 +490,16 @@ const Products: React.FC = () => {
                       type="primary" 
                       icon={<SearchOutlined />}
                       style={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: '#2c3e50',
                         border: 'none',
-                        borderRadius: '0 8px 8px 0'
+                        borderRadius: '0 8px 8px 0',
+                        fontWeight: '500'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#34495e';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#2c3e50';
                       }}
                     >
                       搜索
@@ -511,7 +518,7 @@ const Products: React.FC = () => {
                 style={{ width: '100%' }}
                 size="large"
                 allowClear
-                suffixIcon={<FilterOutlined style={{ color: '#667eea' }} />}
+                suffixIcon={<FilterOutlined style={{ color: '#2c3e50' }} />}
               >
                 {categories.map(category => (
                   <Option key={category.id} value={category.id}>
@@ -539,16 +546,17 @@ const Products: React.FC = () => {
 
         {/* 分类标签 */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ 
-            display: 'flex', 
-            gap: 12, 
-            flexWrap: 'wrap', 
-            alignItems: 'center',
-            padding: '24px',
-            background: 'white',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
-          }}>
+                      <div style={{ 
+              display: 'flex', 
+              gap: 12, 
+              flexWrap: 'wrap', 
+              alignItems: 'center',
+              padding: '24px',
+              background: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #f0f0f0'
+            }}>
             <span style={{ 
               color: '#2c3e50', 
               marginRight: 16, 
@@ -558,7 +566,7 @@ const Products: React.FC = () => {
               alignItems: 'center',
               gap: '8px'
             }}>
-              <FilterOutlined style={{ color: '#667eea' }} /> 快速筛选:
+              <FilterOutlined style={{ color: '#2c3e50' }} /> 快速筛选:
             </span>
             <Button
               type={selectedCategory === null ? 'primary' : 'default'}
@@ -566,11 +574,11 @@ const Products: React.FC = () => {
               onClick={() => handleCategorySelect(null)}
               style={{
                 borderRadius: '20px',
-                fontWeight: selectedCategory === null ? 'bold' : 'normal',
-                background: selectedCategory === null ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
-                border: selectedCategory === null ? 'none' : '2px solid #f0f0f0',
-                color: selectedCategory === null ? 'white' : '#2c3e50',
-                boxShadow: selectedCategory === null ? '0 4px 15px rgba(102, 126, 234, 0.3)' : 'none',
+                fontWeight: selectedCategory === null ? '500' : 'normal',
+                background: selectedCategory === null ? '#2c3e50' : 'white',
+                border: selectedCategory === null ? 'none' : '1px solid #e5e7eb',
+                color: selectedCategory === null ? 'white' : '#374151',
+                boxShadow: selectedCategory === null ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none',
                 padding: '0 24px',
                 height: '42px',
                 transition: 'all 0.3s ease'
@@ -586,11 +594,11 @@ const Products: React.FC = () => {
                 onClick={() => handleCategorySelect(category.id)}
                 style={{
                   borderRadius: '20px',
-                  fontWeight: selectedCategory === category.id ? 'bold' : 'normal',
-                  background: selectedCategory === category.id ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white',
-                  border: selectedCategory === category.id ? 'none' : '2px solid #f0f0f0',
-                  color: selectedCategory === category.id ? 'white' : '#2c3e50',
-                  boxShadow: selectedCategory === category.id ? '0 4px 15px rgba(102, 126, 234, 0.3)' : 'none',
+                  fontWeight: selectedCategory === category.id ? '500' : 'normal',
+                  background: selectedCategory === category.id ? '#2c3e50' : 'white',
+                  border: selectedCategory === category.id ? 'none' : '1px solid #e5e7eb',
+                  color: selectedCategory === category.id ? 'white' : '#374151',
+                  boxShadow: selectedCategory === category.id ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none',
                   padding: '0 24px',
                   height: '42px',
                   transition: 'all 0.3s ease'
@@ -618,20 +626,20 @@ const Products: React.FC = () => {
           }}>
             {getCurrentCategoryName()}
             {activeSearchText && (
-              <span style={{ color: '#667eea', fontSize: '20px', marginLeft: 12 }}>
+              <span style={{ color: '#2c3e50', fontSize: '20px', marginLeft: 12 }}>
                 - "{activeSearchText}"
               </span>
             )}
           </h2>
           <div style={{ 
             fontSize: 16, 
-            color: '#667eea',
+            color: '#2c3e50',
             background: 'white',
             padding: '12px 24px',
             borderRadius: '20px',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-            border: '2px solid rgba(102, 126, 234, 0.1)'
+            fontWeight: '500',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            border: '1px solid #f0f0f0'
           }}>
             共 {total} 件商品
           </div>
@@ -648,7 +656,8 @@ const Products: React.FC = () => {
             padding: 100,
             background: 'white',
             borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            border: '1px solid #f0f0f0'
           }}>
             <Empty 
               description={
@@ -662,16 +671,23 @@ const Products: React.FC = () => {
                 type="primary" 
                 size="large"
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#2c3e50',
                   border: 'none',
                   borderRadius: '20px',
                   padding: '0 30px',
-                  height: '45px'
+                  height: '45px',
+                  fontWeight: '500'
                 }}
                 onClick={() => {
                   setActiveSearchText('');
                   setSearchText('');
                   setSelectedCategory(null);
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#34495e';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#2c3e50';
                 }}
               >
                 重新搜索
@@ -738,20 +754,20 @@ const Products: React.FC = () => {
                         onClick={(e) => handleRentNow(product, e)}
                         style={{ 
                           width: '90%',
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          background: '#2c3e50',
                           border: 'none',
                           borderRadius: '20px',
-                          fontWeight: 'bold',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                          fontWeight: '500',
+                          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
                           transition: 'all 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                          e.currentTarget.style.background = '#34495e';
+                          e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                          e.currentTarget.style.background = '#2c3e50';
+                          e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
                         }}
                       >
                         立即租赁
@@ -760,19 +776,19 @@ const Products: React.FC = () => {
                     style={{
                       borderRadius: '16px',
                       overflow: 'hidden',
-                      border: 'none',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                      border: '1px solid #f0f0f0',
+                      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
                       transition: 'all 0.3s ease',
                       background: 'white'
                     }}
                     bodyStyle={{ padding: '20px' }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(0,0,0,0.15)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+                      e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
                     }}
                   >
                     <Meta
@@ -810,10 +826,10 @@ const Products: React.FC = () => {
                             display: 'flex', 
                             justifyContent: 'space-between', 
                             alignItems: 'center',
-                            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                            background: '#f8fafc',
                             padding: '12px 16px',
                             borderRadius: '12px',
-                            border: '1px solid rgba(102, 126, 234, 0.1)'
+                            border: '1px solid #f1f5f9'
                           }}>
                             <div>
                               <div style={{ color: '#e74c3c', fontSize: 18, fontWeight: 'bold' }}>
@@ -850,7 +866,8 @@ const Products: React.FC = () => {
                 background: 'white',
                 borderRadius: '16px',
                 marginTop: '24px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                border: '1px solid #f0f0f0'
               }}>
                 <Spin size="large" tip="正在加载更多精彩商品..." />
               </div>

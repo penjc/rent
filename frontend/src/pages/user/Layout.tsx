@@ -125,11 +125,13 @@ const UserLayout: React.FC = () => {
   };
 
   return (
-    <Layout className="min-h-screen" style={{ background: '#f0f2f5' }}>
+    <Layout className="min-h-screen" style={{ background: '#f8fafc' }}>
       <Header 
         style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(229, 231, 235, 0.8)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           position: 'sticky',
           top: 0,
           zIndex: 1000,
@@ -148,23 +150,22 @@ const UserLayout: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
             <div 
               style={{ 
-                color: 'white', 
+                color: '#1f2937', 
                 fontSize: '24px', 
                 fontWeight: 'bold', 
                 marginRight: '24px', 
                 cursor: 'pointer',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                 transition: 'all 0.3s ease',
                 flexShrink: 0
               }} 
               onClick={() => navigate('/user')}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#3b82f6'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#1f2937'}
             >
               Casual Rent
             </div>
             <Menu
-              theme="dark"
+              theme="light"
               mode="horizontal"
               selectedKeys={[getSelectedKey()]}
               onClick={handleNavMenuClick}
@@ -179,51 +180,56 @@ const UserLayout: React.FC = () => {
                 {
                   key: 'home',
                   label: '首页',
-                  icon: <UserOutlined style={{ fontSize: '16px' }} />,
+                  icon: <UserOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 },
                 {
                   key: 'products',
                   label: '商品',
-                  icon: <ShoppingOutlined style={{ fontSize: '16px' }} />,
+                  icon: <ShoppingOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 },
                 {
                   key: 'orders',
                   label: '订单',
-                  icon: <HistoryOutlined style={{ fontSize: '16px' }} />,
+                  icon: <HistoryOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 },
                 {
                   key: 'addresses',
                   label: '地址',
-                  icon: <HomeOutlined style={{ fontSize: '16px' }} />,
+                  icon: <HomeOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 },
                 {
                   key: 'favorites',
                   label: '收藏',
-                  icon: <HeartOutlined style={{ fontSize: '16px' }} />,
+                  icon: <HeartOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 },
                 {
@@ -245,11 +251,12 @@ const UserLayout: React.FC = () => {
                       )}
                     </div>
                   ),
-                  icon: <MessageOutlined style={{ fontSize: '16px' }} />,
+                  icon: <MessageOutlined style={{ fontSize: '16px', color: '#6b7280' }} />,
                   style: {
                     borderRadius: '8px',
                     margin: '0 4px',
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: '#374151'
                   }
                 }
               ]}
@@ -264,11 +271,18 @@ const UserLayout: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  color: 'white',
+                  color: '#374151',
                   padding: '8px 16px',
+                  borderRadius: '12px',
                   transition: 'all 0.3s ease',
                   maxWidth: window.innerWidth > 768 ? '200px' : '150px',
                   minWidth: window.innerWidth > 768 ? '120px' : '80px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}>
                   <Avatar 
                     src={(user as any)?.avatar} 
@@ -298,23 +312,25 @@ const UserLayout: React.FC = () => {
                   type="text" 
                   onClick={() => navigate('/auth/login?type=user')}
                   style={{
-                    color: 'white',
+                    color: '#6b7280',
                     fontSize: window.innerWidth > 768 ? '16px' : '14px',
                     height: '40px',
                     padding: window.innerWidth > 768 ? '0 20px' : '0 16px',
                     borderRadius: '20px',
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.3)',
+                    border: '1px solid #e5e7eb',
                     transition: 'all 0.3s ease',
                     minWidth: window.innerWidth > 768 ? '80px' : '60px'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.background = '#f9fafb';
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.color = '#374151';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.color = '#6b7280';
                   }}
                 >
                   登录
@@ -326,22 +342,22 @@ const UserLayout: React.FC = () => {
                     height: '40px',
                     padding: window.innerWidth > 768 ? '0 20px' : '0 16px',
                     borderRadius: '20px',
-                    background: 'white',
-                    color: '#667eea',
+                    background: '#3b82f6',
+                    color: 'white',
                     border: 'none',
-                    fontWeight: 'bold',
+                    fontWeight: '500',
                     fontSize: window.innerWidth > 768 ? '16px' : '14px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
                     transition: 'all 0.3s ease',
                     minWidth: window.innerWidth > 768 ? '80px' : '60px'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.background = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                    e.currentTarget.style.background = '#3b82f6';
+                    e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
                   }}
                 >
                   注册
@@ -352,7 +368,7 @@ const UserLayout: React.FC = () => {
         </div>
       </Header>
 
-      <Content style={{ flex: 1, background: '#f0f2f5' }}>
+      <Content style={{ flex: 1, background: '#f8fafc' }}>
         <Routes>
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
@@ -371,10 +387,11 @@ const UserLayout: React.FC = () => {
       <Footer 
         style={{
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-          color: 'white',
+          background: 'white',
+          color: '#6b7280',
           padding: '40px 24px',
-          fontSize: '16px'
+          fontSize: '16px',
+          borderTop: '1px solid #e5e7eb'
         }}
       >
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -382,14 +399,12 @@ const UserLayout: React.FC = () => {
             <span style={{ 
               fontSize: '24px', 
               fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              color: '#1f2937'
             }}>
               Casual Rent
             </span>
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <div style={{ color: '#9ca3af' }}>
             让闲置物品重新焕发价值 | ©2025 Created by Genius of CityU
           </div>
         </div>

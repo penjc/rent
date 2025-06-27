@@ -87,15 +87,20 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="register-page min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="register-page min-h-screen flex items-center justify-center p-4" style={{ background: '#fafafa' }}>
       <Card 
-        className="w-full max-w-lg shadow-2xl border-0 rounded-2xl overflow-hidden"
+        className="w-full max-w-lg border-0 rounded-2xl overflow-hidden"
+        style={{
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
+          border: '1px solid #f0f0f0',
+          background: 'white'
+        }}
         title={
           <div className="text-center py-4">
-            <Title level={2} className="!mb-2 !text-gray-800">
+            <Title level={2} className="!mb-2" style={{ color: '#1f2937' }}>
               加入 Casual Rent
             </Title>
-            <Text type="secondary" className="text-base">
+            <Text type="secondary" className="text-base" style={{ color: '#6b7280' }}>
               开启您的租赁之旅
             </Text>
           </div>
@@ -182,15 +187,26 @@ const Register: React.FC = () => {
                   size="large" 
                   block 
                   loading={loading}
-                  className="h-12 rounded-lg font-medium text-base bg-gradient-to-r from-blue-500 to-indigo-600 border-0 hover:from-blue-600 hover:to-indigo-700"
+                  className="h-12 rounded-lg font-medium text-base border-0"
+                  style={{
+                    background: '#2c3e50',
+                    borderColor: '#2c3e50',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#34495e';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#2c3e50';
+                  }}
                 >
                   立即注册
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                <Text type="secondary">已有账号？</Text>
-                <Link to="/auth/login?type=user" className="ml-1 text-blue-600 hover:text-blue-800 font-medium">
+                <Text type="secondary" style={{ color: '#6b7280' }}>已有账号？</Text>
+                <Link to="/auth/login?type=user" className="ml-1 font-medium" style={{ color: '#2c3e50' }}>
                   立即登录
                 </Link>
               </div>
@@ -282,8 +298,8 @@ const Register: React.FC = () => {
                 />
               </Form.Item>
 
-              <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                <Text type="secondary" className="text-sm">
+              <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                <Text type="secondary" className="text-sm" style={{ color: '#6c757d' }}>
                   提示：商家入驻需要提供相关证件，注册后可在商家中心上传证件完成实名认证
                 </Text>
               </div>
@@ -295,15 +311,26 @@ const Register: React.FC = () => {
                   size="large" 
                   block 
                   loading={loading}
-                  className="h-12 rounded-lg font-medium text-base bg-gradient-to-r from-green-500 to-emerald-600 border-0 hover:from-green-600 hover:to-emerald-700"
+                  className="h-12 rounded-lg font-medium text-base border-0"
+                  style={{
+                    background: '#5a6c7d',
+                    borderColor: '#5a6c7d',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#4a5c6d';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#5a6c7d';
+                  }}
                 >
                   申请入驻
                 </Button>
               </Form.Item>
 
               <div className="text-center">
-                <Text type="secondary">已有账号？</Text>
-                <Link to="/auth/login?type=merchant" className="ml-1 text-green-600 hover:text-green-800 font-medium">
+                <Text type="secondary" style={{ color: '#6b7280' }}>已有账号？</Text>
+                <Link to="/auth/login?type=merchant" className="ml-1 font-medium" style={{ color: '#5a6c7d' }}>
                   立即登录
                 </Link>
               </div>
