@@ -49,6 +49,53 @@ app:
       region: ${TENCENT_COS_REGION}
       bucket-name: ${TENCENT_COS_BUCKET}
       domain: ${TENCENT_COS_DOMAIN}
+  
+  # AI客服配置
+  ai:
+    # 当前启用的AI提供商: openai, azure-openai, ollama, qianfan, dashscope, doubao
+    provider: ${AI_PROVIDER:openai}
+    # 系统提示词
+    system-prompt: ${AI_SYSTEM_PROMPT:你是Casual Rent平台的AI客服助手。你需要帮助用户解决关于租赁服务的问题，包括商品租赁、订单管理、支付问题等。请用友善、专业的态度回答用户问题。}
+    # OpenAI配置
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      model: ${OPENAI_MODEL:gpt-3.5-turbo}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      temperature: ${OPENAI_TEMPERATURE:0.7}
+      max-tokens: ${OPENAI_MAX_TOKENS:1000}
+    # Azure OpenAI配置
+    azure-openai:
+      api-key: ${AZURE_OPENAI_API_KEY}
+      endpoint: ${AZURE_OPENAI_ENDPOINT}
+      deployment-name: ${AZURE_OPENAI_DEPLOYMENT_NAME}
+      api-version: ${AZURE_OPENAI_API_VERSION:2024-02-15-preview}
+      temperature: ${AZURE_OPENAI_TEMPERATURE:0.7}
+      max-tokens: ${AZURE_OPENAI_MAX_TOKENS:1000}
+    # Ollama配置
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      model: ${OLLAMA_MODEL:llama2}
+      temperature: ${OLLAMA_TEMPERATURE:0.7}
+    # 百度千帆配置
+    qianfan:
+      api-key: ${QIANFAN_API_KEY}
+      secret-key: ${QIANFAN_SECRET_KEY}
+      model: ${QIANFAN_MODEL:ERNIE-Bot-turbo}
+      temperature: ${QIANFAN_TEMPERATURE:0.7}
+      max-tokens: ${QIANFAN_MAX_TOKENS:1000}
+    # 阿里云通义千问配置
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+      model: ${DASHSCOPE_MODEL:qwen-turbo}
+      temperature: ${DASHSCOPE_TEMPERATURE:0.7}
+      max-tokens: ${DASHSCOPE_MAX_TOKENS:1000}
+    # 豆包配置
+    doubao:
+      api-key: ${DOUBAO_API_KEY}
+      model: ${DOUBAO_MODEL:doubao-lite-4k}
+      base-url: ${DOUBAO_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
+      temperature: ${DOUBAO_TEMPERATURE:0.7}
+      max-tokens: ${DOUBAO_MAX_TOKENS:1000}
 
 springdoc:
   swagger-ui:

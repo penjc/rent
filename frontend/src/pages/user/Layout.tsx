@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Avatar, Dropdown, Badge } from 'antd';
-import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined, HeartOutlined } from '@ant-design/icons';
+import { Layout, Menu, Button, Avatar, Dropdown, Badge, Modal, Input, message } from 'antd';
+import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined, HeartOutlined, SendOutlined, RobotOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { createChat, sendMessage } from '@/services/aiChatApi';
+import type { SendMessageRequest } from '@/services/aiChatApi';
 import Home from './Home';
 import Products from './Products';
 import ProductDetail from './ProductDetail';
@@ -24,6 +26,17 @@ const UserLayout: React.FC = () => {
   const { unreadCount, refreshUnreadCount } = useUnreadMessages();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // AI客服状态
+  const [aiChatVisible, setAiChatVisible] = useState(false);
+  const [aiInputValue, setAiInputValue] = useState('');
+  const [aiMessages, setAiMessages] = useState<Array<{
+    id: number;
+    content: string;
+    role: 'user' | 'assistant';
+  }>>([]);
+  const [aiSessionId, setAiSessionId] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // 组件初始化时检查登录状态
   useEffect(() => {
@@ -92,6 +105,94 @@ const UserLayout: React.FC = () => {
         break;
       default:
         break;
+    }
+  };
+
+  // 初始化AI客服聊天
+  const initAiChat = async () => {
+    if (!isAuthenticated) {
+      message.warning('请先登录后使用AI客服');
+      navigate('/auth/login?type=user');
+      return;
+    }
+
+    try {
+      const response = await createChat(user?.id || null);
+      setAiSessionId(response.data.sessionId);
+      
+      // 添加欢迎消息
+      setAiMessages([{
+        id: Date.now(),
+        content: '您好！我是 Casual Rent 的AI客服助手，很高兴为您服务！请问有什么可以帮助您的吗？',
+        role: 'assistant'
+      }]);
+    } catch (error) {
+      console.error('初始化AI客服失败:', error);
+      message.error('初始化AI客服失败，请稍后重试');
+    }
+  };
+
+  // AI客服处理函数
+  const handleAiSendMessage = async () => {
+    if (!aiInputValue.trim() || aiLoading) return;
+    if (!isAuthenticated) {
+      message.warning('请先登录后使用AI客服');
+      navigate('/auth/login?type=user');
+      return;
+    }
+
+    const userMessage = aiInputValue.trim();
+    setAiInputValue('');
+    setAiLoading(true);
+
+    // 添加用户消息
+    setAiMessages(prev => [...prev, {
+      id: Date.now(),
+      content: userMessage,
+      role: 'user'
+    }]);
+
+    try {
+      // 如果没有会话ID，先创建会话
+      let sessionId = aiSessionId;
+      if (!sessionId) {
+        const chatResponse = await createChat(user?.id || null);
+        sessionId = chatResponse.data.sessionId;
+        setAiSessionId(sessionId);
+      }
+
+      // 发送消息给AI
+      const request: SendMessageRequest = {
+        sessionId,
+        message: userMessage,
+        userId: user?.id || null
+      };
+      const response = await sendMessage(request);
+      
+      // 添加AI回复
+      setAiMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        content: response.data.content,
+        role: 'assistant'
+      }]);
+    } catch (error) {
+      console.error('发送消息失败:', error);
+      setAiMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        content: '抱歉，AI客服暂时无法回复，请稍后重试。如有紧急问题，请通过页面上的"消息"功能联系相关商家。',
+        role: 'assistant'
+      }]);
+      message.error('发送消息失败，请稍后重试');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // 打开AI客服对话窗口
+  const handleOpenAiChat = () => {
+    setAiChatVisible(true);
+    if (aiMessages.length === 0) {
+      initAiChat();
     }
   };
 
@@ -409,6 +510,132 @@ const UserLayout: React.FC = () => {
           </div>
         </div>
       </Footer>
+
+      {/* AI客服悬浮按钮 */}
+      <div
+        style={{
+          position: 'fixed',
+          right: '24px',
+          bottom: '24px',
+          zIndex: 1000,
+        }}
+      >
+        <Button
+          type="primary"
+          shape="circle"
+          size="large"
+          icon={<MessageOutlined />}
+          onClick={handleOpenAiChat}
+          style={{
+            width: '60px',
+            height: '60px',
+            fontSize: '24px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            transition: 'all 0.3s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+        />
+      </div>
+
+      {/* AI客服对话窗口 */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <RobotOutlined style={{ color: '#1890ff' }} />
+            <span>AI客服</span>
+          </div>
+        }
+        open={aiChatVisible}
+        onCancel={() => setAiChatVisible(false)}
+        footer={null}
+        width={400}
+        style={{ top: 20 }}
+      >
+        <div style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
+            marginBottom: '16px', 
+            background: '#f5f5f5', 
+            padding: '16px', 
+            borderRadius: '8px',
+            maxHeight: '300px'
+          }}>
+            {aiMessages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  marginBottom: '12px'
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: '80%',
+                    padding: '8px 12px',
+                    borderRadius: '12px',
+                    backgroundColor: msg.role === 'user' ? '#1890ff' : '#ffffff',
+                    color: msg.role === 'user' ? '#ffffff' : '#000000',
+                    fontSize: '14px',
+                    lineHeight: '1.4',
+                    wordBreak: 'break-word',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Input.TextArea
+              value={aiInputValue}
+              onChange={(e) => setAiInputValue(e.target.value)}
+              placeholder="输入消息，按回车发送..."
+              autoSize={{ minRows: 1, maxRows: 3 }}
+              style={{ flex: 1, resize: 'none' }}
+              onPressEnter={(e) => {
+                if (!e.shiftKey) {
+                  e.preventDefault();
+                  handleAiSendMessage();
+                }
+              }}
+            />
+            <Button
+              type="primary"
+              icon={aiLoading ? <LoadingOutlined /> : <SendOutlined />}
+              onClick={handleAiSendMessage}
+              disabled={!aiInputValue.trim() || aiLoading}
+              loading={aiLoading}
+              style={{
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            />
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#999', 
+            marginTop: '8px',
+            textAlign: 'center'
+          }}>
+            由 AI 驱动，可能会出现错误 | 支持多种AI模型
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 };
