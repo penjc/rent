@@ -65,6 +65,7 @@ Casual Rent 是一个功能完整的二手物品租赁平台，旨在为用户�
 - 📍 **地址管理**：收货地址增删改查、默认地址设置
 - ❤️ **收藏功能**：商品收藏、收藏夹管理
 - 💬 **即时通讯**：与商家实时聊天、消息通知
+- 🤖 **AI智能客服**：24/7在线AI助手，流式对话体验
 
 ### 🏪 商家端功能
 - 📊 **商家仪表盘**：经营数据概览、收入统计、趋势分析
@@ -90,6 +91,8 @@ Casual Rent 是一个功能完整的二手物品租赁平台，旨在为用户�
 - **数据访问**：MyBatis Plus 3.5.3
 - **数据库**：MySQL 5.7.24
 - **安全框架**：Spring Security
+- **AI集成**：LangChain4j（支持OpenAI、Azure、阿里云、百度等）
+- **流式响应**：Server-Sent Events (SSE)
 - **文件存储**：腾讯云COS
 - **API文档**：SpringDoc OpenAPI 3
 - **构建工具**：Maven 3.6+
@@ -170,6 +173,7 @@ rent/
 - **MySQL**：5.7+
 - **Maven**：3.6+
 - **Git**：用于代码管理
+- **AI服务**：OpenAI API Key 或其他支持的AI提供商（可选）
 
 ### 🛠️ 安装步骤
 
@@ -214,14 +218,25 @@ cp .env.example .env
 vim .env
 ```
 
-填写COS配置：
+填写COS和AI配置：
 ```env
+# 腾讯云COS配置
 TENCENT_SECRET_ID=your_secret_id
 TENCENT_SECRET_KEY=your_secret_key
 TENCENT_COS_REGION=your_region
 TENCENT_COS_BUCKET=your_bucket_name
 TENCENT_COS_DOMAIN=your_cos_domain
+
+# AI客服配置（可选）
+AI_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_BASE_URL=https://api.openai.com/v1
+AI_SYSTEM_PROMPT=你是Casual Rent平台的AI客服助手
 ```
+
+> **AI客服配置说明**：
+> - 支持多种AI提供商：OpenAI、Azure OpenAI、Ollama、百度千帆、阿里云通义千问、豆包
 
 #### 5. 前端依赖安装
 ```bash
@@ -295,6 +310,7 @@ scp -r frontend/dist user@server:/path/to/nginx/html/
 - **订单管理**：`/api/orders/*`
 - **分类管理**：`/api/categories/*`
 - **文件上传**：`/api/upload/*`
+- **AI客服**：`/api/ai-chat/*`
 
 ## 📱 应用访问
 
@@ -440,6 +456,14 @@ A: 请检查：
 </details>
 
 ## 📝 更新日志
+
+### v1.1.0 (2025-07-08)
+- 🤖 **新增AI智能客服功能**
+  - 支持6种AI提供商：OpenAI、Azure OpenAI、Ollama、百度千帆、阿里云通义千问、豆包
+  - 实现真正的流式对话体验，AI回复实时显示
+  - 智能对话历史管理，支持上下文理解
+  - 悬浮客服窗口，随时随地获得帮助
+  - 完整的错误处理和降级机制
 
 ### v1.0.0 (2025-06-15)
 - 🎉 项目初始版本发布

@@ -66,6 +66,7 @@ Casual Rent is a comprehensive second-hand rental platform designed to provide c
 - 📍 **Address Management**: CRUD operations for shipping addresses, default address setting
 - ❤️ **Favorites**: Product favorites, favorites management
 - 💬 **Instant Messaging**: Real-time chat with merchants, message notifications
+- 🤖 **AI Customer Service**: 24/7 AI assistant with streaming conversation experience
 
 ### 🏪 Merchant Side
 - 📊 **Merchant Dashboard**: Business data overview, revenue statistics, trend analysis
@@ -91,6 +92,8 @@ Casual Rent is a comprehensive second-hand rental platform designed to provide c
 - **Data Access**: MyBatis Plus 3.5.3
 - **Database**: MySQL 5.7.24
 - **Security**: Spring Security
+- **AI Integration**: LangChain4j (supports OpenAI, Azure, Alibaba Cloud, Baidu, etc.)
+- **Streaming Response**: Server-Sent Events (SSE)
 - **File Storage**: Tencent Cloud COS
 - **API Documentation**: SpringDoc OpenAPI 3
 - **Build Tool**: Maven 3.6+
@@ -171,6 +174,7 @@ rent/
 - **MySQL**: 5.7+ (8.0+ recommended)
 - **Maven**: 3.6+
 - **Git**: For code management
+- **AI Service**: OpenAI API Key or other supported AI providers (optional)
 
 ### 🛠️ Installation Steps
 
@@ -215,14 +219,25 @@ cp .env.example .env
 vim .env
 ```
 
-Fill in COS configuration:
+Fill in COS and AI configuration:
 ```env
+# Tencent Cloud COS Configuration
 TENCENT_SECRET_ID=your_secret_id
 TENCENT_SECRET_KEY=your_secret_key
 TENCENT_COS_REGION=your_region
 TENCENT_COS_BUCKET=your_bucket_name
 TENCENT_COS_DOMAIN=your_cos_domain
+
+# AI Customer Service Configuration (Optional)
+AI_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_BASE_URL=https://api.openai.com/v1
+AI_SYSTEM_PROMPT=You are the AI customer service assistant for Casual Rent platform
 ```
+
+> **AI Configuration Notes**:
+> - Supports multiple AI providers: OpenAI, Azure OpenAI, Ollama, Baidu Qianfan, Alibaba Cloud Tongyi Qianwen, ByteDance Doubao
 
 #### 5. Frontend Dependencies Installation
 ```bash
@@ -296,6 +311,7 @@ The project integrates SpringDoc OpenAPI 3, providing complete API documentation
 - **Order Management**: `/api/orders/*`
 - **Category Management**: `/api/categories/*`
 - **File Upload**: `/api/upload/*`
+- **AI Customer Service**: `/api/ai-chat/*`
 
 ## 📱 Application Pages
 
@@ -445,6 +461,14 @@ A: Please check:
 
 ## 📝 Changelog
 
+### v1.1.0 (2025-07-07)
+- 🤖 **New AI Customer Service Feature**
+  - Support for 6 AI providers: OpenAI, Azure OpenAI, Ollama, Baidu Qianfan, Alibaba Cloud Tongyi Qianwen, ByteDance Doubao
+  - True streaming conversation experience with real-time AI responses
+  - Intelligent conversation history management with context understanding
+  - Floating customer service window for help anytime, anywhere
+  - Complete error handling and fallback mechanisms
+
 ### v1.0.0 (2024-01-15)
 - 🎉 Initial project release
 - ✨ Complete user, merchant, admin functionality
@@ -463,13 +487,6 @@ A: Please check:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE.en](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Jiancheng PENG**
-- 📧 Email: penjc204@gmail.com
-- 🌐 Website: https://pengjiancheng.com
-- 💼 GitHub: [@penjc](https://github.com/penjc)
 
 ## 🙏 Acknowledgments
 
