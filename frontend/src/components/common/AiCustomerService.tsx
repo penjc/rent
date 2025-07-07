@@ -27,7 +27,7 @@ const AiCustomerService: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [currentChat, setCurrentChat] = useState<AiChat | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
 
   // 滚动到底部
   const scrollToBottom = () => {

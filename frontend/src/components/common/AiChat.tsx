@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, Input, message } from 'antd';
+import { Button, Modal, Input } from 'antd';
 import { MessageOutlined, SendOutlined, RobotOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;

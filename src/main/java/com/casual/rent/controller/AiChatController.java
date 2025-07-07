@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -74,6 +76,41 @@ public class AiChatController {
         } catch (Exception e) {
             return Result.error("发送消息失败: " + e.getMessage());
         }
+    }
+
+    @PostMapping(value = "/send/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "发送消息并获取AI流式回复")
+    public SseEmitter sendMessageStream(@RequestBody Map<String, Object> request) {
+        SseEmitter emitter = new SseEmitter(60000L); // 60秒超时
+        
+        try {
+            String sessionId = (String) request.get("sessionId");
+            String message = (String) request.get("message");
+            Long userId = request.get("userId") != null ? Long.valueOf(request.get("userId").toString()) : null;
+
+            if (message == null || message.trim().isEmpty()) {
+                emitter.send(SseEmitter.event()
+                    .name("error")
+                    .data("{\"error\":\"消息内容不能为空\"}"));
+                emitter.complete();
+                return emitter;
+            }
+
+            // 异步处理流式响应
+            aiChatService.sendMessageStream(sessionId, message.trim(), userId, emitter);
+            
+        } catch (Exception e) {
+            try {
+                emitter.send(SseEmitter.event()
+                    .name("error")
+                    .data("{\"error\":\"发送消息失败: " + e.getMessage() + "\"}"));
+                emitter.complete();
+            } catch (Exception ex) {
+                emitter.completeWithError(ex);
+            }
+        }
+        
+        return emitter;
     }
 
     @PostMapping("/reload-model")

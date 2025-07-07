@@ -4,8 +4,8 @@ import { Layout, Menu, Button, Avatar, Dropdown, Badge, Modal, Input, message } 
 import { UserOutlined, ShoppingOutlined, HistoryOutlined, MessageOutlined, HomeOutlined, HeartOutlined, SendOutlined, RobotOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
-import { createChat, sendMessage } from '@/services/aiChatApi';
-import type { SendMessageRequest } from '@/services/aiChatApi';
+import { createChat, sendMessageStream } from '@/services/aiChatApi';
+import type { SendMessageRequest, StreamCallbacks } from '@/services/aiChatApi';
 import Home from './Home';
 import Products from './Products';
 import ProductDetail from './ProductDetail';
@@ -145,13 +145,6 @@ const UserLayout: React.FC = () => {
     setAiInputValue('');
     setAiLoading(true);
 
-    // 添加用户消息
-    setAiMessages(prev => [...prev, {
-      id: Date.now(),
-      content: userMessage,
-      role: 'user'
-    }]);
-
     try {
       // 如果没有会话ID，先创建会话
       let sessionId = aiSessionId;
@@ -161,29 +154,75 @@ const UserLayout: React.FC = () => {
         setAiSessionId(sessionId);
       }
 
-      // 发送消息给AI
+      // 发送消息给AI流式端点
       const request: SendMessageRequest = {
         sessionId,
         message: userMessage,
         userId: user?.id || null
       };
-      const response = await sendMessage(request);
-      
-      // 添加AI回复
-      setAiMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        content: response.data.content,
-        role: 'assistant'
-      }]);
+
+      let currentAiMessageId: number | null = null;
+
+      const callbacks: StreamCallbacks = {
+        onUserMessage: (content: string) => {
+          // 添加用户消息
+          setAiMessages(prev => [...prev, {
+            id: Date.now(),
+            content: content,
+            role: 'user'
+          }]);
+        },
+        onAiStart: () => {
+          // 开始AI回复，添加一个空的AI消息准备逐字更新
+          const messageId = Date.now() + 1;
+          currentAiMessageId = messageId;
+          setAiMessages(prev => [...prev, {
+            id: messageId,
+            content: '',
+            role: 'assistant'
+          }]);
+        },
+        onAiToken: (_token: string, fullContent: string) => {
+          // 更新AI消息内容
+          if (currentAiMessageId) {
+            setAiMessages(prev => prev.map(msg => 
+              msg.id === currentAiMessageId 
+                ? { ...msg, content: fullContent }
+                : msg
+            ));
+          }
+        },
+        onAiComplete: (_messageId: number) => {
+          // AI回复完成
+          setAiLoading(false);
+        },
+        onError: (_error: string) => {
+          // 处理错误
+          setAiMessages(prev => [...prev, {
+            id: Date.now() + 2,
+            content: '抱歉，AI客服暂时无法回复，请稍后重试。如有紧急问题，请通过页面上的"消息"功能联系相关商家。',
+            role: 'assistant'
+          }]);
+          message.error('AI回复失败，请稍后重试');
+          setAiLoading(false);
+        }
+      };
+
+      // 启动流式请求
+      await sendMessageStream(request, callbacks);
+
     } catch (error) {
       console.error('发送消息失败:', error);
       setAiMessages(prev => [...prev, {
+        id: Date.now(),
+        content: userMessage,
+        role: 'user'
+      }, {
         id: Date.now() + 1,
         content: '抱歉，AI客服暂时无法回复，请稍后重试。如有紧急问题，请通过页面上的"消息"功能联系相关商家。',
         role: 'assistant'
       }]);
       message.error('发送消息失败，请稍后重试');
-    } finally {
       setAiLoading(false);
     }
   };
@@ -547,6 +586,14 @@ const UserLayout: React.FC = () => {
       </div>
 
       {/* AI客服对话窗口 */}
+      <style>
+        {`
+          @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+          }
+        `}
+      </style>
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -570,7 +617,7 @@ const UserLayout: React.FC = () => {
             borderRadius: '8px',
             maxHeight: '300px'
           }}>
-            {aiMessages.map((msg) => (
+            {aiMessages.map((msg, index) => (
               <div
                 key={msg.id}
                 style={{
@@ -589,10 +636,24 @@ const UserLayout: React.FC = () => {
                     fontSize: '14px',
                     lineHeight: '1.4',
                     wordBreak: 'break-word',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                    position: 'relative'
                   }}
                 >
                   {msg.content}
+                  {/* 为正在输入的AI消息添加打字光标 */}
+                  {msg.role === 'assistant' && aiLoading && index === aiMessages.length - 1 && (
+                    <span
+                      style={{
+                        marginLeft: '2px',
+                        opacity: 1,
+                        animation: 'blink 1s infinite',
+                        color: '#1890ff'
+                      }}
+                    >
+                      |
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

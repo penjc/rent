@@ -8,20 +8,32 @@ import com.casual.rent.mapper.AiChatMapper;
 import com.casual.rent.mapper.AiMessageMapper;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.model.azure.AzureOpenAiChatModel;
+import dev.langchain4j.model.azure.AzureOpenAiStreamingChatModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
 import dev.langchain4j.model.qianfan.QianfanChatModel;
+import dev.langchain4j.model.qianfan.QianfanStreamingChatModel;
 import dev.langchain4j.model.dashscope.QwenChatModel;
+import dev.langchain4j.model.dashscope.QwenStreamingChatModel;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.model.chat.StreamingChatLanguageModel;
+import dev.langchain4j.model.StreamingResponseHandler;
+import dev.langchain4j.model.output.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class AiChatService {
@@ -36,6 +48,7 @@ public class AiChatService {
     private AiMessageMapper aiMessageMapper;
 
     private ChatLanguageModel chatModel;
+    private StreamingChatLanguageModel streamingChatModel;
 
     /**
      * 获取或创建聊天模型
@@ -45,6 +58,16 @@ public class AiChatService {
             chatModel = createChatModel();
         }
         return chatModel;
+    }
+
+    /**
+     * 获取或创建流式聊天模型
+     */
+    private StreamingChatLanguageModel getStreamingChatModel() {
+        if (streamingChatModel == null) {
+            streamingChatModel = createStreamingChatModel();
+        }
+        return streamingChatModel;
     }
 
     /**
@@ -66,6 +89,30 @@ public class AiChatService {
                 return createDashscopeModel();
             case "doubao":
                 return createDoubaoModel();
+            default:
+                throw new RuntimeException("不支持的AI提供商: " + provider);
+        }
+    }
+
+    /**
+     * 根据配置创建流式聊天模型
+     */
+    private StreamingChatLanguageModel createStreamingChatModel() {
+        String provider = aiConfig.getProvider();
+
+        switch (provider.toLowerCase()) {
+            case "openai":
+                return createStreamingOpenAiModel();
+            case "azure-openai":
+                return createStreamingAzureOpenAiModel();
+            case "ollama":
+                return createStreamingOllamaModel();
+            case "qianfan":
+                return createStreamingQianfanModel();
+            case "dashscope":
+                return createStreamingDashscopeModel();
+            case "doubao":
+                return createStreamingDoubaoModel();
             default:
                 throw new RuntimeException("不支持的AI提供商: " + provider);
         }
@@ -125,6 +172,69 @@ public class AiChatService {
     private ChatLanguageModel createDoubaoModel() {
         AiConfig.DoubaoConfig config = aiConfig.getDoubao();
         return OpenAiChatModel.builder()
+                .apiKey(config.getApiKey())
+                .baseUrl(config.getBaseUrl())
+                .modelName(config.getModel())
+                .temperature(config.getTemperature())
+                .maxTokens(config.getMaxTokens())
+                .build();
+    }
+
+    // 流式模型创建方法
+    private StreamingChatLanguageModel createStreamingOpenAiModel() {
+        AiConfig.OpenAiConfig config = aiConfig.getOpenai();
+        return OpenAiStreamingChatModel.builder()
+                .apiKey(config.getApiKey())
+                .baseUrl(config.getBaseUrl())
+                .modelName(config.getModel())
+                .temperature(config.getTemperature())
+                .maxTokens(config.getMaxTokens())
+                .build();
+    }
+
+    private StreamingChatLanguageModel createStreamingAzureOpenAiModel() {
+        AiConfig.AzureOpenAiConfig config = aiConfig.getAzureOpenai();
+        return AzureOpenAiStreamingChatModel.builder()
+                .apiKey(config.getApiKey())
+                .endpoint(config.getEndpoint())
+                .deploymentName(config.getDeploymentName())
+                .temperature(config.getTemperature())
+                .maxTokens(config.getMaxTokens())
+                .build();
+    }
+
+    private StreamingChatLanguageModel createStreamingOllamaModel() {
+        AiConfig.OllamaConfig config = aiConfig.getOllama();
+        return OllamaStreamingChatModel.builder()
+                .baseUrl(config.getBaseUrl())
+                .modelName(config.getModel())
+                .temperature(config.getTemperature())
+                .build();
+    }
+
+    private StreamingChatLanguageModel createStreamingQianfanModel() {
+        AiConfig.QianfanConfig config = aiConfig.getQianfan();
+        return QianfanStreamingChatModel.builder()
+                .apiKey(config.getApiKey())
+                .secretKey(config.getSecretKey())
+                .modelName(config.getModel())
+                .temperature(config.getTemperature())
+                .build();
+    }
+
+    private StreamingChatLanguageModel createStreamingDashscopeModel() {
+        AiConfig.DashscopeConfig config = aiConfig.getDashscope();
+        return QwenStreamingChatModel.builder()
+                .apiKey(config.getApiKey())
+                .modelName(config.getModel())
+                .temperature(config.getTemperature().floatValue())
+                .maxTokens(config.getMaxTokens())
+                .build();
+    }
+
+    private StreamingChatLanguageModel createStreamingDoubaoModel() {
+        AiConfig.DoubaoConfig config = aiConfig.getDoubao();
+        return OpenAiStreamingChatModel.builder()
                 .apiKey(config.getApiKey())
                 .baseUrl(config.getBaseUrl())
                 .modelName(config.getModel())
@@ -232,9 +342,159 @@ public class AiChatService {
     }
 
     /**
+     * 发送消息并获取AI流式回复
+     */
+    @Async
+    public void sendMessageStream(String sessionId, String userMessage, Long userId, SseEmitter emitter) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 获取或创建聊天会话
+                AiChat chat = aiChatMapper.selectBySessionId(sessionId);
+                final String finalSessionId;
+                if (chat == null) {
+                    chat = createChat(userId);
+                    finalSessionId = chat.getSessionId();
+                } else {
+                    finalSessionId = sessionId;
+                }
+
+                // 保存用户消息
+                AiMessage userMsg = new AiMessage(chat.getId(), finalSessionId, userMessage, "user");
+                aiMessageMapper.insert(userMsg);
+
+                // 发送用户消息确认
+                emitter.send(SseEmitter.event()
+                    .name("user_message")
+                    .data("{\"content\":\"" + escapeJson(userMessage) + "\",\"role\":\"user\"}"));
+
+                // 获取历史消息构建上下文
+                List<AiMessage> history = aiMessageMapper.selectBySessionId(finalSessionId);
+                List<ChatMessage> chatMessages = buildChatHistory(history);
+                
+                final AiChat finalChat = chat;
+
+                // 开始AI回复
+                emitter.send(SseEmitter.event()
+                    .name("ai_start")
+                    .data("{\"status\":\"start\"}"));
+
+                StringBuilder aiReplyBuilder = new StringBuilder();
+                
+                try {
+                    // 使用流式AI模型获取实时回复
+                    StreamingChatLanguageModel streamingModel = getStreamingChatModel();
+                    
+                    // 创建流式响应处理器
+                    StreamingResponseHandler<dev.langchain4j.data.message.AiMessage> handler = 
+                        new StreamingResponseHandler<dev.langchain4j.data.message.AiMessage>() {
+                            @Override
+                            public void onNext(String token) {
+                                try {
+                                    aiReplyBuilder.append(token);
+                                    
+                                    // 实时发送AI生成的token
+                                    emitter.send(SseEmitter.event()
+                                        .name("ai_token")
+                                        .data("{\"content\":\"" + escapeJson(token) + "\",\"full_content\":\"" + escapeJson(aiReplyBuilder.toString()) + "\"}"));
+                                } catch (Exception e) {
+                                    // 忽略发送错误，继续处理
+                                }
+                            }
+                            
+                            @Override
+                            public void onComplete(Response<dev.langchain4j.data.message.AiMessage> response) {
+                                try {
+                                    // 保存AI回复
+                                    AiMessage aiMsg = new AiMessage(finalChat.getId(), finalSessionId, aiReplyBuilder.toString(), "assistant");
+                                    if (response.tokenUsage() != null) {
+                                        aiMsg.setTokens(response.tokenUsage().totalTokenCount());
+                                    }
+                                    aiMessageMapper.insert(aiMsg);
+
+                                    // 更新聊天会话时间
+                                    finalChat.setUpdatedAt(LocalDateTime.now());
+                                    aiChatMapper.updateById(finalChat);
+
+                                    // 发送完成信号
+                                    emitter.send(SseEmitter.event()
+                                        .name("ai_complete")
+                                        .data("{\"status\":\"complete\",\"message_id\":" + aiMsg.getId() + "}"));
+                                    
+                                    emitter.complete();
+                                } catch (Exception e) {
+                                    emitter.completeWithError(e);
+                                }
+                            }
+                            
+                            @Override
+                            public void onError(Throwable error) {
+                                try {
+                                    // 发送错误信息
+                                    String errorMessage = "抱歉，AI客服暂时无法回复，请稍后重试。";
+                                    emitter.send(SseEmitter.event()
+                                        .name("ai_error")
+                                        .data("{\"error\":\"" + escapeJson(errorMessage) + "\"}"));
+                                    
+                                    // 保存错误消息
+                                    AiMessage errorMsg = new AiMessage(finalChat.getId(), finalSessionId, errorMessage, "assistant");
+                                    aiMessageMapper.insert(errorMsg);
+                                    
+                                    emitter.complete();
+                                } catch (Exception e) {
+                                    emitter.completeWithError(e);
+                                }
+                            }
+                        };
+                    
+                    // 开始流式生成
+                    streamingModel.generate(chatMessages, handler);
+                    
+                    // 注意：不要在这里调用 emitter.complete()，因为它会在handler的onComplete中调用
+
+                } catch (Exception e) {
+                    // 发送错误信息
+                    String errorMessage = "抱歉，AI客服暂时无法回复，请稍后重试。";
+                    emitter.send(SseEmitter.event()
+                        .name("ai_error")
+                        .data("{\"error\":\"" + escapeJson(errorMessage) + "\"}"));
+                    
+                    // 保存错误消息
+                    AiMessage errorMsg = new AiMessage(finalChat.getId(), finalSessionId, errorMessage, "assistant");
+                    aiMessageMapper.insert(errorMsg);
+                    
+                    emitter.complete();
+                }
+
+            } catch (Exception e) {
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("{\"error\":\"" + escapeJson("系统错误: " + e.getMessage()) + "\"}"));
+                } catch (IOException ioException) {
+                    // 忽略发送错误
+                }
+                emitter.completeWithError(e);
+            }
+        });
+    }
+
+    /**
+     * 转义JSON字符串
+     */
+    private String escapeJson(String text) {
+        if (text == null) return "";
+        return text.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
+    }
+
+    /**
      * 重新加载AI模型（当配置更改时）
      */
     public void reloadModel() {
         this.chatModel = null;
+        this.streamingChatModel = null;
     }
 }
