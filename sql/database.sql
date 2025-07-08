@@ -175,22 +175,6 @@ CREATE TABLE `favorites` (
   KEY `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏表';
 
-
--- 插入默认数据
-
--- 默认管理员
-INSERT INTO `admins` (`username`, `password`, `name`) VALUES
-('admin', '123456', '系统管理员');
-
--- 默认分类
-INSERT INTO `categories` (`name`, `icon`, `sort_order`) VALUES
-('数码产品', 'digital', 1),
-('家用电器', 'appliance', 2),
-('运动器材', 'sports', 3),
-('乐器', 'music', 4),
-('工具设备', 'tools', 5),
-('其他', 'other', 99);
-
 -- 10. AI聊天会话表
 CREATE TABLE `ai_chat` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '聊天会话ID',
@@ -222,3 +206,18 @@ CREATE TABLE `ai_message` (
   KEY `idx_created_at` (`created_at`),
   CONSTRAINT `fk_ai_message_chat` FOREIGN KEY (`chat_id`) REFERENCES `ai_chat` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI消息表';
+
+-- 插入默认数据
+
+-- 默认管理员
+INSERT INTO `admins` (`username`, `password`, `name`) VALUES
+('admin', '123456', '系统管理员');
+
+-- 默认分类
+INSERT INTO `categories` (`name`, `icon`, `sort_order`) VALUES
+('数码产品', 'digital', 1),
+('家用电器', 'appliance', 2),
+('运动器材', 'sports', 3),
+('乐器', 'music', 4),
+('工具设备', 'tools', 5),
+('其他', 'other', 99);

@@ -29,7 +29,6 @@
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
-- [Deployment](#-deployment)
 - [API Documentation](#-api-documentation)
 - [Application Pages](#-application-pages)
 - [Development Tools](#-development-tools)
@@ -270,31 +269,6 @@ chmod +x start-all.sh stop-all.sh
 #### 9. Default Accounts
 ```
 Admin: admin / admin123
-```
-
-## 🚀 Deployment
-
-### Docker Deployment (Recommended)
-```bash
-# Build image
-docker build -t casual-rent .
-
-# Run container
-docker run -d -p 8080:8080 -p 3000:3000 casual-rent
-```
-
-### Production Deployment
-```bash
-# Backend packaging
-mvn clean package -DskipTests
-
-# Frontend build
-cd frontend
-npm run build
-
-# Deploy to server
-scp target/rent-*.jar user@server:/path/to/deploy/
-scp -r frontend/dist user@server:/path/to/nginx/html/
 ```
 
 ## 📚 API Documentation

@@ -7,7 +7,7 @@
 <div align="center">
   <img src="assets/rent.png" alt="Casual Rent" width="200">
   
-  <p>一个现代化的二手物品租赁平台，连接租客与商家</p>
+  <p>现代化二手物品租赁平台，连接租客与商家</p>
 
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
   [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.18-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -29,7 +29,6 @@
 - [技术栈](#-技术栈)
 - [项目结构](#-项目结构)
 - [快速开始](#-快速开始)
-- [部署指南](#-部署指南)
 - [API文档](#-API文档)
 - [应用访问](#-应用访问)
 - [开发工具](#-开发工具)
@@ -269,31 +268,6 @@ chmod +x start-all.sh stop-all.sh
 #### 9. 默认账号
 ```
 管理员账号：admin / admin123
-```
-
-## 🚀 部署指南
-
-### Docker部署（推荐）
-```bash
-# 构建镜像
-docker build -t casual-rent .
-
-# 运行容器
-docker run -d -p 8080:8080 -p 3000:3000 casual-rent
-```
-
-### 生产环境部署
-```bash
-# 后端打包
-mvn clean package -DskipTests
-
-# 前端构建
-cd frontend
-npm run build
-
-# 部署到服务器
-scp target/rent-*.jar user@server:/path/to/deploy/
-scp -r frontend/dist user@server:/path/to/nginx/html/
 ```
 
 ## 📚 API文档
