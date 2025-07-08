@@ -51,6 +51,4 @@ Thumbs.db
 /build/
 .gradle/
 
-ROADMAP.md
-
-AI_CONFIG.md
+doc/**
