@@ -45,28 +45,28 @@ for i in {1..30}; do
 done
 
 # 启动前端服务
-#echo ""
-#echo "🎨 启动前端服务 (React + Vite)..."
-#echo "前端服务将在 http://localhost:3000 运行"
-#cd frontend
-#nohup npm run dev > ../frontend.log 2>&1 &
-#FRONTEND_PID=$!
-#echo "前端进程PID: $FRONTEND_PID"
-#cd ..
+echo ""
+echo "🎨 启动前端服务 (React + Vite)..."
+echo "前端服务将在 http://localhost:3000 运行"
+cd frontend
+nohup npm run dev > ../frontend.log 2>&1 &
+FRONTEND_PID=$!
+echo "前端进程PID: $FRONTEND_PID"
+cd ..
 
 # 等待前端启动
-#for i in {1..30}; do
-#    if curl -s http://localhost:3000 > /dev/null 2>&1; then
-#        echo "✅ 前端服务启动成功"
-#        break
-#    fi
-#    if [ $i -eq 30 ]; then
-#        echo "❌ 前端服务启动超时"
-#        kill $BACKEND_PID $FRONTEND_PID 2>/dev/null
-#        exit 1
-#    fi
-#    sleep 2
-#done
+for i in {1..30}; do
+   if curl -s http://localhost:3000 > /dev/null 2>&1; then
+       echo "✅ 前端服务启动成功"
+       break
+   fi
+   if [ $i -eq 30 ]; then
+       echo "❌ 前端服务启动超时"
+       kill $BACKEND_PID $FRONTEND_PID 2>/dev/null
+       exit 1
+   fi
+   sleep 2
+done
 
 echo ""
 echo "🎉 Casual Rent 启动完成！"
